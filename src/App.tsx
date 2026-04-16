@@ -3,6 +3,7 @@ import { MainLayout } from './components/layout/MainLayout'
 import { Dashboard } from './pages/dashboard'
 import { ProjectList } from './pages/projects'
 import { ProjectWizard } from './components/projects/wizard/ProjectWizard'
+import { ProjectDetail } from './pages/projects/detail'
 import { Dimensions } from './pages/dimensions'
 import { Departments } from './pages/departments'
 import { Centers } from './pages/centers'
@@ -16,6 +17,7 @@ function App() {
       <Route path="/index" element={<MainLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="projects" element={<ProjectList />} />
+        <Route path="projects/:projectId" element={<ProjectDetail />} />
         <Route path="projects/create" element={<ProjectWizard />} />
         <Route path="dimensions" element={<Dimensions />} />
         <Route path="departments" element={<Departments />} />
