@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>惟翎·科研管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+		<link rel="icon" href="logo.svg" type="image/svg+xml">
+		<!-- 引入图标库 RemixIcon -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <style>
+        .fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* 隐藏数字输入框的上下箭头 */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        #global-sidebar.collapsed { width: 4rem !important; }
+        #global-sidebar.collapsed h1, #global-sidebar.collapsed .nav-text { display: none; }
+        #global-sidebar.collapsed nav a { justify-content: center; }
+        #global-sidebar.collapsed nav a svg { margin-right: 0; }
+        #global-sidebar.collapsed #sidebar-footer-info { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <!-- ================= 1. 全局左侧导航栏 (Light Mode) ================= -->
+    <aside id="global-sidebar" class="w-64 bg-white border-r border-gray-200 flex flex-col transition-all z-20 shadow-sm shrink-0">
+        <div class="px-5 flex items-center gap-3 border-b border-gray-100 h-[73px] shrink-0">
+            <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xl shadow-sm">W</div>
+            <h1 class="text-lg font-bold text-gray-800 tracking-wide">惟翎·科研管理</h1>
+        </div>
+        
+        <nav class="flex-1 py-4 space-y-1">   
+            <a href="#" onclick="switchModule('EDC')" id="nav-EDC" class="flex items-center px-5 py-3 bg-blue-50 text-blue-700 border-r-4 border-blue-600 font-medium transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <span class="nav-text">EDC 电子数据采集</span>
+            </a>
+            
+            <a href="#" onclick="alert('该功能暂未开放')" id="nav-IWRS" class="flex items-center px-5 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 border-r-4 border-transparent transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                <span class="nav-text">IWRS 中央随机化</span>
+            </a>
+        </nav>
+        
+        <div class="p-4 border-t border-gray-100 text-sm flex items-center justify-between bg-gray-50">
+            <div id="sidebar-footer-info" class="flex items-center gap-2 text-gray-600 hover:text-blue-700">
+                <button onclick="location.reload()" class="w-8 h-8 rounded bg-white border border-gray-300 text-gray-800">
+									<i class="ri-refresh-line text-base"></i>
+								</button>
+                <div class="flex flex-col items-baseline">
+									<span id="app-version" class="font-medium">v0.1.0</span>
+									<span id="app-commit" class="text-xs text-gray-400">fj78sfhnj</span>
+                </div>
+            </div>
+            <button id="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" class="p-2 rounded text-gray-600" title="折叠/展开侧边栏">
+                <i id="sidebar-collapse-icon" class="ri-menu-fold-line text-lg"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ================= 2. 右侧主内容区 ================= -->
+    <main class="flex-1 flex flex-col relative overflow-hidden bg-gray-50/50">
+        
+        <!-- 视图A：项目卡片列表 -->
+        <div id="view-project-list" class="flex-1 flex flex-col fade-in block h-full">
+            <header class="bg-white px-6 flex items-center border-b border-gray-200 shadow-sm z-10 shrink-0 h-[73px]">
+                <h2 class="text-lg font-bold text-gray-800" id="module-title">项目列表</h2>
+                <div class="ml-auto flex items-center gap-3">
+                    <button onclick="alert('功能开发中')" class="p-2 rounded hover:bg-gray-100 text-gray-600" title="消息提示">
+                        <i class="ri-notification-3-line text-lg"></i>
+                    </button>
+                    <button onclick="alert('功能开发中')" class="p-2 rounded hover:bg-gray-100 text-gray-600" title="全局设置">
+                        <i class="ri-settings-3-line text-lg"></i>
+                    </button>
+                    <span class="w-px h-6 bg-gray-200"></span>
+                    <div class="relative">
+                        <button onclick="toggleUserDropdown(this)" class="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center border border-blue-200">PI</div>
+                            <span class="text-sm font-medium text-gray-700">Admin</span>
+                        </button>
+                        <div class="absolute right-0 top-11 bg-white border border-gray-200 rounded-md shadow-lg w-36 hidden">
+                            <button class="w-full text-left px-3 py-2 hover:bg-gray-50">个人中心</button>
+                            <button onclick="logout()" class="w-full text-left px-3 py-2 hover:bg-gray-50">退出登录</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div class="flex-1 overflow-y-auto p-8">
+                <p class="text-gray-500 mb-6">请选择您要操作的临床研究项目</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="project-cards-container">
+                    <!-- 卡片由 JS 动态渲染 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 视图B：项目工作台 (上下布局) -->
+        <div id="view-project-dashboard" class="flex-1 flex-col hidden fade-in h-full">
+            <header class="bg-white px-6 border-b border-gray-200 flex items-center shadow-sm z-10 shrink-0 h-[73px]">
+                <h2 class="text-lg font-bold text-gray-800">项目详情</h2>
+                <div class="ml-auto flex items-center gap-3">
+                    <button onclick="alert('功能开发中')" class="p-2 rounded hover:bg-gray-100 text-gray-600" title="消息提示">
+                        <i class="ri-notification-3-line text-lg"></i>
+                    </button>
+                    <button onclick="alert('功能开发中')" class="p-2 rounded hover:bg-gray-100 text-gray-600" title="全局设置">
+                        <i class="ri-settings-3-line text-lg"></i>
+                    </button>
+                    <span class="w-px h-6 bg-gray-200"></span>
+                    <div class="relative">
+                        <button onclick="toggleUserDropdown(this)" class="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center border border-blue-200">PI</div>
+                            <span class="text-sm font-medium text-gray-700">Admin</span>
+                            <i class="ri-arrow-down-s-line text-gray-500"></i>
+                        </button>
+                        <div class="absolute right-0 top-11 bg-white border border-gray-200 rounded-md shadow-lg w-36 hidden">
+                            <button class="w-full text-left px-3 py-2 hover:bg-gray-50">个人中心</button>
+                            <button onclick="logout()" class="w-full text-left px-3 py-2 hover:bg-gray-50">退出登录</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <!-- 返回链接 + 添加受试者 -->
+                <div class="flex items-center justify-between text-sm">
+                    <div class="flex items-center">
+                        <button onclick="backToProjects()" class="text-gray-500 hover:text-blue-600 flex items-center transition-colors font-medium">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            返回项目列表
+                        </button>
+                        <span class="text-gray-300 mx-3">/</span>
+                        <span class="font-semibold text-gray-800" id="dash-breadcrumb">项目详情</span>
+                    </div>
+                    <button onclick="openSubjectDrawer()" class="bg-blue-600 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-700 flex items-center shadow-sm">
+                        <svg class="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        添加受试者
+                    </button>
+                </div>
+
+                <!-- 上：项目信息卡片 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-xl font-bold text-gray-900" id="dash-proj-name">项目名称</h2>
+                        <span id="dash-proj-status" class="text-xs font-medium px-2.5 py-1 rounded">状态</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-6" id="dash-proj-desc">项目描述内容...</p>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-gray-100">
+                        <div><div class="text-xs text-gray-400 mb-1">项目代号</div><span class="text-sm font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded" id="dash-proj-code">CODE</span></div>
+                        <div><div class="text-xs text-gray-400 mb-1">主要研究者 (PI)</div><div class="text-sm font-bold text-gray-800" id="dash-proj-pi">PI Name</div></div>
+                        <div><div class="text-xs text-gray-400 mb-1">参与中心</div><div class="text-sm font-bold text-gray-800" id="dash-proj-centers">--</div></div>
+												<div><div class="text-xs text-gray-400 mb-1">申办单位</div><div class="text-sm font-bold text-gray-800" id="dash-proj-organizations">--</div></div>
+                        <div><div class="text-xs text-gray-400 mb-1">当前入组人数</div><div class="text-2xl font-bold text-blue-600 underline" id="dash-proj-enrollment">0</div></div>
+                    </div>
+                </div>
+
+                <!-- 下：受试者数据表格 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-gray-800">受试者列表</h3>
+                            <div class="flex items-center gap-3 text-sm">
+                                <div class="flex items-center gap-1">
+                                    <select id="subject-center-filter" onchange="onSubjectFilterChange()" class="border border-gray-300 rounded-md px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="all">全部中心</option>
+                                        <option value="上海市眼病防治中心">上海市眼病防治中心</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <select id="subject-source-filter" onchange="onSubjectFilterChange()" class="border border-gray-300 rounded-md px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="all">全部来源</option>
+                                        <option value="门诊">门诊</option>
+                                        <option value="招募">招募</option>
+                                    </select>
+                                </div>
+                                <input id="subject-search-input" type="text" placeholder="筛选号" class="flex-1 text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:ring-1 focus:ring-blue-500 outline-none">
+                                <button onclick="applySubjectSearch()" class="text-sm bg-white text-blue-600 border border-blue-600 px-3 py-1.5 rounded-md hover:text-blue-800 hover:border-blue-800">搜索</button>
+                                <button onclick="resetSubjectFilters()" class="text-sm bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-50">重置</button>
+																<span class="mx-1 text-gray-400">｜</span>
+																<button class="flex items-center gap-1 text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700">
+																	<i class="ri-download-line"></i>
+																	导出数据
+																</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                                    <th class="px-6 py-3 font-medium">
+                                        <button id="sort-id-label" onclick="setSubjectSort('id')" class="flex items-center gap-1 hover:text-blue-700 transition">
+                                            筛选号
+                                            <span id="sort-id-indicator" class="text-gray-300">↕</span>
+                                        </button>
+                                    </th>
+                                    <th class="px-6 py-3 font-medium">随机号</th>
+                                    <th class="px-6 py-3 font-medium">受试者缩写</th>
+                                    <th class="px-6 py-3 font-medium">受试者来源</th>
+                                    <th class="px-6 py-3 font-medium">中心</th>
+                                    <th class="px-6 py-3 font-medium">科室</th>
+                                    <th class="px-6 py-3 font-medium">当前状态<span class="text-red-600">（一期不开发这个字段）</span></th>
+                                    <th class="px-6 py-3 font-medium">入组日期</th>
+                                    <th class="px-6 py-3 font-medium">结束日期</th>
+                                    <th class="px-6 py-3 font-medium text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm" id="subject-table-body">
+                                <!-- 表格行由 JS 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 视图C：受试者详情 (高级表单引擎) -->
+        <div id="view-subject-detail" class="flex-1 flex-col hidden fade-in h-full">
+            <header class="bg-white px-6 border-b border-gray-200 flex items-center shadow-sm z-10 shrink-0 h-[73px]">
+                <h2 class="text-lg font-bold text-gray-800">采集数据</h2>
+                <div class="ml-auto flex items-center gap-3">
+                    <button onclick="alert('功能开发中')" class="p-2 rounded hover:bg-gray-100 text-gray-600" title="消息提示">
+                        <i class="ri-notification-3-line text-lg"></i>
+                    </button>
+                    <button onclick="alert('功能开发中')" class="p-2 rounded hover:bg-gray-100 text-gray-600" title="全局设置">
+                        <i class="ri-settings-3-line text-lg"></i>
+                    </button>
+                    <span class="w-px h-6 bg-gray-200"></span>
+                    <div class="relative">
+                        <button onclick="toggleUserDropdown(this)" class="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center border border-blue-200">PI</div>
+                            <span class="text-sm font-medium text-gray-700">Admin</span>
+                            <i class="ri-arrow-down-s-line text-gray-500"></i>
+                        </button>
+                        <div class="absolute right-0 top-11 bg-white border border-gray-200 rounded-md shadow-lg w-36 hidden">
+                            <button class="w-full text-left px-3 py-2 hover:bg-gray-50">个人中心</button>
+                            <button onclick="logout()" class="w-full text-left px-3 py-2 hover:bg-gray-50">退出登录</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <div class="px-6 py-3 flex items-center justify-between shrink-0">
+                    <div class="flex items-center text-sm">
+                        <button onclick="backToDashboard()" class="text-gray-500 hover:text-blue-600 flex items-center transition-colors font-medium">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            返回项目
+                        </button>
+                        <span class="text-gray-300 mx-3">/</span>
+                        <span class="font-semibold text-gray-800" id="detail-breadcrumb">受试者: XW09001</span>
+                    </div>
+                    <div class="flex gap-3" id="form-actions">
+                        <!-- 读写按钮动态渲染 -->
+                    </div>
+                </div>
+
+                <div class="flex-1 flex overflow-hidden border-t border-gray-200 bg-gray-50">
+                    <!-- 左侧：访视树及受试者信息 (卡片式) -->
+                    <aside class="w-64 flex flex-col shrink-0 space-y-4 p-6 pr-0">
+                        <!-- 受试者卡片 -->
+                        <div class="bg-blue-600 rounded-xl shadow-sm border border-blue-700 p-5 shrink-0 text-white">
+                            <div class="text-xs opacity-90 mb-1">当前受试者</div>
+                            <div class="font-bold text-xl tracking-tight mb-1" id="sidebar-subject-name">ZSM</div>
+                            <div class="text-sm opacity-90" id="sidebar-subject-id">XW09001</div>
+                        </div>
+                        <!-- 访视节点卡片 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-1 flex flex-col overflow-hidden">
+                            <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/80 font-bold text-gray-700 text-sm shrink-0">访视阶段</div>
+                            <nav class="flex-1 overflow-y-auto p-4 no-scrollbar" id="visit-nav">
+                                <!-- 访视节点由 JS 动态生成 -->
+                            </nav>
+                        </div>
+                    </aside>
+
+                    <!-- 中间：动态表单区 -->
+                    <main id="form-scroll-container" class="flex-1 overflow-y-auto p-6">
+                        <div class="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-10">
+                            <div class="flex justify-between items-end border-b border-gray-200 pb-4 mb-6">
+                                <h2 class="text-2xl font-bold text-gray-800" id="current-visit-title">加载中...</h2>
+                                <span id="edit-status-badge" class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">只读模式</span>
+                            </div>
+                            <form id="dynamic-form" class="space-y-8" onsubmit="event.preventDefault();">
+                                <!-- 表单内容由 JS 动态生成 -->
+                            </form>
+                        </div>
+                    </main>
+                    
+                    <!-- 右侧：目录 -->
+                    <aside class="w-64 shrink-0 p-6 pl-0">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 h-full">
+                            <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/80 font-bold text-gray-700 text-sm">目录</div>
+                            <nav id="toc-nav" class="p-3 space-y-1 text-sm overflow-y-auto max-h-full">
+                                <!-- 目录由 JS 动态生成 -->
+                            </nav>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+
+        <div id="subject-drawer-container"></div>
+
+    </main>
+
+    <script>
+        // ================= 数据模拟与结构定义 =================
+        const projects = [
+            { id: 'P001', code: 'XW09', name: '光刻微结构近视管理镜片在儿童青少年近视防控中的有效性及佩戴安全舒适性的随机对照临床研究', desc: '本研究旨在评估新型光刻微结构镜片在延缓儿童青少年近视进展方面的有效性与安全性。', pi: '徐蔚', centers: ['上海眼病防治中心'], organizations: ['南通诺瞳奕目医疗科技有限公司'], status: '进行中', statusColor: 'bg-green-100 text-green-800' },
+            { id: 'P002', code: 'XW07', name: '某新型角膜塑形镜多中心随机对照临床试验', desc: '评估夜戴型角膜塑形镜对低中度近视患者的视力矫正效果及角膜安全性。', pi: '李教授', centers: ['上海眼病防治中心', '广东中山医院'], status: '已结束', organizations: ['南通诺瞳奕目医疗科技有限公司'], statusColor: 'bg-gray-100 text-gray-600' },
+            { id: 'P003', code: 'XW06', name: '低浓度阿托品滴眼液联合光学干预的真实世界研究', desc: '观察0.01%阿托品滴眼液联合离焦眼镜在临床真实环境下的长期控制效果。', pi: '王主任', centers: ['上海眼病防治中心'], status: '准备中', organizations: ['南通诺瞳奕目医疗科技有限公司'], statusColor: 'bg-amber-100 text-amber-800' }
+        ];
+
+        const subjectsData = {};
+        projects.forEach(p => {
+            subjectsData[p.id] = Array.from({length: 10}, (_, i) => {
+                const num = String(i + 1).padStart(3, '0');
+                const isDropOut = i === 8;
+                const enrollmentStatus = isDropOut ? '提前退出' : (i < 2 ? '筛选中' : '入组');
+                const stage = isDropOut ? '-' : (i < 2 ? '-' : (['基线','3M','6M'][(i - 2) % 3]));
+                const enrollmentStatusColor = enrollmentStatus === '提前退出' ? 'text-red-700 bg-red-50' : (enrollmentStatus === '筛选中' ? 'text-amber-700 bg-amber-50' : 'text-green-700 bg-green-50');
+                const center = '上海市眼病防治中心';
+                const department = '眼科';
+                const endDate = isDropOut || p.status === '已结束' ? `2026-01-${String((i%20)+1).padStart(2,'0')}` : '';
+                return {
+                    id: `S-${p.id}-${num}`,
+                    randomId: i < 2 ? '-' : `R${num}`,
+                    initials: ['ZSM', 'LJH', 'WXY', 'CQ', 'ZJY'][i % 5],
+                    enrollDate: `2025-10-${String((i%20)+1).padStart(2,'0')}`,
+                    enrollmentStatus,
+                    enrollmentStatusColor,
+                    stage,
+                    source: ['门诊','招募'][i % 2],
+                    center,
+                    department,
+                    endDate
+                };
+            });
+        });
+
+        const visits = [
+            { id: 'v0', name: 'V0 基线期 (0M)' },
+            { id: 'v1', name: 'V1 访视 (3M)' },
+            { id: 'v2', name: 'V2 访视 (6M)' },
+            { id: 'v3', name: 'V3 访视 (9M)' },
+            { id: 'v4', name: 'V4 访视 (12M)' }
+        ];
+
+        // 模拟表单数据 (包含空值测试)
+        let formData = {
+            "inc_1": "是", "inc_2": "是", "inc_3": "是", "inc_4": "是",
+            "exc_1": "否", "exc_2": "否", "exc_3": "否", "exc_4": "否",
+            "initials": "ZSM", "gender": "男", "birth_date": "2015-05-12", "height": "145", "weight": "38.5",
+            "father_myopia": "有", "father_myopia_degree": "-3.00", "mother_myopia": "无",
+            "has_disease": "有", "disease_list": [{ name: "过敏性鼻炎", eye: "4", start_date: "2023-01-01", ongoing: "是", end_date: "", affects: "否" }],
+            "has_medication": "无", "medication_list": [],
+            "has_allergy": "有", "allergy_desc": "青霉素过敏",
+            "has_past_control": "无", "past_control_list": [],
+            "ucva_od": "4.8", "ucva_os": "4.8", "bcva_od": "5.0", "bcva_os": "5.0",
+            "subj_sph_od": "-2.50", "subj_cyl_od": "-0.50", "subj_sph_os": "-2.25", "subj_cyl_os": "-0.75",
+            "obj_sph_od": "-2.75", "obj_cyl_od": "-0.50", "obj_sph_os": "-2.50", "obj_cyl_os": "-0.75"
+        };
+
+        const formSchema = [
+            {
+                title: "1. 审核入选排除标准", type: "criteria",
+                groups: [
+                    { name: "入选标准 (必须全部为'是')", fields: [
+                        { id: "inc_1", label: "年龄：6-14岁" },
+                        { id: "inc_2", label: "使用1%盐酸环喷托酯滴眼液睫状肌麻痹后，双眼均在-0.50D～-4.00D，双眼柱镜≤1.50D，屈光参差≤1.50D，最佳矫正视力5.0以上" },
+                        { id: "inc_3", label: "3个月内未使用过多焦眼镜、OK镜、角膜塑形镜、渐进眼镜、阿托品滴眼液、红光或针灸治疗等近视防控方法" },
+                        { id: "inc_4", label: "受试者有治疗意愿并由其法定监护人签署知情同意书" }
+                    ]},
+                    { name: "排除标准 (必须全部为'否')", fields: [
+                        { id: "exc_1", label: "确诊恒定斜视" }, { id: "exc_2", label: "确诊病理性近视" },
+                        { id: "exc_3", label: "其他先天性眼病等" }, { id: "exc_4", label: "研究医生认为不适合纳入项目的其他原因等" }
+                    ]}
+                ]
+            },
+            {
+                title: "2. 受试者基本信息", type: "grid",
+                fields: [
+                    { id: "initials", label: "姓名缩写", type: "text", width: "col-span-1" },
+                    { id: "gender", label: "性别", type: "radio", options: ["男", "女"], width: "col-span-1" },
+                    { id: "birth_date", label: "出生日期", type: "date", width: "col-span-1" },
+                    { id: "height", label: "身高 (cm)", type: "number", width: "col-span-1" },
+                    { id: "weight", label: "体重 (kg)", type: "number", width: "col-span-1" },
+                    { id: "empty", type: "empty", width: "col-span-1" },
+                    { id: "father_myopia", label: "父亲家族近视情况", type: "radio_with_input", options: ["无", "有"], inputId: "father_myopia_degree", inputLabel: "近视度数 (D)", inputType: "number", width: "col-span-2" },
+                    { id: "mother_myopia", label: "母亲家族近视情况", type: "radio_with_input", options: ["无", "有"], inputId: "mother_myopia_degree", inputLabel: "近视度数 (D)", inputType: "number", width: "col-span-2" },
+                    { id: "has_allergy", label: "过敏史", type: "radio_with_input", options: ["无", "有"], inputId: "allergy_desc", inputLabel: "过敏详情", inputType: "text", width: "col-span-2" },
+                    { 
+                        id: "has_disease", label: "既往/现有疾病信息", tooltip: "尤其是可能影响治疗的眼部疾病和既往3个月全身性疾病", 
+                        type: "dynamic_list", listId: "disease_list", width: "col-span-full",
+                        columns: [
+                            { id: "name", label: "疾病名称", type: "text", width: "w-48" },
+                            { id: "eye", label: "眼别", type: "select", options: [{v:"1",l:"右眼"},{v:"2",l:"左眼"},{v:"3",l:"双眼"},{v:"4",l:"NA"}], width: "w-24" },
+                            { id: "start_date", label: "开始时间", type: "date", width: "w-36" },
+                            { id: "ongoing", label: "是否持续", type: "select", options: [{v:"是",l:"是"},{v:"否",l:"否"}], width: "w-24", triggers: "end_date" },
+                            { id: "end_date", label: "结束时间", type: "date", width: "w-36", dependsOn: "ongoing", dependsVal: "否" },
+                            { id: "affects", label: "影响研究", type: "select", options: [{v:"是",l:"是"},{v:"否",l:"否"}], width: "w-24" }
+                        ]
+                    },
+                    { 
+                        id: "has_medication", label: "既往/正在使用的药物", tooltip: "尤其是可能影响视力、干眼、消炎药、皮质激素类的既往1个月药物", 
+                        type: "dynamic_list", listId: "medication_list", width: "col-span-full",
+                        columns: [
+                            { id: "name", label: "用药名称", type: "text", width: "w-40" },
+                            { id: "indication", label: "适应症", type: "text", width: "w-32" },
+                            { id: "dosage", label: "用法用量", type: "text", width: "w-32" },
+                            { id: "start_date", label: "开始时间", type: "date", width: "w-36" },
+                            { id: "ongoing", label: "是否持续", type: "select", options: [{v:"是",l:"是"},{v:"否",l:"否"}], width: "w-24", triggers: "end_date" },
+                            { id: "end_date", label: "结束时间", type: "date", width: "w-36", dependsOn: "ongoing", dependsVal: "否" },
+                            { id: "affects", label: "影响研究", type: "select", options: [{v:"是",l:"是"},{v:"否",l:"否"}], width: "w-24" }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "3. 视力检查", type: "eye_grid",
+                rows: [
+                    { label: "裸眼视力（远）", id_od: "ucva_od", id_os: "ucva_os", type: "number", step: "0.01" },
+                    { label: "最佳矫正视力（远）", id_od: "bcva_od", id_os: "bcva_os", type: "number", step: "0.01" }
+                ]
+            },
+            {
+                title: "4. 屈光度检查", type: "eye_grid",
+                rows: [
+                    { label: "主觉球镜度数 (D)", id_od: "subj_sph_od", id_os: "subj_sph_os", type: "number", step: "0.25" },
+                    { label: "主觉柱镜度数 (D)", id_od: "subj_cyl_od", id_os: "subj_cyl_os", type: "number", step: "0.25" },
+                    { label: "客观球镜度数 (D)", id_od: "obj_sph_od", id_os: "obj_sph_os", type: "number", step: "0.25" },
+                    { label: "客观柱镜度数 (D)", id_od: "obj_cyl_od", id_os: "obj_cyl_os", type: "number", step: "0.25" }
+                ]
+            },
+            {
+                title: "5. 调节指标", type: "grid",
+                fields: [
+                    { id: "nra", label: "负相对调节 (D)", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "pra", label: "正相对调节 (D)", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "bcc", label: "调节反应 (D)", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "empty_adj_1", type: "empty", width: "col-span-1" },
+                    { id: "amp_ou", label: "调节幅度-双眼 (D)", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "amp_od", label: "调节幅度-右眼 (D)", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "amp_os", label: "调节幅度-左眼 (D)", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "amp_note", label: "调节幅度备注", type: "text", width: "col-span-1" },
+                    { id: "flipper_ou", label: "调节灵敏度-双眼 (D)", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "flipper_od", label: "调节灵敏度-右眼 (D)", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "flipper_os", label: "调节灵敏度-左眼 (D)", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "flipper_note", label: "调节灵敏度备注", type: "text", width: "col-span-1" }
+                ]
+            },
+            {
+                title: "6. 眼压检查", type: "eye_grid",
+                rows: [
+                    { label: "非接触眼压 (mmHg)", id_od: "iop_nct_od", id_os: "iop_nct_os", type: "number", step: "0.1" }
+                ]
+            },
+            {
+                title: "7. 眼球光学生物测量", type: "eye_grid",
+                rows: [
+                    { label: "眼轴长度 (mm)", id_od: "axial_len_od", id_os: "axial_len_os", type: "number", step: "0.01" }
+                ]
+            },
+            {
+                title: "8. 脉络膜检查", type: "eye_grid",
+                rows: [
+                    { label: "脉络膜厚度 (μm)", id_od: "choro_thk_od", id_os: "choro_thk_os", type: "number", step: "1" }
+                ]
+            },
+            {
+                title: "9. 角膜地形图检查", type: "eye_grid",
+                rows: [
+                    { label: "平坦 K 值 (D)", id_od: "k_flat_od", id_os: "k_flat_os", type: "number", step: "0.01" },
+                    { label: "陡峭 K 值 (D)", id_od: "k_steep_od", id_os: "k_steep_os", type: "number", step: "0.01" },
+                    { label: "角膜散光 (D)", id_od: "k_astig_od", id_os: "k_astig_os", type: "number", step: "0.01" },
+                    { label: "散光类型", id_od: "ast_type_od", id_os: "ast_type_os", type: "radio_with_input", options: ["顺规","逆规","其他"], inputLabel: "原因", inputId_od: "ast_type_other_od", inputId_os: "ast_type_other_os" },
+                    { label: "角膜直径 (mm)", id_od: "corneal_dia_od", id_os: "corneal_dia_os", type: "number", step: "0.1" },
+                    { label: "瞳孔直径 (mm)", id_od: "pupil_dia_od", id_os: "pupil_dia_os", type: "number", step: "0.1" },
+                    { label: "中央前房深度 (mm)", id_od: "acd_od", id_os: "acd_os", type: "number", step: "0.01" },
+                    { label: "中央角膜厚度 (μm)", id_od: "cct_od", id_os: "cct_os", type: "number", step: "1" }
+                ]
+            },
+            {
+                title: "10. 对比敏感度（试镜架）", type: "matrix",
+                rows: [
+                    { id: "cs_ou", label: "OU" },
+                    { id: "cs_od", label: "OD" },
+                    { id: "cs_os", label: "OS" }
+                ],
+                cols: [
+                    { id: "aulcsf", label: "AULCSF" },
+                    { id: "acuity", label: "Acuity" },
+                    { id: "c1_0", label: "1.0c/d" },
+                    { id: "c1_5", label: "1.5c/d" },
+                    { id: "c3_0", label: "3.0c/d" },
+                    { id: "c6_0", label: "6.0c/d" },
+                    { id: "c12_0", label: "12.0c/d" },
+                    { id: "c18_0", label: "18.0c/d" }
+                ],
+                cellType: "number",
+                step: "0.01"
+            },
+            {
+                title: "11. 视觉质量", type: "eye_grid",
+                rows: [
+                    { label: "MTF-cutoff (c/deg)", id_od: "mtf_cutoff_od", id_os: "mtf_cutoff_os", type: "number", step: "0.01" },
+                    { label: "OSI", id_od: "osi_od", id_os: "osi_os", type: "number", step: "0.01" },
+                    { label: "预测视力", id_od: "pred_va_od", id_os: "pred_va_os", type: "number", step: "0.01" },
+                    { label: "VA 100%", id_od: "va100_od", id_os: "va100_os", type: "number", step: "0.01" },
+                    { label: "VA 20%", id_od: "va20_od", id_os: "va20_os", type: "number", step: "0.01" },
+                    { label: "VA 9%", id_od: "va9_od", id_os: "va9_os", type: "number", step: "0.01" }
+                ]
+            },
+            {
+                title: "12. 波前像差（5mm）", type: "eye_grid",
+                rows: [
+                    { label: "总高阶像差 tHOA (μm)", id_od: "wf_thoa_od", id_os: "wf_thoa_os", type: "number", step: "0.001" },
+                    { label: "球差 Z40 (μm)", id_od: "wf_z40_od", id_os: "wf_z40_os", type: "number", step: "0.001" }
+                ]
+            },
+            {
+                title: "13. 裂隙灯检查", type: "eye_grid",
+                rows: [
+                    { label: "眼前节", id_od: "slit_antseg_od", id_os: "slit_antseg_os", type: "radio", options: ["+", "-"] }
+                ]
+            },
+            {
+                title: "14. 眼底检查", type: "eye_grid",
+                rows: [
+                    { label: "眼后节", id_od: "fundus_postseg_od", id_os: "fundus_postseg_os", type: "radio", options: ["+", "-"] }
+                ]
+            },
+            {
+                title: "15. 眼位检查", type: "eye_grid",
+                rows: [
+                    { label: "眼位", id_od: "eye_position_od", id_os: "eye_position_os", type: "radio", options: ["正视","隐斜","间歇性斜视"] }
+                ]
+            },
+            {
+                title: "16. 屈光度检查（扩瞳后）", type: "eye_grid",
+                rows: [
+                    { label: "客观球镜度数 (D)", id_od: "cycl_obj_sph_od", id_os: "cycl_obj_sph_os", type: "number", step: "0.01" },
+                    { label: "客观柱镜度数 (D)", id_od: "cycl_obj_cyl_od", id_os: "cycl_obj_cyl_os", type: "number", step: "0.01" }
+                ]
+            },
+            {
+                title: "17. 多光谱屈光地形图（扩瞳后）", type: "eye_grid",
+                rows: [
+                    { label: "TRVD", id_od: "msrt_trvd_od", id_os: "msrt_trvd_os", type: "number", step: "0.01" },
+                    { label: "RVD-0", id_od: "msrt_rvd0_od", id_os: "msrt_rvd0_os", type: "number", step: "0.01" },
+                    { label: "RVD-15", id_od: "msrt_rvd15_od", id_os: "msrt_rvd15_os", type: "number", step: "0.01" },
+                    { label: "RVD-45", id_od: "msrt_rvd45_od", id_os: "msrt_rvd45_os", type: "number", step: "0.01" },
+                    { label: "RVD-S", id_od: "msrt_rvds_od", id_os: "msrt_rvds_os", type: "number", step: "0.01" },
+                    { label: "RVD-I", id_od: "msrt_rvdi_od", id_os: "msrt_rvdi_os", type: "number", step: "0.01" },
+                    { label: "RVD-T", id_od: "msrt_rvdt_od", id_os: "msrt_rvdt_os", type: "number", step: "0.01" },
+                    { label: "RVD-N", id_od: "msrt_rvdn_od", id_os: "msrt_rvdn_os", type: "number", step: "0.01" }
+                ]
+            },
+            {
+                title: "18. 离焦镜验配参数", type: "eye_grid_plus",
+                rows: [
+                    { label: "球镜度数 (D)", id_od: "defocus_sph_od", id_os: "defocus_sph_os", type: "number", step: "0.01" },
+                    { label: "柱镜度数 (D)", id_od: "defocus_cyl_od", id_os: "defocus_cyl_os", type: "number", step: "0.01" },
+                    { label: "轴位", id_od: "defocus_axis_od", id_os: "defocus_axis_os", type: "text" }
+                ],
+                sharedFields: [
+                    { id: "defocus_fitter", label: "验配师", type: "select", options: ["姚文波","张骏婕","陈梦"], width: "col-span-1" },
+                    { id: "defocus_receive", label: "离焦镜签收", type: "text", width: "col-span-1" },
+                    { id: "defocus_date", label: "日期", type: "date", width: "col-span-1" }
+                ]
+            }
+        ];
+
+        const followUpSchema = [
+            {
+                title: "1. 离焦镜评估", type: "eye_grid",
+                rows: [
+                    { label: "是否有破损、划痕", id_od: "defocus_damage_od", id_os: "defocus_damage_os", type: "radio", options: ["否", "是"] },
+                    { label: "其他异常情况描述", id_od: "defocus_other_od", id_os: "defocus_other_os", type: "radio_with_input", options: ["无", "有"], inputId_od: "defocus_other_desc_od", inputId_os: "defocus_other_desc_os", inputLabel: "描述" }
+                ]
+            },
+            {
+                title: "2. 视力检查", type: "eye_grid",
+                rows: [
+                    { label: "裸眼视力（远）", id_od: "ucva_dist_od", id_os: "ucva_dist_os", type: "number", step: "0.01" },
+                    { label: "戴镜视力（远）", id_od: "gl_va_dist_od", id_os: "gl_va_dist_os", type: "number", step: "0.01" },
+                    { label: "最佳矫正视力（远）", id_od: "bcva_dist_od", id_os: "bcva_dist_os", type: "number", step: "0.01" }
+                ]
+            },
+            {
+                title: "3. 屈光度检查", type: "eye_grid",
+                rows: [
+                    { label: "主觉球镜度数 (D)", id_od: "subj_sph_od", id_os: "subj_sph_os", type: "number", step: "0.01" },
+                    { label: "主觉柱镜度数 (D)", id_od: "subj_cyl_od", id_os: "subj_cyl_os", type: "number", step: "0.01" },
+                    { label: "客观球镜度数 (D)", id_od: "obj_sph_od", id_os: "obj_sph_os", type: "number", step: "0.01" },
+                    { label: "客观柱镜度数 (D)", id_od: "obj_cyl_od", id_os: "obj_cyl_os", type: "number", step: "0.01" }
+                ]
+            },
+            {
+                title: "4. 调节指标", type: "grid",
+                fields: [
+                    { id: "nra", label: "负相对调节 (NRA) (D)", type: "number", step: "0.01", width: "col-span-2" },
+                    { id: "pra", label: "正相对调节 (PRA) (D)", type: "number", step: "0.01", width: "col-span-2" },
+                    { id: "bcc", label: "调节反应 (BCC) (D)", type: "number", step: "0.01", width: "col-span-4" },
+                    
+                    { id: "sep_1", type: "separator", label: "调节幅度 (AMP)", width: "col-span-4" },
+                    { id: "amp_ou", label: "双眼", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "amp_od", label: "右眼", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "amp_os", label: "左眼", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "amp_note", label: "备注", type: "text", width: "col-span-1" },
+
+                    { id: "sep_2", type: "separator", label: "调节灵敏度 (Flipper)", width: "col-span-4" },
+                    { id: "flipper_ou", label: "双眼", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "flipper_od", label: "右眼", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "flipper_os", label: "左眼", type: "number", step: "0.01", width: "col-span-1" },
+                    { id: "flipper_note", label: "备注", type: "text", width: "col-span-1" }
+                ]
+            },
+            {
+                title: "5. 眼压检查", type: "eye_grid",
+                rows: [
+                    { label: "非接触检查 (mmHg)", id_od: "iop_nc_od", id_os: "iop_nc_os", type: "number", step: "0.1" }
+                ]
+            },
+            {
+                title: "6. 眼球光学生物测量", type: "eye_grid",
+                rows: [
+                    { label: "眼轴长度 (mm)", id_od: "al_od", id_os: "al_os", type: "number", step: "0.01" }
+                ]
+            },
+            {
+                title: "7. 脉络膜检查", type: "eye_grid",
+                rows: [
+                    { label: "脉络膜厚度 (μm)", id_od: "ct_od", id_os: "ct_os", type: "number", step: "1" }
+                ]
+            },
+            {
+                title: "8. 角膜地形图", type: "eye_grid",
+                rows: [
+                    { label: "平坦K值 (D)", id_od: "k_flat_od", id_os: "k_flat_os", type: "number", step: "0.01" },
+                    { label: "陡峭K值 (D)", id_od: "k_steep_od", id_os: "k_steep_os", type: "number", step: "0.01" },
+                    { label: "角膜散光 (D)", id_od: "cyl_cornea_od", id_os: "cyl_cornea_os", type: "number", step: "0.01" },
+                    { label: "散光类型", id_od: "cyl_type_od", id_os: "cyl_type_os", type: "radio", options: ["顺规", "逆规", "其他"] },
+                    { label: "角膜直径 (mm)", id_od: "cornea_dia_od", id_os: "cornea_dia_os", type: "number", step: "0.1" },
+                    { label: "瞳孔直径 (mm)", id_od: "pupil_dia_od", id_os: "pupil_dia_os", type: "number", step: "0.1" },
+                    { label: "中央前房深度 (mm)", id_od: "acd_od", id_os: "acd_os", type: "number", step: "0.01" },
+                    { label: "中央角膜厚度 (μm)", id_od: "cct_od", id_os: "cct_os", type: "number", step: "1" }
+                ]
+            },
+            {
+                title: "9. 对比敏感度（戴镜）", type: "matrix",
+                rows: [
+                    { id: "cs_ou", label: "OU" },
+                    { id: "cs_od", label: "OD" },
+                    { id: "cs_os", label: "OS" }
+                ],
+                cols: [
+                    { id: "aulcsf", label: "AULCSF" },
+                    { id: "acuity", label: "Acuity" },
+                    { id: "c1_0", label: "1.0c/d" },
+                    { id: "c1_5", label: "1.5c/d" },
+                    { id: "c3_0", label: "3.0c/d" },
+                    { id: "c6_0", label: "6.0c/d" },
+                    { id: "c12_0", label: "12.0c/d" },
+                    { id: "c18_0", label: "18.0c/d" }
+                ],
+                cellType: "number",
+                step: "0.01"
+            },
+            {
+                title: "10. 波前像差（5mm）", type: "eye_grid",
+                rows: [
+                    { label: "总高阶像差 tHOA (μm)", id_od: "wf_thoa_od", id_os: "wf_thoa_os", type: "number", step: "0.001" },
+                    { label: "球差 Z40 (μm)", id_od: "wf_z40_od", id_os: "wf_z40_os", type: "number", step: "0.001" }
+                ]
+            },
+            {
+                title: "11. 裂隙灯检查", type: "eye_grid",
+                rows: [
+                    { label: "眼前节", id_od: "slit_antseg_od", id_os: "slit_antseg_os", type: "radio", options: ["+", "-"] }
+                ]
+            },
+            {
+                title: "12. 眼底检查", type: "eye_grid",
+                rows: [
+                    { label: "眼后节", id_od: "fundus_postseg_od", id_os: "fundus_postseg_os", type: "radio", options: ["+", "-"] }
+                ]
+            },
+            {
+                title: "13. 眼位检查", type: "eye_grid",
+                rows: [
+                    { label: "眼位", id_od: "eye_position_od", id_os: "eye_position_os", type: "radio", options: ["正视","隐斜","间歇性斜视"] }
+                ]
+            },
+            {
+                title: "14. 屈光度检查（扩瞳后）", type: "eye_grid",
+                rows: [
+                    { label: "客观球镜度数 (D)", id_od: "cycl_obj_sph_od", id_os: "cycl_obj_sph_os", type: "number", step: "0.01" },
+                    { label: "客观柱镜度数 (D)", id_od: "cycl_obj_cyl_od", id_os: "cycl_obj_cyl_os", type: "number", step: "0.01" }
+                ]
+            },
+            {
+                title: "15. 多光谱屈光地形图（扩瞳后）", type: "eye_grid",
+                rows: [
+                    { label: "TRVD", id_od: "msrt_trvd_od", id_os: "msrt_trvd_os", type: "number", step: "0.01" },
+                    { label: "RVD-0", id_od: "msrt_rvd0_od", id_os: "msrt_rvd0_os", type: "number", step: "0.01" },
+                    { label: "RVD-15", id_od: "msrt_rvd15_od", id_os: "msrt_rvd15_os", type: "number", step: "0.01" },
+                    { label: "RVD-45", id_od: "msrt_rvd45_od", id_os: "msrt_rvd45_os", type: "number", step: "0.01" },
+                    { label: "RVD-S", id_od: "msrt_rvds_od", id_os: "msrt_rvds_os", type: "number", step: "0.01" },
+                    { label: "RVD-I", id_od: "msrt_rvdi_od", id_os: "msrt_rvdi_os", type: "number", step: "0.01" },
+                    { label: "RVD-T", id_od: "msrt_rvdt_od", id_os: "msrt_rvdt_os", type: "number", step: "0.01" },
+                    { label: "RVD-N", id_od: "msrt_rvdn_od", id_os: "msrt_rvdn_os", type: "number", step: "0.01" }
+                ]
+            },
+            {
+                title: "16. 异常情况", type: "exceptions",
+                items: [
+                    { id: "dev_protocol", label: "自上次访视至本次访视有无发生方案偏离情况", linkText: "《方案偏离表》" },
+                    { id: "dev_device", label: "本次访视有无发生器械缺陷情况", linkText: "《器械缺陷表》" },
+                    { id: "dev_ae", label: "自上次访视至本次访视有无发生不良事件AE情况", linkText: "《不良事件AE表》" },
+                    { id: "dev_sae", label: "自上次访视至本次访视有无发生严重不良事件SAE情况", linkText: "《严重不良事件SAE表》" },
+                    { id: "dev_med", label: "自上次访视至本次访视有无发生合并用药情况", linkText: "《合并用药表》" }
+                ]
+            }
+        ];
+
+        // ================= 状态管理与路由 =================
+        let currentProject = null;
+        let currentSubject = null;
+        let currentVisit = 'v0';
+        let isEditMode = false;
+
+        window.onload = () => { renderProjectCards(); };
+
+        function switchModule(moduleName) {
+            const navEDC = document.getElementById('nav-EDC');
+            const navIWRS = document.getElementById('nav-IWRS');
+            const activeClass = "bg-blue-50 text-blue-700 border-blue-600 font-medium".split(" ");
+            const inactiveClass = "text-gray-600 hover:bg-gray-50 hover:text-blue-600 border-transparent".split(" ");
+
+            if(moduleName === 'EDC') {
+                navEDC.classList.add(...activeClass); navEDC.classList.remove(...inactiveClass);
+                navIWRS.classList.add(...inactiveClass); navIWRS.classList.remove(...activeClass);
+                document.getElementById('module-title').innerText = "项目列表";
+            } else {
+                navIWRS.classList.add(...activeClass); navIWRS.classList.remove(...inactiveClass);
+                navEDC.classList.add(...inactiveClass); navEDC.classList.remove(...activeClass);
+                document.getElementById('module-title').innerText = "项目列表";
+            }
+            backToProjects();
+        }
+
+        // --- 视图A：项目列表 ---
+        function renderProjectCards() {
+            const container = document.getElementById('project-cards-container');
+            container.innerHTML = projects.map(p => `
+                <div onclick="openProject('${p.id}')" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-md hover:border-blue-400 transition-all flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="${p.statusColor} text-xs font-medium px-2.5 py-1 rounded">${p.status}</span>
+                        <span class="bg-gray-100 text-gray-600 border border-gray-200 text-xs font-mono px-2 py-0.5 rounded-md">${p.code}</span>
+                    </div>
+                    <h3 class="text-base font-bold text-gray-900 mb-2 line-clamp-2 leading-tight hover:text-blue-600 transition-colors">${p.name}</h3>
+                    <p class="text-sm text-gray-500 mb-4 line-clamp-2 flex-1">${p.desc}</p>
+                    <div class="flex justify-between items-center text-xs border-t border-gray-100 pt-4 mt-auto">
+                        <span class="text-gray-500">主要研究人: <span class="text-blue-600 font-bold">${p.pi}</span></span>
+                        <span class="text-gray-500 flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                            <span class="font-bold">${p.centers.join(',')}</span>
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- 视图B：项目工作台 ---
+        function openProject(projectId) {
+            currentProject = projects.find(p => p.id === projectId);
+            document.getElementById('view-project-list').classList.add('hidden');
+            document.getElementById('view-project-dashboard').classList.remove('hidden');
+            document.getElementById('view-project-dashboard').classList.add('flex');
+            
+            document.getElementById('dash-breadcrumb').innerText = currentProject.name;
+            document.getElementById('dash-proj-name').innerText = currentProject.name;
+            document.getElementById('dash-proj-status').className = `text-xs font-medium px-2.5 py-1 rounded ${currentProject.statusColor}`;
+            document.getElementById('dash-proj-status').innerText = currentProject.status;
+            document.getElementById('dash-proj-desc').innerText = currentProject.desc;
+            document.getElementById('dash-proj-code').innerText = currentProject.code;
+            document.getElementById('dash-proj-pi').innerText = currentProject.pi;
+            document.getElementById('dash-proj-centers').innerText = currentProject.centers.join(',');
+							document.getElementById('dash-proj-organizations').innerText = currentProject.organizations.join(',');
+            document.getElementById('dash-proj-enrollment').innerText = subjectsData[projectId].length;
+
+            updateSubjectTable();
+        }
+
+        let subjectSortField = 'enrollDate';
+        let subjectSortDir = 'desc';
+        let subjectFilterCenter = 'all';
+        let subjectFilterSource = 'all';
+        let subjectSearchQuery = '';
+
+        function setSubjectSort(field) {
+            if (subjectSortField === field) {
+                subjectSortDir = subjectSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                subjectSortField = field;
+                subjectSortDir = field === 'id' ? 'asc' : 'desc';
+            }
+            updateSubjectTable();
+        }
+
+        function onSubjectFilterChange() {
+            const centerSelect = document.getElementById('subject-center-filter');
+            const sourceSelect = document.getElementById('subject-source-filter');
+            subjectFilterCenter = centerSelect ? centerSelect.value : 'all';
+            subjectFilterSource = sourceSelect ? sourceSelect.value : 'all';
+            updateSubjectTable();
+        }
+
+        function applySubjectSearch() {
+            const input = document.getElementById('subject-search-input');
+            subjectSearchQuery = (input?.value || '').trim();
+            updateSubjectTable();
+        }
+
+        function resetSubjectFilters() {
+            subjectFilterCenter = 'all';
+            subjectFilterSource = 'all';
+            subjectSearchQuery = '';
+            const centerSelect = document.getElementById('subject-center-filter');
+            const sourceSelect = document.getElementById('subject-source-filter');
+            const input = document.getElementById('subject-search-input');
+            if (centerSelect) centerSelect.value = 'all';
+            if (sourceSelect) sourceSelect.value = 'all';
+            if (input) input.value = '';
+            updateSubjectTable();
+        }
+
+        function getStageClass(stage) {
+            if (stage === '基线') return 'text-blue-700 bg-blue-50';
+            if (stage === '3M') return 'text-amber-700 bg-amber-50';
+            if (stage === '6M') return 'text-violet-700 bg-violet-50';
+            return 'text-gray-600 bg-gray-100';
+        }
+
+        function getSourceClass(source) {
+            if (source === '门诊') return 'text-cyan-700 bg-cyan-50';
+            if (source === '招募') return 'text-purple-700 bg-purple-50';
+            return 'text-gray-700 bg-gray-100';
+        }
+
+        function updateSortIndicators() {
+            const lbl = document.getElementById('sort-id-label');
+            const ind = document.getElementById('sort-id-indicator');
+            if (lbl && ind) {
+                if (subjectSortField === 'id') {
+                    ind.textContent = subjectSortDir === 'asc' ? '↑' : '↓';
+                    ind.className = 'text-blue-700';
+                } else {
+                    ind.textContent = '↕';
+                    ind.className = 'text-gray-300';
+                }
+            }
+        }
+
+        function updateSubjectTable() {
+            if (!currentProject) return;
+            let list = subjectsData[currentProject.id].slice();
+            if (subjectFilterCenter !== 'all') {
+                list = list.filter(s => s.center === subjectFilterCenter);
+            }
+            if (subjectFilterSource !== 'all') {
+                list = list.filter(s => s.source === subjectFilterSource);
+            }
+            if (subjectSearchQuery) {
+                list = list.filter(s => s.id.includes(subjectSearchQuery));
+            }
+            list.sort((a, b) => {
+                if (subjectSortField === 'enrollDate') {
+                    const da = new Date(a.enrollDate).getTime();
+                    const db = new Date(b.enrollDate).getTime();
+                    return subjectSortDir === 'asc' ? da - db : db - da;
+                } else if (subjectSortField === 'id') {
+                    return subjectSortDir === 'asc' ? a.id.localeCompare(b.id) : b.id.localeCompare(a.id);
+                }
+                return 0;
+            });
+            const tbody = document.getElementById('subject-table-body');
+            tbody.innerHTML = list.map(s => {
+                const isDropout = s.enrollmentStatus === '提前退出';
+                const rowClass = isDropout ? "bg-gray-50 text-gray-400" : "hover:bg-blue-50/50 transition-colors text-gray-900 group";
+                const textClass = isDropout ? "line-through decoration-gray-400" : "";
+                
+                return `
+                <tr class="${rowClass} border-b border-gray-100 last:border-0">
+                    <td class="px-6 py-4 font-medium ${textClass}">${s.id}</td>
+                    <td class="px-6 py-4 ${isDropout ? 'text-gray-400' : 'text-gray-600'} ${textClass}">${s.randomId}</td>
+                    <td class="px-6 py-4 ${isDropout ? 'text-gray-400' : 'text-gray-600'} ${textClass}">${s.initials}</td>
+                    <td class="px-6 py-4 ${textClass}">
+                        <span class="px-2 py-1 rounded text-xs font-medium ${isDropout ? 'bg-gray-100 text-gray-400 border border-gray-200' : getSourceClass(s.source)}">${s.source || '-'}</span>
+                    </td>
+                    <td class="px-6 py-4 ${isDropout ? 'text-gray-400' : 'text-gray-600'} ${textClass}">${s.center || '-'}</td>
+                    <td class="px-6 py-4 ${isDropout ? 'text-gray-400' : 'text-gray-600'} ${textClass}">${s.department || '-'}</td>
+                    <td class="px-6 py-4">
+                        ${
+                            isDropout 
+                            ? `<span class="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 border border-red-100">提前退出</span>`
+                            : `<span class="px-2 py-1 rounded text-xs font-medium ${s.enrollmentStatusColor}">${s.enrollmentStatus}</span>
+                               ${s.stage && s.stage !== '-' ? `<span class="ml-2 px-2 py-1 rounded text-xs font-medium ${getStageClass(s.stage)}">${s.stage}</span>` : ''}`
+                        }
+                    </td>
+                    <td class="px-6 py-4 ${isDropout ? 'text-gray-400' : 'text-gray-600'} ${textClass}">${s.enrollDate}</td>
+                    <td class="px-6 py-4 ${isDropout ? 'text-gray-400' : 'text-gray-600'} ${textClass}">${s.endDate || '--'}</td>
+                    <td class="px-6 py-4 text-right space-x-3">
+                        <button onclick="openSubject('${s.id}')" class="text-blue-600 hover:text-blue-800">查看详情</button>
+                        <button class="${isDropout ? 'text-gray-300 cursor-not-allowed' : 'text-red-600 hover:text-red-800'}" ${isDropout ? 'disabled' : ''}>退出</button>
+                    </td>
+                </tr>
+            `}).join('');
+            updateSortIndicators();
+        }
+
+        function openSubjectDrawer() {
+            if (!currentProject) return;
+            const container = document.getElementById('subject-drawer-container');
+            container.innerHTML = `
+                <div class="fixed inset-0 z-50">
+                    <div class="absolute inset-0 bg-black/40" onclick="closeSubjectDrawer()"></div>
+                    <div class="absolute right-0 top-0 h-full w-[480px] bg-white shadow-2xl border-l border-gray-200 transform translate-x-0 transition-transform flex flex-col">
+                        <div class="p-6 border-b border-gray-200 flex items-center justify-between shrink-0">
+                            <div class="text-base font-bold text-gray-900">新增受试者</div>
+                            <button class="p-2 rounded-md hover:bg-gray-100" onclick="closeSubjectDrawer()">
+                                <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar pb-24">
+                            <div class="bg-white rounded-xl border border-gray-200 p-5">
+                                <div class="text-md font-semibold text-gray-800 mb-4 border-l-4 border-blue-600 pl-4">项目基本信息</div>
+                                <div class="grid grid-cols-1 gap-4 text-sm">
+                                    <div><div class="text-xs text-gray-500 mb-1">项目名称</div><div class="font-medium text-gray-900">光刻微结构近视管理镜片在儿童青少年近视防控中的有效性及佩戴安全舒适性的随机对照临床研究</div></div>
+                                    <div><div class="text-xs text-gray-500 mb-1">负责人</div><div class="font-medium text-gray-900">徐蔚</div></div>
+                                    <div><div class="text-xs text-gray-500 mb-1">中心</div><div class="font-medium text-gray-900">上海市眼病防治中心</div></div>
+                                    <div><div class="text-xs text-gray-500 mb-1">科室</div><div class="font-medium text-gray-900">眼科</div></div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl border border-gray-200 p-5">
+                                <div class="text-md font-semibold text-gray-800 mb-4 border-l-4 border-blue-600 pl-4">受试者基本信息</div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="col-span-2">
+                                        <div class="block text-sm text-gray-700 mb-2">受试者来源 <span class="text-red-600">*</span></div>
+                                        <div class="flex items-center gap-6">
+                                            <label class="flex items-center gap-2">
+                                                <input type="radio" name="drawer-source" value="门诊" class="text-blue-600" checked>
+                                                <span class="text-sm text-gray-700">门诊</span>
+                                            </label>
+                                            <label class="flex items-center gap-2">
+                                                <input type="radio" name="drawer-source" value="招募" class="text-blue-600">
+                                                <span class="text-sm text-gray-700">招募</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="">
+                                        <label class="block text-sm text-gray-700 mb-1">受试者姓名缩写 <span class="text-red-600">*</span></label>
+                                        <input id="drawer-initials" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500" placeholder="如：ZSM">
+                                    </div>
+                                    <div class="">
+                                        <label class="block text-sm text-gray-700 mb-1">受试者筛选号 <span class="text-red-600">*</span></label>
+                                        <input id="drawer-screen" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500" placeholder="如：S-P001-011">
+                                    </div>
+                                    <div class="">
+                                        <label class="block text-sm text-gray-700 mb-1">受试者随机号 <span class="text-red-600">*</span></label>
+                                        <input id="drawer-random" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500" placeholder="如：R011">
+                                    </div>
+                                    <div class="">
+                                        <label class="block text-sm text-gray-700 mb-1">研究用医疗器械组别</label>
+                                        <select id="drawer-device-group" class="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">请选择组别</option>
+                                            <option>试验组1</option>
+                                            <option>试验组2</option>
+                                            <option>试验组3</option>
+                                            <option>对照组</option>
+                                        </select>
+                                    </div>
+                                    <div class="">
+                                        <label class="block text-sm text-gray-700 mb-1">研究开始日期 <span class="text-red-600">*</span></label>
+                                        <input id="drawer-start" type="date" class="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div class="">
+                                        <label class="block text-sm text-gray-700 mb-1">随访结束日期</label>
+                                        <input id="drawer-end" type="date" class="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div class="">
+                                        <label class="block text-sm text-gray-700 mb-1">记录者 <span class="text-red-600">*</span></label>
+                                        <input id="drawer-recorder" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500" placeholder="如：张三">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="shrink-0 border-t border-gray-200 p-4 bg-white flex justify-end gap-2">
+                            <button onclick="closeSubjectDrawer(true)" class="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50">取消</button>
+                            <button onclick="saveSubjectFromDrawer()" class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow-sm">保存</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleSidebarCollapse() {
+            const aside = document.getElementById('global-sidebar');
+            if (!aside) return;
+            const icon = document.getElementById('sidebar-collapse-icon');
+            const collapsed = aside.classList.toggle('collapsed');
+            if (icon) {
+                icon.className = collapsed ? 'ri-menu-unfold-line text-lg' : 'ri-menu-fold-line text-lg';
+            }
+        }
+
+        function toggleUserDropdown(btn) {
+            const dropdown = btn && btn.nextElementSibling;
+            if (!dropdown) return;
+            dropdown.classList.toggle('hidden');
+        }
+
+        function logout() {
+            alert('已退出登录');
+        }
+
+        function closeSubjectDrawer(reset) {
+            if (reset) {
+                const initials = document.getElementById('drawer-initials'); if (initials) initials.value = '';
+                const screen = document.getElementById('drawer-screen'); if (screen) screen.value = '';
+                const random = document.getElementById('drawer-random'); if (random) random.value = '';
+                const start = document.getElementById('drawer-start'); if (start) start.value = '';
+                const end = document.getElementById('drawer-end'); if (end) end.value = '';
+                const rec = document.getElementById('drawer-recorder'); if (rec) rec.value = '';
+            }
+            const container = document.getElementById('subject-drawer-container');
+            container.innerHTML = '';
+        }
+
+        function saveSubjectFromDrawer() {
+            if (!currentProject) return;
+            const source = document.querySelector('input[name="drawer-source"]:checked')?.value || '';
+            const initials = (document.getElementById('drawer-initials')?.value || '').trim();
+            const screen = (document.getElementById('drawer-screen')?.value || '').trim();
+            const random = (document.getElementById('drawer-random')?.value || '').trim();
+            const start = (document.getElementById('drawer-start')?.value || '').trim();
+            const rec = (document.getElementById('drawer-recorder')?.value || '').trim();
+            if (!source || !initials || !screen || !random || !start || !rec) {
+                alert('请完整填写带星号的必填项');
+                return;
+            }
+            const newSubject = {
+                id: screen,
+                randomId: random,
+                initials: initials,
+                enrollDate: start,
+                enrollmentStatus: '入组',
+                enrollmentStatusColor: 'text-green-700 bg-green-50',
+                stage: '基线',
+                source,
+                center: '上海市眼病防治中心',
+                department: '眼科',
+                endDate: ''
+            };
+            subjectsData[currentProject.id].push(newSubject);
+            updateSubjectTable();
+            closeSubjectDrawer();
+        }
+
+        function backToProjects() {
+            document.getElementById('view-project-dashboard').classList.add('hidden');
+            document.getElementById('view-project-dashboard').classList.remove('flex');
+            document.getElementById('view-subject-detail').classList.add('hidden');
+            document.getElementById('view-subject-detail').classList.remove('flex');
+            document.getElementById('view-project-list').classList.remove('hidden');
+        }
+
+        // --- 视图C：受试者详情 ---
+        function openSubject(subjectId) {
+            currentSubject = subjectId;
+            isEditMode = false;
+            currentVisit = 'v0';
+            
+            document.getElementById('view-project-dashboard').classList.add('hidden');
+            document.getElementById('view-project-dashboard').classList.remove('flex');
+            document.getElementById('view-subject-detail').classList.remove('hidden');
+            document.getElementById('view-subject-detail').classList.add('flex');
+            
+            document.getElementById('sidebar-subject-id').innerText = subjectId;
+            document.getElementById('sidebar-subject-name').innerText = formData.initials;
+            document.getElementById('detail-breadcrumb').innerText = `受试者: ${subjectId}`;
+            
+            loadVisit('v0');
+        }
+
+        function backToDashboard() {
+            document.getElementById('view-subject-detail').classList.add('hidden');
+            document.getElementById('view-subject-detail').classList.remove('flex');
+            document.getElementById('view-project-dashboard').classList.remove('hidden');
+            document.getElementById('view-project-dashboard').classList.add('flex');
+        }
+
+        function loadVisit(visitId) {
+            currentVisit = visitId;
+            const nav = document.getElementById('visit-nav');
+            const currentIndex = visits.findIndex(v => v.id === currentVisit);
+
+            nav.innerHTML = `<div class="relative px-2 py-2">` + 
+                visits.map((v, index) => {
+                    const isActive = v.id === currentVisit;
+                    const isCompleted = index < currentIndex;
+                    const isLast = index === visits.length - 1;
+                    
+                    let circleHtml = '';
+                    let textClass = '';
+                    let lineClass = isCompleted ? 'bg-blue-500' : 'bg-gray-200';
+                    
+                    if (isActive) {
+                        circleHtml = `<div class="w-5 h-5 rounded-full bg-white border-2 border-blue-600 flex items-center justify-center shadow-sm">
+                                        <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                      </div>`;
+                        textClass = 'text-blue-700 font-bold';
+                    } else if (isCompleted) {
+                        circleHtml = `<div class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shadow-sm">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                      </div>`;
+                        textClass = 'text-gray-700 font-medium group-hover:text-blue-600';
+                    } else {
+                        circleHtml = `<div class="w-5 h-5 rounded-full bg-white border-2 border-gray-300 group-hover:border-blue-400 transition-colors"></div>`;
+                        textClass = 'text-gray-500 group-hover:text-gray-800 font-medium';
+                    }
+
+                    return `
+                        <div onclick="loadVisit('${v.id}')" class="relative flex items-start group cursor-pointer ${isLast ? '' : 'pb-8'}">
+                            ${!isLast ? `<div class="absolute left-[9px] top-5 bottom-0 w-[2px] ${lineClass} transition-colors"></div>` : ''}
+                            <div class="flex items-center justify-center shrink-0 relative z-10 bg-white">
+                                ${circleHtml}
+                            </div>
+                            <div class="ml-3 flex-1 flex flex-col justify-center min-h-[20px]">
+                                <span class="${textClass} text-sm transition-colors block">${v.name}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('') +
+            `</div>`;
+            
+            const visitName = visits.find(v => v.id === visitId).name;
+            document.getElementById('current-visit-title').innerText = `${visitName} 数据采集表`;
+            
+            renderActions();
+            renderForm();
+        }
+
+        // ================= 高级表单引擎 =================
+        function toggleEditMode() {
+            if(isEditMode) {
+                // 保存数据：从 DOM 抓取基础字段
+                document.querySelectorAll('#dynamic-form input, #dynamic-form select').forEach(el => {
+                    if(el.name && !el.name.includes('_list_')) {
+                        if(el.type === 'radio') { if(el.checked) formData[el.name] = el.value; }
+                        else formData[el.name] = el.value;
+                    }
+                });
+            }
+            isEditMode = !isEditMode;
+            renderActions();
+            renderForm();
+        }
+
+        function renderActions() {
+            const container = document.getElementById('form-actions');
+            const badge = document.getElementById('edit-status-badge');
+            if (isEditMode) {
+                badge.innerText = "编辑模式"; badge.className = "text-xs px-2 py-1 rounded bg-amber-100 text-amber-700 font-medium border border-amber-200";
+                container.innerHTML = `
+                    <button onclick="toggleEditMode()" class="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition font-medium">取消</button>
+                    <button onclick="toggleEditMode()" class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow-sm transition font-medium">保存数据</button>
+                `;
+            } else {
+                badge.innerText = "只读模式"; badge.className = "text-xs px-2 py-1 rounded bg-gray-100 text-gray-600";
+                container.innerHTML = `
+                    <button onclick="alert('CRA功能，二期开发')" class="text-sm bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition font-medium">提出质疑 (Query)</button>
+                    <button onclick="toggleEditMode()" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm transition font-medium flex items-center">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        编辑数据
+                    </button>
+                `;
+            }
+        }
+
+        function renderForm() {
+            const container = document.getElementById('dynamic-form');
+            let schemaToRender = [];
+
+            if (currentVisit === 'v0') {
+                schemaToRender = formSchema;
+            } else if (['v1', 'v2', 'v3', 'v4'].includes(currentVisit)) {
+                schemaToRender = followUpSchema;
+            } else {
+                container.innerHTML = `<div class="text-gray-400 text-center py-16">该访视节点暂无表单配置</div>`;
+                renderTOC([]); 
+                return;
+            }
+
+            let html = '';
+            // 记录信息 (Meta Card)
+            const invOpts = Array.from(new Set([currentProject?.pi, "张主任","李教授","王主任"].filter(Boolean)));
+            const examinerOpts = ["姚文波", "张骏婕", "陈梦"];
+            const metaFields = [
+                { id: 'exam_date', label: '检查日期', type: 'date' },
+                { id: 'investigator', label: '研究者', type: 'select', options: invOpts },
+                { id: 'examiner', label: '检查者', type: 'select', options: examinerOpts },
+                { id: 'record_date', label: '记录日期', type: 'date' },
+                { id: 'recorder', label: '记录者', type: 'text' }
+            ];
+            if (currentVisit === 'v0') {
+                metaFields.push({ id: 'consent_date', label: '签署知情同意书日期', type: 'date' });
+            }
+            
+            html += renderMetaCard(metaFields);
+            const anchors = [{ id: 'sec-meta', title: '记录信息' }];
+
+            schemaToRender.forEach((sec, idx) => {
+                const anchorId = `sec-${idx+1}`;
+                anchors.push({ id: anchorId, title: sec.title });
+                
+                html += `<div id="${anchorId}" class="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6 shadow-sm transition-all hover:shadow-md">
+                            <div class="bg-gray-50/80 px-5 py-3 border-b border-gray-200 font-bold text-gray-800 flex items-center">
+                                <div class="w-1 h-4 bg-blue-600 rounded mr-3"></div>${sec.title}
+                            </div>
+                            <div class="p-6">`;
+                
+                if (sec.type === 'criteria') html += renderCriteria(sec);
+                else if (sec.type === 'grid') html += renderGrid(sec);
+                else if (sec.type === 'eye_grid') html += renderEyeGrid(sec);
+                else if (sec.type === 'eye_grid_plus') html += renderEyeGridPlus(sec);
+                else if (sec.type === 'matrix') html += renderMatrix(sec);
+                else if (sec.type === 'exceptions') html += renderExceptions(sec);
+                
+                html += `   </div>
+                        </div>`;
+            });
+            
+            container.innerHTML = html;
+            renderTOC(anchors);
+        }
+
+        function renderExceptions(sec) {
+            let html = `<div class="space-y-4 divide-y divide-gray-100">`;
+            sec.items.forEach(item => {
+                const val = formData[item.id] || '';
+                html += `
+                    <div class="pt-4 first:pt-0">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="flex-1 flex gap-2">
+                                <span class="text-sm font-medium text-gray-700 block mb-2 sm:mb-0">${item.label}</span>
+                                ${item.linkText ? `
+                                    <a href="#" onclick="alert('即将打开: ${item.linkText}'); return false;" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center hover:underline">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                        详见${item.linkText}
+                                    </a>
+                                ` : ''}
+                            </div>
+                            <div class="flex items-center gap-6 shrink-0">
+                                <div class="flex gap-4">
+                                    <label class="inline-flex items-center cursor-pointer">
+                                        <input type="radio" name="${item.id}" value="无" ${val==='无'?'checked':''} ${!isEditMode?'disabled':''} class="form-radio text-blue-600 w-4 h-4 transition duration-150 ease-in-out">
+                                        <span class="ml-2 text-sm text-gray-700">无</span>
+                                    </label>
+                                    <label class="inline-flex items-center cursor-pointer">
+                                        <input type="radio" name="${item.id}" value="有" ${val==='有'?'checked':''} ${!isEditMode?'disabled':''} class="form-radio text-blue-600 w-4 h-4 transition duration-150 ease-in-out">
+                                        <span class="ml-2 text-sm text-gray-700">有</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            return html;
+        }
+
+        function renderMetaCard(customFields) {
+            // 如果传入了自定义字段则使用，否则使用默认逻辑 (兼容旧代码调用，虽然这里我们已经重构了调用方)
+            let fields = customFields;
+            if (!fields) {
+                const isBaseline = currentVisit === 'v0';
+                const invOpts = Array.from(new Set([currentProject?.pi, "张主任","李教授","王主任"].filter(Boolean)));
+                const examinerOpts = ["姚文波", "张骏婕", "陈梦"];
+                fields = [
+                    { id: 'exam_date', label: '检查日期', type: 'date' },
+                    { id: 'investigator', label: '研究者', type: 'select', options: invOpts },
+                    { id: 'examiner', label: '检查者', type: 'select', options: examinerOpts },
+                    { id: 'record_date', label: '记录日期', type: 'date' },
+                    { id: 'recorder', label: '记录者', type: 'text' }
+                ];
+                if (isBaseline) fields.push({ id: 'consent_date', label: '签署知情同意书日期', type: 'date' });
+            }
+
+            let html = `<div id="sec-meta" class="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6 shadow-sm">
+                            <div class="bg-blue-50/50 px-5 py-3 border-b border-blue-100 font-bold text-blue-800 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                记录信息
+                            </div>
+                            <div class="p-5">`;
+            html += currentVisit === 'v0' ? `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">` : `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">`;
+            
+            fields.forEach(f => {
+                const val = formData[f.id] || '';
+                html += `<div class="col-span-1 flex flex-col group">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 group-hover:text-blue-600 transition-colors">${f.label}</label>`;
+                if (!isEditMode) {
+                    html += `<div class="py-2 text-sm font-medium text-gray-900 border-b border-gray-200 min-h-[36px]">${val || '<span class="text-gray-300 italic">--</span>'}</div>`;
+                } else {
+                    if (f.type === 'select') {
+                        html += `<div class="relative"><select name="${f.id}" class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm transition-shadow shadow-sm">
+                            <option value="">请选择</option>
+                            ${f.options.map(opt => `<option value="${opt}" ${val===opt?'selected':''}>${opt}</option>`).join('')}
+                        </select></div>`;
+                    } else if (f.type === 'date') {
+                         html += `<input type="date" name="${f.id}" value="${val}" class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-3 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm transition-shadow shadow-sm text-gray-900">`;
+                    } else if (f.type === 'text') {
+                         html += `<input type="text" name="${f.id}" value="${val}" class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-3 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm transition-shadow shadow-sm text-gray-900" placeholder="请输入...">`;
+                    }
+                }
+                html += `</div>`;
+            });
+            html += `</div></div></div>`;
+            return html;
+        }
+
+        function renderCriteria(sec) {
+            let html = '<div class="space-y-6">';
+            sec.groups.forEach(group => {
+                html += `<div><h4 class="text-sm font-bold text-gray-700 mb-3 bg-gray-100 inline-block px-3 py-1 rounded">${group.name}</h4><div class="space-y-2">`;
+                group.fields.forEach(f => {
+                    const val = formData[f.id] || '';
+                    html += `<div class="flex justify-between items-start py-2 border-b border-gray-50 hover:bg-gray-50/50 transition px-2 rounded">
+                        <div class="text-sm text-gray-700 pr-6 flex-1 leading-relaxed">${f.label}</div>
+                        <div class="flex gap-4 shrink-0 mt-0.5">`;
+                    if (isEditMode) {
+                        html += `<label class="flex items-center gap-1 text-sm cursor-pointer"><input type="radio" name="${f.id}" value="是" ${val==='是'?'checked':''} class="text-blue-600 focus:ring-blue-500"> 是</label>
+                                 <label class="flex items-center gap-1 text-sm cursor-pointer"><input type="radio" name="${f.id}" value="否" ${val==='否'?'checked':''} class="text-blue-600 focus:ring-blue-500"> 否</label>`;
+                    } else {
+                        html += `<span class="font-medium text-sm ${val==='是'?'text-green-600':(val==='否'?'text-red-600':'text-gray-400')}">${val || '--'}</span>`;
+                    }
+                    html += `</div></div>`;
+                });
+                html += `</div></div>`;
+            });
+            return html + '</div>';
+        }
+
+        function renderGrid(sec) {
+            let html = '<div class="grid grid-cols-4 gap-x-6 gap-y-5">';
+            sec.fields.forEach(f => {
+                if(f.type === 'empty') { html += `<div class="${f.width}"></div>`; return; }
+                html += `<div class="${f.width} flex flex-col">
+                    <label class="text-sm font-medium text-gray-600 mb-1.5 flex items-center">
+                        ${f.label} ${f.tooltip ? `<svg class="w-4 h-4 ml-1 text-gray-400 cursor-help" title="${f.tooltip}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>` : ''}
+                    </label>`;
+                const val = formData[f.id] || '';
+                if (!isEditMode) {
+                    if (f.type === 'radio_with_input') {
+                        const inputVal = formData[f.inputId] || '--';
+                        html += `<div class="py-2 text-sm font-medium text-gray-900 border-b border-gray-100 min-h-[36px]">${val || '--'} ${val === '有' ? `<span class="text-gray-400 ml-2">| ${f.inputLabel}: <span class="text-gray-900">${inputVal}</span></span>` : ''}</div>`;
+                    } else if (f.type === 'dynamic_list') {
+                        html += `<div class="py-2 text-sm font-medium text-gray-900 border-b border-gray-100 mb-2">${val || '--'}</div>`;
+                        if (val === '有') html += renderDynamicTableReadOnly(f);
+                    } else {
+                        html += `<div class="py-2 text-sm font-medium text-gray-900 border-b border-gray-100 min-h-[36px]">${val || '--'}</div>`;
+                    }
+                } else {
+                    if (f.type === 'text' || f.type === 'number' || f.type === 'date') {
+                        const stepAttr = f.type === 'number' ? ` step="${f.step || 'any'}"` : '';
+                        html += `<input type="${f.type}"${stepAttr} name="${f.id}" value="${val}" class="border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-full">`;
+                    } else if (f.type === 'radio') {
+                        html += `<div class="flex gap-4 mt-2">${f.options.map(opt => `<label class="flex items-center gap-1 text-sm"><input type="radio" name="${f.id}" value="${opt}" ${val===opt?'checked':''} class="text-blue-600"> ${opt}</label>`).join('')}</div>`;
+                    } else if (f.type === 'select') {
+                        const optionsHtml = (f.options||[]).map(opt => `<option value="${opt}" ${val===opt?'selected':''}>${opt}</option>`).join('');
+                        html += `<select name="${f.id}" class="border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-full">${optionsHtml}</select>`;
+                    } else if (f.type === 'radio_with_input') {
+                        const inputVal = formData[f.inputId] || '';
+                        html += `<div class="flex items-center gap-4 mt-1">${f.options.map(opt => `<label class="flex items-center gap-1 text-sm"><input type="radio" name="${f.id}" value="${opt}" ${val===opt?'checked':''} onchange="formData['${f.id}']='${opt}'; renderForm()" class="text-blue-600"> ${opt}</label>`).join('')}`;
+                        if (val === '有') html += `<div class="flex items-center gap-2 ml-2 fade-in"><span class="text-sm text-gray-500">${f.inputLabel}</span><input type="${f.inputType}" name="${f.inputId}" value="${inputVal}" class="border border-gray-300 rounded-md p-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-24"></div>`;
+                        html += `</div>`;
+                    } else if (f.type === 'dynamic_list') {
+                        html += `<div class="flex gap-4 mt-1 mb-3">${["无", "有"].map(opt => `<label class="flex items-center gap-1 text-sm"><input type="radio" name="${f.id}" value="${opt}" ${val===opt?'checked':''} onchange="formData['${f.id}']='${opt}'; renderForm()" class="text-blue-600"> ${opt}</label>`).join('')}</div>`;
+                        if (val === '有') html += renderDynamicTableEdit(f);
+                    }
+                }
+                html += `</div>`;
+            });
+            return html + '</div>';
+        }
+
+        function renderEyeGrid(sec) {
+            let html = `<table class="w-full text-left border-collapse">
+                <thead><tr class="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
+                    <th class="py-3 px-4 font-medium w-1/3">检查项目</th>
+                    <th class="py-3 px-4 font-medium w-1/3 border-l border-gray-200 text-blue-800 bg-blue-50/30">OD (右眼)</th>
+                    <th class="py-3 px-4 font-medium w-1/3 border-l border-gray-200 text-green-800 bg-green-50/30">OS (左眼)</th>
+                </tr></thead><tbody class="divide-y divide-gray-100">`;
+            sec.rows.forEach(row => {
+                const valOD = formData[row.id_od] || ''; const valOS = formData[row.id_os] || '';
+                html += `<tr><td class="py-3 px-4 text-sm font-medium text-gray-700">${row.label}</td>`;
+                if (isEditMode) {
+                    if (row.type === 'radio_with_input') {
+                        html += `<td class="py-2 px-4 border-l border-gray-100">
+                                    <div class="flex items-center gap-3">
+                                        ${row.options.map(opt => `<label class="flex items-center gap-1 text-sm"><input type="radio" name="${row.id_od}" value="${opt}" ${valOD===opt?'checked':''} onchange="formData['${row.id_od}']='${opt}'; renderForm()" class="text-blue-600"> ${opt}</label>`).join('')}
+                                        ${valOD === '其他' ? `<input type="text" name="${row.inputId_od}" value="${formData[row.inputId_od]||''}" placeholder="${row.inputLabel||'原因'}" class="border border-gray-300 rounded p-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none w-28">` : ''}
+                                    </div>
+                                  </td>
+                                  <td class="py-2 px-4 border-l border-gray-100">
+                                    <div class="flex items-center gap-3">
+                                        ${row.options.map(opt => `<label class="flex items-center gap-1 text-sm"><input type="radio" name="${row.id_os}" value="${opt}" ${valOS===opt?'checked':''} onchange="formData['${row.id_os}']='${opt}'; renderForm()" class="text-green-600"> ${opt}</label>`).join('')}
+                                        ${valOS === '其他' ? `<input type="text" name="${row.inputId_os}" value="${formData[row.inputId_os]||''}" placeholder="${row.inputLabel||'原因'}" class="border border-gray-300 rounded p-1.5 text-sm focus:ring-2 focus:ring-green-500 outline-none w-28">` : ''}
+                                    </div>
+                                  </td>`;
+                    } else if (row.type === 'radio') {
+                        html += `<td class="py-2 px-4 border-l border-gray-100">
+                                    <div class="flex items-center gap-3">
+                                        ${row.options.map(opt => `<label class="flex items-center gap-1 text-sm"><input type="radio" name="${row.id_od}" value="${opt}" ${valOD===opt?'checked':''} class="text-blue-600"> ${opt}</label>`).join('')}
+                                    </div>
+                                </td>
+                                <td class="py-2 px-4 border-l border-gray-100">
+                                    <div class="flex items-center gap-3">
+                                        ${row.options.map(opt => `<label class="flex items-center gap-1 text-sm"><input type="radio" name="${row.id_os}" value="${opt}" ${valOS===opt?'checked':''} class="text-green-600"> ${opt}</label>`).join('')}
+                                    </div>
+                                </td>`;
+                    } else if (row.type === 'select') {
+                        const makeOpts = (opts, val) => (opts||[]).map(o => {
+                            const v = (typeof o === 'object') ? (o.v ?? o.value ?? o.label) : o;
+                            const l = (typeof o === 'object') ? (o.l ?? o.label ?? o.v) : o;
+                            return `<option value="${v}" ${val===v?'selected':''}>${l}</option>`;
+                        }).join('');
+                        html += `<td class="py-2 px-4 border-l border-gray-100"><select name="${row.id_od}" class="border border-gray-300 rounded p-1.5 text-sm w-full focus:ring-2 focus:ring-blue-500 outline-none">${makeOpts(row.options, valOD)}</select></td>
+                                 <td class="py-2 px-4 border-l border-gray-100"><select name="${row.id_os}" class="border border-gray-300 rounded p-1.5 text-sm w-full focus:ring-2 focus:ring-green-500 outline-none">${makeOpts(row.options, valOS)}</select></td>`;
+                    } else {
+                        html += `<td class="py-2 px-4 border-l border-gray-100"><input type="${row.type}" step="${row.step||'any'}" name="${row.id_od}" value="${valOD}" class="border border-gray-300 rounded p-1.5 text-sm w-full focus:ring-2 focus:ring-blue-500 outline-none"></td>
+                                 <td class="py-2 px-4 border-l border-gray-100"><input type="${row.type}" step="${row.step||'any'}" name="${row.id_os}" value="${valOS}" class="border border-gray-300 rounded p-1.5 text-sm w-full focus:ring-2 focus:ring-green-500 outline-none"></td>`;
+                    }
+                } else {
+                    if (row.type === 'radio_with_input') {
+                        const odExtra = valOD === '其他' ? ` <span class="text-gray-400 ml-1">| ${row.inputLabel}: <span class="text-gray-900">${formData[row.inputId_od]||'--'}</span></span>` : '';
+                        const osExtra = valOS === '其他' ? ` <span class="text-gray-400 ml-1">| ${row.inputLabel}: <span class="text-gray-900">${formData[row.inputId_os]||'--'}</span></span>` : '';
+                        html += `<td class="py-3 px-4 border-l border-gray-100 text-sm text-gray-900">${valOD || '<span class="text-gray-300">--</span>'}${valOD?odExtra:''}</td>
+                                 <td class="py-3 px-4 border-l border-gray-100 text-sm text-gray-900">${valOS || '<span class="text-gray-300">--</span>'}${valOS?osExtra:''}</td>`;
+                    } else if (row.type === 'select') {
+                        const labelFor = (opts, v) => {
+                            if (!opts) return v || '<span class="text-gray-300">--</span>';
+                            const found = opts.find(o => (typeof o === 'object' ? (o.v ?? o.value ?? o.label) : o) === v);
+                            const lbl = found ? (typeof found === 'object' ? (found.l ?? found.label ?? found.v) : found) : v;
+                            return lbl || '<span class="text-gray-300">--</span>';
+                        };
+                        html += `<td class="py-3 px-4 border-l border-gray-100 text-sm text-gray-900">${labelFor(row.options, valOD)}</td>
+                                 <td class="py-3 px-4 border-l border-gray-100 text-sm text-gray-900">${labelFor(row.options, valOS)}</td>`;
+                    } else {
+                        html += `<td class="py-3 px-4 border-l border-gray-100 text-sm text-gray-900">${valOD || '<span class="text-gray-300">--</span>'}</td>
+                                 <td class="py-3 px-4 border-l border-gray-100 text-sm text-gray-900">${valOS || '<span class="text-gray-300">--</span>'}</td>`;
+                    }
+                }
+                html += `</tr>`;
+            });
+            return html + `</tbody></table>`;
+        }
+
+        function renderEyeGridPlus(sec) {
+            let html = renderEyeGrid({ rows: sec.rows });
+            if (sec.sharedFields && sec.sharedFields.length > 0) {
+                html += `<div class="mt-4 pt-4 border-t border-gray-200"><div class="text-sm font-semibold text-gray-700 mb-3">共用信息</div>`;
+                html += renderGrid({ fields: sec.sharedFields });
+                html += `</div>`;
+            }
+            return html;
+        }
+
+        function renderMatrix(sec) {
+            let html = `<div class="overflow-x-auto"><table class="w-full text-left border-collapse">
+                <thead><tr class="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
+                    <th class="py-3 px-4 font-medium w-24">眼别</th>
+                    ${sec.cols.map(c => `<th class="py-3 px-4 font-medium border-l border-gray-200">${c.label}</th>`).join('')}
+                </tr></thead><tbody class="divide-y divide-gray-100">`;
+            sec.rows.forEach(r => {
+                html += `<tr><td class="py-3 px-4 text-sm font-medium text-gray-700">${r.label}</td>`;
+                sec.cols.forEach(c => {
+                    const fid = `${r.id}_${c.id}`;
+                    const val = formData[fid] || '';
+                    if (isEditMode) {
+                        const stepAttr = sec.cellType === 'number' ? ` step="${sec.step || 'any'}"` : '';
+                        html += `<td class="py-2 px-4 border-l border-gray-100"><input type="${sec.cellType || 'text'}"${stepAttr} name="${fid}" value="${val}" class="border border-gray-300 rounded p-1.5 text-sm w-full focus:ring-2 focus:ring-blue-500 outline-none"></td>`;
+                    } else {
+                        html += `<td class="py-3 px-4 border-l border-gray-100 text-sm text-gray-900">${val || '<span class="text-gray-300">--</span>'}</td>`;
+                    }
+                });
+                html += `</tr>`;
+            });
+            return html + `</tbody></table></div>`;
+        }
+
+        function renderTOC(anchors) {
+            const toc = document.getElementById('toc-nav');
+            if (!toc) return;
+            window.__tocAnchors = anchors || [];
+            toc.innerHTML = (anchors || []).map((a, i) => {
+                const isMeta = a.id === 'sec-meta';
+                const label = a.title;
+                const baseCls = "w-full text-left px-3 py-2 rounded transition";
+                const restCls = isMeta ? "font-semibold text-gray-800" : "text-gray-700";
+                return `<button data-anchor="${a.id}" onclick="scrollToAnchor('${a.id}')" class="${baseCls} ${restCls} hover:bg-blue-50 hover:text-blue-700 whitespace-nowrap">${label}</button>`;
+            }).join('');
+            setActiveTOC((anchors && anchors.length) ? anchors[0].id : null);
+            initTOCScrollSync();
+        }
+
+        function scrollToAnchor(id) {
+            const container = document.getElementById('form-scroll-container');
+            const el = document.getElementById(id);
+            if (!container || !el) return;
+            const cTop = container.getBoundingClientRect().top;
+            const eTop = el.getBoundingClientRect().top;
+            const offset = 8; // 微调
+            container.scrollBy({ top: eTop - cTop - offset, behavior: 'smooth' });
+        }
+
+        function setActiveTOC(id) {
+            const toc = document.getElementById('toc-nav');
+            if (!toc) return;
+            toc.querySelectorAll('button[data-anchor]').forEach(btn => {
+                const active = btn.getAttribute('data-anchor') === id;
+                btn.classList.toggle('bg-blue-50', active);
+                btn.classList.toggle('text-blue-700', active);
+                btn.classList.toggle('font-semibold', active);
+            });
+        }
+
+        function initTOCScrollSync() {
+            if (window.__tocScrollInited) return;
+            const container = document.getElementById('form-scroll-container');
+            if (!container) return;
+            const onScroll = () => {
+                const anchors = window.__tocAnchors || [];
+                if (!anchors.length) return;
+                const cTop = container.getBoundingClientRect().top;
+                let bestId = anchors[0].id;
+                let bestDelta = Infinity;
+                anchors.forEach(a => {
+                    const el = document.getElementById(a.id);
+                    if (!el) return;
+                    const delta = Math.abs(el.getBoundingClientRect().top - cTop - 8);
+                    if (delta < bestDelta) { bestDelta = delta; bestId = a.id; }
+                });
+                setActiveTOC(bestId);
+            };
+            container.addEventListener('scroll', onScroll);
+            window.__tocScrollInited = true;
+        }
+
+        function renderDynamicTableReadOnly(f) {
+            const list = formData[f.listId] || [];
+            if (list.length === 0) return `<div class="text-sm text-gray-400 italic bg-gray-50 p-3 rounded">暂无记录</div>`;
+            let html = `<div class="overflow-x-auto border border-gray-200 rounded-md mt-2"><table class="w-full text-left text-sm"><thead class="bg-gray-100 text-gray-600"><tr class="divide-x divide-gray-200">`;
+            f.columns.forEach(col => html += `<th class="py-2 px-3 font-medium">${col.label}</th>`);
+            html += `</tr></thead><tbody class="divide-y divide-gray-200">`;
+            list.forEach(row => {
+                html += `<tr class="divide-x divide-gray-100 hover:bg-gray-50">`;
+                f.columns.forEach(col => {
+                    let text = row[col.id] || '--';
+                    if (col.id === 'eye') text = {1:'右眼', 2:'左眼', 3:'双眼', 4:'NA'}[text] || text;
+                    if (col.dependsOn && row[col.dependsOn] !== col.dependsVal) text = '--';
+                    html += `<td class="py-2 px-3 text-gray-800">${text}</td>`;
+                });
+                html += `</tr>`;
+            });
+            return html + `</tbody></table></div>`;
+        }
+
+        function renderDynamicTableEdit(f) {
+            const list = formData[f.listId] || [];
+            let html = `<div class="border border-blue-200 rounded-md mt-2 overflow-hidden fade-in"><table class="w-full text-left text-sm bg-white"><thead class="bg-blue-50 text-blue-800"><tr class="divide-x divide-blue-100">`;
+            f.columns.forEach(col => html += `<th class="py-2 px-3 font-medium ${col.width}">${col.label}</th>`);
+            html += `<th class="py-2 px-3 font-medium w-16 text-center">操作</th></tr></thead><tbody class="divide-y divide-gray-200">`;
+            list.forEach((row, index) => {
+                html += `<tr class="divide-x divide-gray-100">`;
+                f.columns.forEach(col => {
+                    const val = row[col.id] || '';
+                    const isHidden = col.dependsOn && row[col.dependsOn] !== col.dependsVal;
+                    html += `<td class="py-2 px-2">`;
+                    if (!isHidden) {
+                        if (col.type === 'select') {
+                            html += `<select onchange="updateList('${f.listId}', ${index}, '${col.id}', this.value)" class="w-full border border-gray-300 rounded p-1.5 focus:ring-1 focus:ring-blue-500 outline-none"><option value="">请选择</option>${col.options.map(o => `<option value="${o.v}" ${val===o.v?'selected':''}>${o.l}</option>`).join('')}</select>`;
+                        } else {
+                            html += `<input type="${col.type}" value="${val}" onchange="updateList('${f.listId}', ${index}, '${col.id}', this.value)" class="w-full border border-gray-300 rounded p-1.5 focus:ring-1 focus:ring-blue-500 outline-none">`;
+                        }
+                    } else { html += `<div class="text-gray-300 text-center bg-gray-50 rounded p-1.5">不适用</div>`; }
+                    html += `</td>`;
+                });
+                html += `<td class="py-2 px-2 text-center"><button onclick="removeListRow('${f.listId}', ${index})" class="text-red-500 hover:text-red-700 font-bold px-2 py-1 rounded hover:bg-red-50 transition">×</button></td></tr>`;
+            });
+            html += `</tbody></table><div class="bg-gray-50 p-2 border-t border-gray-200"><button onclick="addListRow('${f.listId}')" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center px-2 py-1 rounded hover:bg-blue-100 transition"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>新增一条记录</button></div></div>`;
+            return html;
+        }
+
+        function updateList(listId, index, key, value) { formData[listId][index][key] = value; renderForm(); }
+        function addListRow(listId) { if(!formData[listId]) formData[listId] = []; formData[listId].push({}); renderForm(); }
+        function removeListRow(listId, index) { formData[listId].splice(index, 1); renderForm(); }
+
+    </script>
+</body>
+</html>
