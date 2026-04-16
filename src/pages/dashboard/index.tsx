@@ -27,22 +27,6 @@ export const Dashboard: React.FC = () => {
     { name: "Female", data: [22, 45, 38, 20, 15, 8] }
   ];
 
-  const radarOptions = {
-    chart: { type: 'radar', toolbar: { show: false } },
-    labels: ['Fashion', 'Technology', 'Cars', 'Memes', 'Watches', 'Others'],
-    stroke: { width: 2 },
-    fill: { opacity: 0.2 },
-    markers: { size: 4 },
-    colors: ['#ea580c', '#3b82f6', '#34d399'],
-    yaxis: { show: false }
-  };
-
-  const radarSeries = [
-    { name: 'Tiktok', data: [80, 65, 40, 70, 30, 55] },
-    { name: 'Twitter', data: [60, 75, 45, 50, 40, 60] },
-    { name: 'Facebook', data: [50, 55, 35, 40, 45, 50] }
-  ];
-
   return (
     <div className="animate-fade-in space-y-6">
       {/* Top 3 cards */}
@@ -81,34 +65,27 @@ export const Dashboard: React.FC = () => {
 
       {/* Main content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div className="lg:col-span-1 h-full">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-full flex flex-col">
             <h3 className="text-slate-800 font-bold text-lg">数据完整度</h3>
             <p className="text-slate-500 text-sm mt-1">实时数据质量监控</p>
-            <div className="my-8 flex justify-center">
-              <div className="relative w-40 h-40">
+            <div className="flex-1 flex flex-col justify-center items-center my-8">
+              <div className="relative w-48 h-48">
                 <div className="absolute inset-0 rounded-full" style={{ background: 'conic-gradient(#4f46e5 0% 72%, #f1f5f9 72% 100%)' }}></div>
                 <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center shadow-inner">
-                  <span className="text-3xl font-black text-slate-800">72%</span>
+                  <span className="text-4xl font-black text-slate-800">72%</span>
                 </div>
               </div>
             </div>
-            <div className="text-center bg-slate-50 rounded-xl p-4">
+            <div className="text-center bg-slate-50 rounded-xl p-4 mt-auto">
               <p className="text-brand-600 font-bold">状态良好</p>
               <p className="text-slate-500 text-xs mt-1">各项指标均在正常范围内</p>
             </div>
           </div>
-          
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-             <h3 className="text-slate-800 font-bold text-lg mb-4">受试者特征雷达</h3>
-             <div className="w-full h-64">
-               <Chart options={radarOptions} series={radarSeries} type="radar" height="100%" />
-             </div>
-          </div>
         </div>
 
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div className="lg:col-span-2 h-full">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-full flex flex-col">
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h3 className="text-slate-800 font-bold text-lg">受试者年龄性别分布</h3>
@@ -118,7 +95,7 @@ export const Dashboard: React.FC = () => {
                 <RefreshCw size={16} />
               </button>
             </div>
-            <div className="w-full h-96">
+            <div className="w-full flex-1 min-h-[300px]">
                <Chart options={ageGenderOptions as any} series={ageGenderSeries} type="bar" height="100%" />
             </div>
           </div>
