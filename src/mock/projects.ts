@@ -175,7 +175,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '王医生'
     },
     {
-      id: 'CHILD_ELESCREEN_0004',
+      id: 'CHILD_ELESCREEN_0003',
       screenId: '0004',
       randomId: 'R-1003',
       drugId: 'D-A002',
@@ -189,7 +189,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '张主任'
     },
     {
-      id: 'CHILD_ELESCREEN_0005',
+      id: 'CHILD_ELESCREEN_0004',
       screenId: '0005',
       randomId: 'R-1004',
       drugId: 'D-A003',
@@ -217,7 +217,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '王医生'
     },
     {
-      id: 'CHILD_ELESCREEN_0007',
+      id: 'CHILD_ELESCREEN_0005',
       screenId: '0007',
       randomId: 'R-1005',
       drugId: 'D-B002',
@@ -231,7 +231,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '张主任'
     },
     {
-      id: 'CHILD_ELESCREEN_0008',
+      id: 'CHILD_ELESCREEN_0006',
       screenId: '0008',
       randomId: 'R-1006',
       drugId: 'D-A004',
@@ -245,7 +245,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '李医生'
     },
     {
-      id: 'CHILD_ELESCREEN_0009',
+      id: 'CHILD_ELESCREEN_0007',
       screenId: '0009',
       randomId: 'R-1007',
       drugId: 'D-B003',
@@ -259,7 +259,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '赵医生'
     },
     {
-      id: 'CHILD_ELESCREEN_0010',
+      id: 'CHILD_ELESCREEN_0008',
       screenId: '0010',
       randomId: 'R-1008',
       drugId: 'D-A005',
@@ -405,7 +405,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '李主任'
     },
     {
-      id: 'CARDIO_0007',
+      id: 'CARDIO_0005',
       screenId: '0007',
       randomId: 'R-9915',
       drugId: 'D-119',
@@ -422,7 +422,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '张医生'
     },
     {
-      id: 'CARDIO_0008',
+      id: 'CARDIO_0006',
       screenId: '0008',
       randomId: 'R-9920',
       drugId: 'D-S2-EXP-8001',
@@ -441,7 +441,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '李主任'
     },
     {
-      id: 'CARDIO_0009',
+      id: 'CARDIO_0007',
       screenId: '0009',
       randomId: 'R-9923',
       drugId: 'D-CTRL-9923',
@@ -458,7 +458,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '王主任'
     },
     {
-      id: 'CARDIO_0010',
+      id: 'CARDIO_0008',
       screenId: '0010',
       randomId: 'R-9929',
       drugId: 'D-S2-CTRL-9002',
@@ -578,7 +578,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '王医生'
     },
     {
-      id: 'GLAUCOMA_0236',
+      id: 'GLAUCOMA_0235',
       screenId: '0236',
       randomId: 'R-2036',
       drugId: 'D-TRIAL-0236',
@@ -592,7 +592,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '赵医生'
     },
     {
-      id: 'GLAUCOMA_0237',
+      id: 'GLAUCOMA_0236',
       screenId: '0237',
       randomId: 'R-2037',
       drugId: 'D-TRIAL-0237',
@@ -757,7 +757,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '王主任'
     },
     {
-      id: 'CHF_0108',
+      id: 'CHF_0106',
       screenId: '0108',
       randomId: 'R-7008',
       drugId: 'D-CTRL-0108',
@@ -774,7 +774,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '李主任'
     },
     {
-      id: 'CHF_0109',
+      id: 'CHF_0107',
       screenId: '0109',
       randomId: 'R-7009',
       drugId: 'D-S2-CTRL-0109',
