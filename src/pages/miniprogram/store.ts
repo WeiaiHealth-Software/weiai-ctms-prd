@@ -45,7 +45,7 @@ export const DB = {
     { id: '110', name: '郑华', phone: '13655556666', sex: '男', age: '8~10岁', diopter: '-1.50~0.00D', status: 'enrolled', doctor: '李医生', time: '一周前', group: 'g1', s_no: 'S-010', id_no: 'ID-E45', r_no: 'R-W66', drug_no: 'D-N22' }
   ],
   users: {
-    doc: { name: '李医生', role: 'doc' },
+    doc: { name: '张三', role: 'doc' },
     crc: { name: '王CRC', role: 'crc' },
     mfr: { name: '张经理', role: 'mfr' }
   }

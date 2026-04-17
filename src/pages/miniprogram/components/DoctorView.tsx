@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutGrid, User, ArrowLeft, LogOut } from 'lucide-react';
+import { LayoutGrid, User, ArrowLeft, Bell, PlusCircle, Search, Plus } from 'lucide-react';
 import classNames from 'classnames';
 import { DB, utils } from '../store';
 import { PhoneContainer } from './PhoneContainer';
@@ -8,151 +8,226 @@ import { LoginView } from './LoginView';
 export const DoctorView: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [tab, setTab] = useState<'home' | 'profile'>('home');
-  const [screen, setScreen] = useState<'home' | 'projects' | 'detail'>('home');
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setTab('home');
-    setScreen('home');
-  };
+  const [screen, setScreen] = useState<'home' | 'detail'>('home');
 
   const renderHome = () => (
-    <div className="flex flex-col h-full bg-slate-50 animate-fade-in">
-      <div className="bg-white text-black px-4 pt-10 pb-6 shadow-sm flex justify-between items-center relative z-10">
+    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+      <div className="px-5 pt-12 pb-4 flex justify-between items-center">
         <div>
-          <div className="text-md opacity-80">Hi,</div>
-          <div className="flex items-center gap-1 text-lg">
-            <span className="font-bold">{DB.users.doc.name}</span>
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold ml-2">Doctor</span>
+          <div className="text-slate-600 text-lg">Hi,</div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="font-bold text-[22px] tracking-wide text-slate-800">{DB.users.doc.name}</span>
+            <span className="text-[11px] bg-blue-50 border border-blue-200 text-blue-600 px-2 py-0.5 rounded font-bold">医生</span>
           </div>
         </div>
-        <div className="relative cursor-pointer flex gap-3 items-center">
-          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-red-50 text-red-500 transition-colors" onClick={handleLogout} title="退出登录">
-            <LogOut className="w-5 h-5" />
+        <div className="relative">
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors">
+            <Bell className="text-slate-600 w-5 h-5" />
           </div>
-          <div className="relative cursor-pointer" onClick={() => setScreen('projects')}>
-            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-              <User className="text-gray-600 w-5 h-5" />
-            </div>
-            <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
-          </div>
+          <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white"></div>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-5 text-white shadow-md shadow-blue-200">
-          <div className="text-blue-100 text-sm mb-1">当前进行中项目</div>
-          <div className="text-xl font-bold mb-4">{DB.project.name}</div>
-          <div className="flex justify-between items-end">
-            <div>
-              <div className="text-3xl font-black">{DB.project.enrolled} <span className="text-sm font-normal opacity-80">/ {DB.project.totalTarget}</span></div>
-              <div className="text-xs opacity-80 mt-1">总入组进度</div>
-            </div>
-            <a onClick={() => setScreen('detail')} className="text-xs text-blue-100 cursor-pointer hover:text-white bg-blue-700/30 px-3 py-1.5 rounded-full backdrop-blur-sm">查看详情 &gt;</a>
-          </div>
-        </div>
-
-        <h3 className="font-bold text-slate-700 mb-3 flex justify-between items-center">
-          今日待办
-          <span className="text-xs font-normal text-slate-400 bg-slate-200 px-2 py-0.5 rounded-full">3</span>
-        </h3>
+      <div className="flex-1 overflow-y-auto no-scrollbar px-5 space-y-6 pb-6">
         
-        <div className="space-y-3">
-          {DB.appointments.slice(0, 3).map(a => (
-            <div key={a.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-blue-400"></div>
-              <div className="flex justify-between items-start mb-2">
-                <div className="font-bold text-slate-800 text-base">{a.name}</div>
-                <div dangerouslySetInnerHTML={{ __html: utils.getStatusBadge(a.status) }}></div>
-              </div>
-              <div className="text-xs text-slate-500 space-y-1 mb-3">
-                <p>预约时间：{a.time}</p>
-              </div>
-              <div className="flex gap-2">
-                <button className="flex-1 py-1.5 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg" onClick={() => setScreen('detail')}>查看档案</button>
-              </div>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+          <h3 className="font-bold text-slate-800 text-[15px] mb-4">我的数据</h3>
+          <div className="flex justify-between items-center px-2">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-1">12</div>
+              <div className="text-xs text-slate-500">已推荐</div>
             </div>
-          ))}
+            <div className="text-center">
+              <div className="text-3xl font-bold text-emerald-600 mb-1">8</div>
+              <div className="text-xs text-slate-500">成功入组</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-rose-500 mb-1">1</div>
+              <div className="text-xs text-slate-500">筛选失败</div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  );
 
-  const renderProjects = () => (
-    <div className="flex flex-col h-full bg-slate-50 animate-fade-in">
-      <div className="bg-white pt-10 px-3 pb-4 flex items-center shadow-sm z-10 flex-none relative">
-        <div className="absolute left-3 cursor-pointer p-2 -ml-2" onClick={() => setScreen('home')}>
-          <ArrowLeft className="text-slate-500" width={20} />
-        </div>
-        <h2 className="font-bold text-lg w-full text-center">我的项目</h2>
-      </div>
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h3 className="font-bold text-slate-800 text-base mb-1">{DB.project.name}</h3>
-              <p className="text-xs text-slate-400">{DB.project.code}</p>
+        <div>
+          <h3 className="font-bold text-slate-800 text-[15px] mb-3">进行中的项目</h3>
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+            <div className="flex justify-between items-start mb-4">
+              <h4 className="font-bold text-slate-800 text-base">{DB.project.name}</h4>
+              <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[11px] font-bold whitespace-nowrap ml-2">招募中</span>
             </div>
-            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">进行中</span>
-          </div>
-          <div className="flex justify-between items-center text-xs text-slate-500 mt-4">
-            <div>进度: {DB.project.enrolled} / {DB.project.totalTarget}</div>
-            <button onClick={() => setScreen('detail')} className="text-blue-600 text-xs font-bold px-3 py-1 bg-blue-50 rounded-lg">查看详情</button>
+            <div className="w-full bg-slate-200 rounded-full h-2 mb-2 overflow-hidden">
+              <div className="bg-blue-600 h-full rounded-full" style={{ width: `${(DB.project.enrolled / DB.project.totalTarget) * 100}%` }}></div>
+            </div>
+            <div className="flex justify-between text-xs text-slate-500 mb-5">
+              <span>进度: {DB.project.enrolled}/{DB.project.totalTarget}</span>
+              <span>剩余名额: {DB.project.totalTarget - DB.project.enrolled}</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-slate-50">
+              <button className="bg-blue-600 text-white text-[13px] font-bold px-4 py-2 rounded-lg flex items-center gap-1 shadow-md shadow-blue-600/20 active:scale-95 transition-transform" onClick={() => {}}>
+                <PlusCircle size={16} /> 预约患者
+              </button>
+              <a onClick={() => setScreen('detail')} className="text-[13px] text-slate-500 cursor-pointer hover:text-blue-600">查看详情 &gt;</a>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );
 
   const renderDetail = () => (
-    <div className="flex flex-col h-full bg-slate-50 animate-fade-in">
-      <div className="bg-white pt-10 px-3 pb-4 flex items-center shadow-sm z-10 flex-none relative">
-        <div className="absolute left-3 cursor-pointer p-2 -ml-2" onClick={() => setScreen('home')}>
-          <ArrowLeft className="text-slate-500" width={20} />
+    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+      <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
+        <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
+          <ArrowLeft className="text-slate-600" width={22} />
         </div>
-        <h2 className="font-bold text-lg w-full text-center">项目详情</h2>
+        <h2 className="font-bold text-[17px] w-full text-center text-slate-800 tracking-wide">项目详情</h2>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-800 text-base mb-1">{DB.project.name}</h3>
-          <p className="text-xs text-slate-400 mb-4">{DB.project.code}</p>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-slate-50 p-2 rounded-lg text-center">
-              <div className="text-xs text-slate-500">总目标</div>
-              <div className="text-lg font-bold text-slate-800">{DB.project.totalTarget}</div>
+      
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-24 relative">
+        {/* 项目卡片 */}
+        <div className="p-4 space-y-4">
+          <div className="relative bg-white p-5 pt-8 rounded-2xl shadow-sm border border-slate-100 text-center overflow-hidden">
+            <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl tracking-wider">
+              {DB.project.code}
             </div>
-            <div className="bg-slate-50 p-2 rounded-lg text-center">
-              <div className="text-xs text-slate-500">已入组</div>
-              <div className="text-lg font-bold text-blue-600">{DB.project.enrolled}</div>
+            <h3 className="font-bold text-slate-800 text-[17px] mb-6">{DB.project.name}</h3>
+            
+            <div className="flex justify-center gap-12 mb-5">
+              <div>
+                <div className="text-[32px] font-black text-blue-600 leading-none mb-1">
+                  {DB.project.enrolled} <span className="text-[13px] text-blue-400 font-bold align-middle">(5)</span>
+                </div>
+                <div className="text-xs text-slate-500 font-medium">已入组 (我推荐)</div>
+              </div>
+              <div className="w-[1px] bg-slate-100"></div>
+              <div>
+                <div className="text-[32px] font-black text-slate-800 leading-none mb-1">
+                  {DB.project.totalTarget}
+                </div>
+                <div className="text-xs text-slate-500 font-medium">目标人数</div>
+              </div>
+            </div>
+
+            <div className="w-full bg-slate-100 rounded-full h-2.5 mb-2 overflow-hidden">
+              <div className="bg-blue-500 h-full rounded-full transition-all duration-1000" style={{ width: `${(DB.project.enrolled / DB.project.totalTarget) * 100}%` }}></div>
+            </div>
+            <div className="text-xs text-slate-400 mt-2 font-medium">
+              总体进度 {Math.round((DB.project.enrolled / DB.project.totalTarget) * 100)}%
             </div>
           </div>
-        </div>
-        
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-          <table className="w-full text-left text-[11px]">
-            <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-100">
-              <tr>
-                <th className="p-2 pl-3">姓名/状态</th>
-                <th className="p-2">组别</th>
-                <th className="p-2 text-center">操作</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {DB.appointments.slice(0, 6).map(a => (
-                <tr key={a.id} className="hover:bg-slate-50">
-                  <td className="p-2 pl-3">
-                    <div className="font-bold text-slate-800">{a.name}</div>
-                    <div className="mt-0.5" dangerouslySetInnerHTML={{ __html: utils.getStatusBadge(a.status) }}></div>
-                  </td>
-                  <td className="p-2">
-                    {a.group ? <span className="text-blue-600 font-bold">{DB.groups.find(g => g.id === a.group)?.name}</span> : <span className="text-slate-400">-</span>}
-                  </td>
-                  <td className="p-2 text-center">
-                    <button className="text-blue-500 hover:text-blue-700 font-medium">查看</button>
-                  </td>
+
+          <div className="flex justify-between items-end px-1 pt-2">
+            <h3 className="font-bold text-slate-800 text-[15px]">项目分组概览</h3>
+            <span className="text-[11px] text-slate-400 font-medium">共 {DB.groups.length} 个分组</span>
+          </div>
+
+          {/* 分组列表 */}
+          {DB.groups.map(g => (
+            <div key={g.id} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+              <h4 className="font-bold text-slate-800 text-[17px] mb-2">{g.name}</h4>
+              <div className="text-[13px] text-slate-500 mb-5 flex items-center gap-1.5">
+                <span className="text-slate-300">🔗</span> {g.drug}
+              </div>
+
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex-1 pr-6">
+                  <div className="flex justify-between text-[13px] mb-2 font-medium">
+                    <span className="text-slate-600">已入组</span>
+                    <span className="text-blue-600 font-bold">{g.enrolled}</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-blue-500 h-full rounded-full" style={{ width: `${(g.enrolled / g.target) * 100}%` }}></div>
+                  </div>
+                </div>
+                <div className="w-[1px] h-8 bg-slate-100 mr-6"></div>
+                <div className="flex-1">
+                  <div className="flex justify-between text-[13px] mb-2 font-medium">
+                    <span className="text-slate-600">剩余名额</span>
+                    <span className="text-slate-800 font-bold">{g.target - g.enrolled}</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-slate-300 h-full rounded-full" style={{ width: `${((g.target - g.enrolled) / g.target) * 100}%` }}></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-slate-400 mb-3 font-medium">因子维度分布</div>
+              <div className="space-y-3">
+                {g.dimensions.map((d, i) => {
+                  const tags = d.name.split(' | ');
+                  return (
+                    <div key={i} className="bg-slate-50/50 rounded-xl p-3 border border-slate-50">
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {tags.map((t, j) => (
+                          <span key={j} className="text-[10px] text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded shadow-sm">{t}</span>
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-center gap-3">
+                        <div className="flex-1 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                          <div className="bg-indigo-400 h-full rounded-full" style={{ width: `${(d.current / d.target) * 100}%` }}></div>
+                        </div>
+                        <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap w-8 text-right">{d.current}/{d.target}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
+          <div className="flex justify-between items-center px-1 pt-4 pb-2">
+            <h3 className="font-bold text-slate-800 text-[15px]">受试者表格</h3>
+            <div className="flex gap-2">
+              <div className="relative">
+                <input type="text" placeholder="姓名" className="text-[11px] w-16 bg-white border border-slate-200 rounded px-2 py-1 pr-6 outline-none focus:border-blue-500 transition-colors" />
+                <Search className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 w-3 h-3" />
+              </div>
+              <select className="text-[11px] bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:border-blue-500 text-slate-700 font-medium">
+                <option value="enrolled">已入组</option>
+                <option value="pending">待处理</option>
+                <option value="all">全部</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <table className="w-full text-left text-[12px]">
+              <thead className="bg-slate-50/80 text-slate-500 font-medium border-b border-slate-100">
+                <tr>
+                  <th className="p-3 pl-4 font-medium">姓名/状态</th>
+                  <th className="p-3 font-medium">组别</th>
+                  <th className="p-3 font-medium">时间</th>
+                  <th className="p-3 text-center font-medium">操作</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {DB.appointments.slice(0, 6).map(a => (
+                  <tr key={a.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="p-3 pl-4">
+                      <div className="font-bold text-slate-800 mb-1">{a.name}</div>
+                      <div dangerouslySetInnerHTML={{ __html: utils.getStatusBadge(a.status) }}></div>
+                    </td>
+                    <td className="p-3 text-slate-600 font-medium">
+                      {a.group ? DB.groups.find(g => g.id === a.group)?.name : '-'}
+                    </td>
+                    <td className="p-3 text-slate-500">
+                      {a.time}
+                    </td>
+                    <td className="p-3 text-center">
+                      <button className="text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded border border-blue-100 font-bold transition-colors">查看</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 悬浮添加按钮 */}
+        <div className="absolute bottom-6 right-4">
+          <button className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg shadow-blue-600/40 flex items-center justify-center transition-all active:scale-95">
+            <Plus size={32} strokeWidth={2} className="text-white" />
+          </button>
         </div>
       </div>
     </div>
@@ -172,7 +247,6 @@ export const DoctorView: React.FC = () => {
         
         <div className="flex-1 overflow-hidden relative mt-6">
           {screen === 'home' && renderHome()}
-          {screen === 'projects' && renderProjects()}
           {screen === 'detail' && renderDetail()}
         </div>
 
