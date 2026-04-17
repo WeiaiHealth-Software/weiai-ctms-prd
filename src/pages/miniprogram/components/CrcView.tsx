@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutList, User, ArrowLeft, Bell, CheckCircle, Building2, FolderKanban, LogOut as LogOutIcon, ChevronRight, MapPin } from 'lucide-react';
 import classNames from 'classnames';
-import { DB } from '../store';
+import { DB, db } from '../store';
 import { PhoneContainer } from './PhoneContainer';
 import { LoginView } from './LoginView';
 
@@ -12,18 +12,19 @@ export const CrcView: React.FC = () => {
   const [currentAppt, setCurrentAppt] = useState<any>(null);
   const [showModal, setShowModal] = useState<'success' | 'fail' | null>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [, setDbVersion] = useState(0);
 
   useEffect(() => {
     const handleDocAction = (e: Event) => {
       const customEvent = e as CustomEvent;
-      const { type, patient } = customEvent.detail;
+      const { type, patient, doctor } = customEvent.detail;
       
       if (type === 'new_appointment') {
         const newNotif = {
           id: Date.now(),
           title: '新预约申请',
           time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-          content: `李医生提交了患者 ${patient.name} 的预约申请，请及时处理。`
+          content: `${doctor || '医生'}提交了患者 ${patient.name} 的预约申请，请及时处理。`
         };
         
         setNotifications(prev => [newNotif, ...prev]);
@@ -32,6 +33,12 @@ export const CrcView: React.FC = () => {
 
     DB.events.addEventListener('doc_action', handleDocAction);
     return () => DB.events.removeEventListener('doc_action', handleDocAction);
+  }, []);
+
+  useEffect(() => {
+    const handleDbUpdated = () => setDbVersion(v => v + 1);
+    DB.events.addEventListener('db_updated', handleDbUpdated);
+    return () => DB.events.removeEventListener('db_updated', handleDbUpdated);
   }, []);
 
   const renderNotifications = () => (
@@ -62,9 +69,21 @@ export const CrcView: React.FC = () => {
     </div>
   );
 
-  const renderHome = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
-      <div className="px-5 pt-12 pb-4 flex justify-between items-center">
+  const renderHome = () => {
+    const pendingCount = db.getPendingCount();
+    const pendingList = db.getPendingAppointments().slice(0, 2);
+
+    const getTodoBadge = (status: string) => {
+      if (status === 'pending_info') return { text: '待补全', className: 'bg-orange-50 text-orange-500' };
+      if (status === 'pending_confirm') return { text: '待确认', className: 'bg-blue-50 text-blue-500' };
+      return { text: '已处理', className: 'bg-slate-100 text-slate-500' };
+    };
+
+    const counterText = pendingCount > 99 ? '99+' : String(pendingCount);
+
+    return (
+      <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+        <div className="px-5 pt-12 pb-4 flex justify-between items-center">
         <div>
           <div className="text-slate-600 text-lg">Hi,</div>
           <div className="flex items-center gap-2 mt-1">
@@ -87,7 +106,7 @@ export const CrcView: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col justify-center">
             <div className="text-xs text-slate-500 font-medium mb-2">待处理预约</div>
-            <div className="text-3xl font-black text-emerald-600">4</div>
+            <div className="text-3xl font-black text-emerald-600">{counterText}</div>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col justify-center">
             <div className="text-xs text-slate-500 font-medium mb-2">进行中项目</div>
@@ -98,41 +117,41 @@ export const CrcView: React.FC = () => {
         <div>
           <h3 className="font-bold text-slate-800 text-[17px] mb-4 flex justify-between items-end">
             待办任务
-            <div className="w-5 h-5 rounded-full bg-slate-200 text-white text-[10px] flex items-center justify-center font-bold">4</div>
+            <div className="w-5 h-5 rounded-full bg-slate-200 text-white text-[10px] flex items-center justify-center font-bold">{counterText}</div>
           </h3>
           
           <div className="space-y-4">
-            {DB.appointments.slice(0, 2).map((a, i) => (
-              <div key={a.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
-                <div className="flex justify-between items-start mb-4">
-                  <div className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-[11px] font-bold">青少年近视防控临床研究</div>
-                  {i === 0 ? (
-                    <div className="px-2 py-1 bg-orange-50 text-orange-500 rounded text-[11px] font-bold">待补全</div>
-                  ) : (
-                    <div className="px-2 py-1 bg-blue-50 text-blue-500 rounded text-[11px] font-bold">待确认</div>
-                  )}
+            {pendingList.map(a => {
+              const badge = getTodoBadge(a.status);
+              return (
+                <div key={a.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-[11px] font-bold">青少年近视防控临床研究</div>
+                    <div className={classNames("px-2 py-1 rounded text-[11px] font-bold", badge.className)}>{badge.text}</div>
+                  </div>
+                  <div className="flex items-end gap-3 mb-6">
+                    <div className="font-black text-slate-800 text-xl">{a.name}</div>
+                    <div className="text-slate-500 font-mono text-[15px] pb-0.5">{a.phone}</div>
+                  </div>
+                  <div className="flex justify-between items-center pt-4 border-t border-slate-50">
+                    <div className="text-[12px] text-slate-400">来自: {a.doctor} <span className="ml-2">{a.time}</span></div>
+                    <button className="bg-indigo-50 text-indigo-600 text-[12px] font-bold px-3 py-1.5 rounded flex items-center hover:bg-indigo-100 transition-colors" onClick={() => {
+                      setCurrentAppt(a);
+                      setScreen('detail');
+                    }}>
+                      查看详情 &rarr;
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-end gap-3 mb-6">
-                  <div className="font-black text-slate-800 text-xl">{a.name}</div>
-                  <div className="text-slate-500 font-mono text-[15px] pb-0.5">{a.phone}</div>
-                </div>
-                <div className="flex justify-between items-center pt-4 border-t border-slate-50">
-                  <div className="text-[12px] text-slate-400">来自: {a.doctor} <span className="ml-2">{a.time}</span></div>
-                  <button className="bg-indigo-50 text-indigo-600 text-[12px] font-bold px-3 py-1.5 rounded flex items-center hover:bg-indigo-100 transition-colors" onClick={() => {
-                    setCurrentAppt(a);
-                    setScreen('detail');
-                  }}>
-                    查看详情 &rarr;
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
-    </div>
-  );
+      </div>
+    );
+  };
 
   const renderProfile = () => (
     <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
@@ -180,6 +199,9 @@ export const CrcView: React.FC = () => {
     </div>
   );
   const handleEnrollSuccess = () => {
+    if (currentAppt?.id) {
+      db.updateAppointment(currentAppt.id, { status: 'enrolled', group: 'g1' });
+    }
     DB.events.dispatchEvent(new CustomEvent('crc_action', {
       detail: {
         type: 'enroll_success',
@@ -192,6 +214,9 @@ export const CrcView: React.FC = () => {
   };
 
   const handleEnrollFail = () => {
+    if (currentAppt?.id) {
+      db.updateAppointment(currentAppt.id, { status: 'closed' });
+    }
     DB.events.dispatchEvent(new CustomEvent('crc_action', {
       detail: {
         type: 'enroll_fail',
@@ -204,7 +229,7 @@ export const CrcView: React.FC = () => {
   };
 
   const renderDetail = () => {
-    const isReady = currentAppt?.id === '102';
+    const isReady = currentAppt?.status === 'pending_confirm';
 
     return (
       <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">

@@ -98,6 +98,81 @@ export const DB = {
   }
 };
 
+type AppointmentStatus = 'pending_info' | 'pending_confirm' | 'confirmed' | 'closed' | 'enrolled';
+
+export type Appointment = {
+  id: string;
+  name: string;
+  phone: string;
+  sex: string;
+  age: string;
+  diopter: string;
+  status: AppointmentStatus;
+  doctor: string;
+  time: string;
+  group: string;
+  s_no: string;
+  id_no: string;
+  r_no: string;
+  drug_no: string;
+};
+
+const formatTimeHHmm = (d: Date) =>
+  d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+const isPendingStatus = (s: string) => s === 'pending_info' || s === 'pending_confirm';
+
+export const db = {
+  getPendingAppointments: () => (DB.appointments as Appointment[]).filter(a => isPendingStatus(a.status)),
+  getPendingCount: () => db.getPendingAppointments().length,
+  addAppointmentFromDoctor: (payload: Pick<Appointment, 'name' | 'phone' | 'sex' | 'age' | 'diopter'>) => {
+    const now = new Date();
+    const id = String(Date.now());
+    const hasAllDims = Boolean(payload.sex && payload.age && payload.diopter);
+
+    const appt: Appointment = {
+      id,
+      name: payload.name,
+      phone: payload.phone,
+      sex: payload.sex,
+      age: payload.age,
+      diopter: payload.diopter,
+      status: hasAllDims ? 'pending_confirm' : 'pending_info',
+      doctor: DB.doctor.profileName,
+      time: formatTimeHHmm(now),
+      group: '',
+      s_no: '',
+      id_no: '',
+      r_no: '',
+      drug_no: ''
+    };
+
+    (DB.appointments as Appointment[]).unshift(appt);
+
+    DB.events.dispatchEvent(
+      new CustomEvent('doc_action', {
+        detail: {
+          type: 'new_appointment',
+          doctor: appt.doctor,
+          patient: { name: appt.name, phone: appt.phone },
+          appointment: appt
+        }
+      })
+    );
+    DB.events.dispatchEvent(new CustomEvent('db_updated', { detail: { entity: 'appointments', id: appt.id } }));
+
+    return appt;
+  },
+  updateAppointment: (id: string, patch: Partial<Appointment>) => {
+    const appts = DB.appointments as Appointment[];
+    const idx = appts.findIndex(a => a.id === id);
+    if (idx < 0) return null;
+    appts[idx] = { ...appts[idx], ...patch };
+    DB.events.dispatchEvent(new CustomEvent('db_updated', { detail: { entity: 'appointments', id } }));
+    return appts[idx];
+  }
+};
+
 export const utils = {
   getStatusBadge: (status: string) => {
     const map: Record<string, { class: string, text: string }> = {
