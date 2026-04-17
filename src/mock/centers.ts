@@ -45,7 +45,7 @@ export type Center = {
 };
 
 const cover1 =
-  'https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=photorealistic%2C%20modern%20ophthalmology%20hospital%20building%20exterior%20in%20Shanghai%2C%20sunny%20day%2C%20wide%20angle%2C%20trees%2C%20patients%20walking%2C%20clean%20medical%20campus%2C%20high%20detail%2C%20natural%20colors&image_size=landscape_4_3';
+  'https://www.shsyf.com/res/202503/11/503deae8f88a90a2.png';
 const cover2 =
   'https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=photorealistic%2C%20large%20university%20affiliated%20specialty%20hospital%20entrance%2C%20East%20China%2C%20daytime%2C%20urban%20street%2C%20clean%20architecture%2C%20high%20detail%2C%20natural%20colors&image_size=landscape_4_3';
 
