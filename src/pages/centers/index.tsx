@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
 import { useHeaderStore } from '../../store/useHeaderStore';
 import { Building2, Plus, Eye, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CENTERS } from '../../mock/centers';
 
 export const Centers: React.FC = () => {
   const setTitle = useHeaderStore(state => state.setTitle);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setTitle('中心管理', '管理多中心临床试验的各个分中心信息', [
@@ -13,26 +16,10 @@ export const Centers: React.FC = () => {
     ]);
   }, [setTitle]);
 
-  const centers = [
-    {
-      id: 1,
-      name: '上海眼病防治中心',
-      iconClass: 'bg-blue-100 text-blue-600',
-      description: '国内顶尖的眼科临床研究中心，专注于疑难眼病诊治。',
-      adminName: '徐教授',
-      adminAvatar: 'https://ui-avatars.com/api/?name=Dr.Wang&background=random',
-      createDate: '2023-01-15'
-    },
-    {
-      id: 2,
-      name: '上海复旦大学附属五官科医院',
-      iconClass: 'bg-emerald-100 text-emerald-600',
-      description: '华东地区领先的眼耳鼻喉专科医院。',
-      adminName: '李主任',
-      adminAvatar: 'https://ui-avatars.com/api/?name=Dr.Li&background=random',
-      createDate: '2023-03-22'
-    }
-  ];
+  const centers = CENTERS.map((c, idx) => ({
+    ...c,
+    iconClass: idx % 2 === 0 ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'
+  }));
 
   return (
     <div className="animate-fade-in space-y-6">
@@ -69,10 +56,14 @@ export const Centers: React.FC = () => {
                     <span className="text-xs font-bold">{center.adminName}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-slate-400 font-mono text-xs">{center.createDate}</td>
+                <td className="px-6 py-4 text-slate-400 font-mono text-xs">{center.createdAt}</td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button className="p-2 text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors" title="查看详情">
+                    <button
+                      className="p-2 text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors"
+                      title="查看详情"
+                      onClick={() => navigate(`/index/centers/${center.id}`)}
+                    >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="删除">

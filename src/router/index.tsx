@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { ProjectWizard } from '@/components/projects/wizard/ProjectWizard'
 import { Centers } from '@/pages/centers'
+import { CenterDetail } from '@/pages/centers/detail'
 import { Dashboard } from '@/pages/dashboard'
 import { Departments } from '@/pages/departments'
 import { Dimensions } from '@/pages/dimensions'
@@ -22,6 +23,7 @@ export function AppRoutes() {
         <Route path="dimensions" element={<Dimensions />} />
         <Route path="departments" element={<Departments />} />
         <Route path="centers" element={<Centers />} />
+        <Route path="centers/:centerId" element={<CenterDetail />} />
         <Route path="roles" element={<Roles />} />
         <Route path="users" element={<Users />} />
       </Route>
