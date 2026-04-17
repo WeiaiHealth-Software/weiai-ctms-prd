@@ -9,6 +9,7 @@ import { Departments } from './pages/departments'
 import { Centers } from './pages/centers'
 import { Roles } from './pages/roles'
 import { Users } from './pages/users'
+import { MiniProgram } from './pages/miniprogram'
 import './App.css'
 
 function App() {
@@ -24,6 +25,9 @@ function App() {
         <Route path="centers" element={<Centers />} />
         <Route path="roles" element={<Roles />} />
         <Route path="users" element={<Users />} />
+      </Route>
+      <Route path="/miniprogram" element={<MainLayout />}>
+        <Route index element={<MiniProgram />} />
       </Route>
       <Route path="/" element={<Navigate to="/index" replace />} />
     </Routes>
