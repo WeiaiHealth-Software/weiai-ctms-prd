@@ -7,8 +7,8 @@ interface LoginViewProps {
 }
 
 export const LoginView: React.FC<LoginViewProps> = ({ role, onLogin }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState(role === 'doc' ? 'doctor01' : role === 'crc' ? 'crc01' : 'mfr01');
+  const [password, setPassword] = useState('123456');
 
   const roleConfig = {
     doc: { title: '医生端登录', color: 'bg-blue-600', icon: <Stethoscope size={32} /> },

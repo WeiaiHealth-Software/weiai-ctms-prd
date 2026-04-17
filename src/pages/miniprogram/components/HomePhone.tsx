@@ -1,8 +1,14 @@
 import React from 'react';
 import { Activity, Stethoscope, ClipboardCheck, Building2, ChevronRight } from 'lucide-react';
 import { PhoneContainer } from './PhoneContainer';
+import classNames from 'classnames';
 
-export const HomePhone: React.FC = () => {
+interface HomePhoneProps {
+  onSelectRole: (role: 'doc' | 'crc' | 'mfr') => void;
+  activeRole: 'doc' | 'crc' | 'mfr' | null;
+}
+
+export const HomePhone: React.FC<HomePhoneProps> = ({ onSelectRole, activeRole }) => {
   return (
     <PhoneContainer>
       <div className="flex-1 overflow-y-auto no-scrollbar bg-white flex flex-col justify-center p-6 space-y-6 h-full relative">
@@ -14,41 +20,59 @@ export const HomePhone: React.FC = () => {
           <p className="text-gray-500 text-md mt-2">临床科研管理系统</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-md border border-gray-100 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition-all group">
-          <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+        <div onClick={() => onSelectRole('doc')} className={classNames(
+          "bg-white p-4 rounded-xl shadow-md border flex items-center gap-4 cursor-pointer transition-all group",
+          activeRole === 'doc' ? "border-blue-500 ring-2 ring-blue-100" : "border-gray-100 hover:bg-gray-50"
+        )}>
+          <div className={classNames(
+            "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
+            activeRole === 'doc' ? "bg-blue-600 text-white" : "bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white"
+          )}>
             <Stethoscope className="w-7 h-7" />
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-gray-800 text-lg">医生角色面板</h3>
             <p className="text-xs text-gray-400">Doctor / PI / Sub-I</p>
           </div>
-          <ChevronRight className="text-gray-300 group-hover:text-blue-500 transition-colors" />
+          <ChevronRight className={classNames("transition-colors", activeRole === 'doc' ? "text-blue-500" : "text-gray-300 group-hover:text-blue-500")} />
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-md border border-gray-100 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition-all group">
-          <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+        <div onClick={() => onSelectRole('crc')} className={classNames(
+          "bg-white p-4 rounded-xl shadow-md border flex items-center gap-4 cursor-pointer transition-all group",
+          activeRole === 'crc' ? "border-emerald-500 ring-2 ring-emerald-100" : "border-gray-100 hover:bg-gray-50"
+        )}>
+          <div className={classNames(
+            "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
+            activeRole === 'crc' ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white"
+          )}>
             <ClipboardCheck className="w-7 h-7" />
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-gray-800 text-lg">CRC角色面板</h3>
             <p className="text-xs text-gray-400">Coordinator</p>
           </div>
-          <ChevronRight className="text-gray-300 group-hover:text-emerald-500 transition-colors" />
+          <ChevronRight className={classNames("transition-colors", activeRole === 'crc' ? "text-emerald-500" : "text-gray-300 group-hover:text-emerald-500")} />
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-md border border-gray-100 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition-all group">
-          <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+        <div onClick={() => onSelectRole('mfr')} className={classNames(
+          "bg-white p-4 rounded-xl shadow-md border flex items-center gap-4 cursor-pointer transition-all group",
+          activeRole === 'mfr' ? "border-purple-500 ring-2 ring-purple-100" : "border-gray-100 hover:bg-gray-50"
+        )}>
+          <div className={classNames(
+            "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
+            activeRole === 'mfr' ? "bg-purple-600 text-white" : "bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white"
+          )}>
             <Building2 className="w-7 h-7" />
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-gray-800 text-lg">厂家角色面板</h3>
             <p className="text-xs text-gray-400">Sponsor / Manager</p>
           </div>
-          <ChevronRight className="text-gray-300 group-hover:text-purple-500 transition-colors" />
+          <ChevronRight className={classNames("transition-colors", activeRole === 'mfr' ? "text-purple-500" : "text-gray-300 group-hover:text-purple-500")} />
         </div>
 
         <div className="absolute bottom-6 left-0 w-full text-center text-xs text-slate-400">
-          请在右侧对应的角色终端中进行操作
+          点击选择角色，右侧将展开对应的操作终端
         </div>
       </div>
     </PhoneContainer>
