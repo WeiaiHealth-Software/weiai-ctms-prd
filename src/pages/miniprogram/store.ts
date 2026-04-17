@@ -48,6 +48,52 @@ export const DB = {
     doc: { name: '张三', role: 'doc' },
     crc: { name: '王CRC', role: 'crc' },
     mfr: { name: '张经理', role: 'mfr' }
+  },
+  doctor: {
+    profileName: '李医生',
+    profileRole: '临床医生',
+    centers: [
+      {
+        id: 'c1',
+        name: '北京协和医院眼科中心',
+        address: '北京市东城区帅府园1号',
+        status: 'verified',
+        role: 'PI'
+      },
+      {
+        id: 'c2',
+        name: '上海同仁医院',
+        address: '上海市长宁区仙霞路1111号',
+        status: 'pending',
+        role: 'PI'
+      }
+    ],
+    projects: [
+      {
+        id: 'p1',
+        name: '青少年近视防控临床研究',
+        code: 'MYOPIA-2024-001',
+        status: 'active',
+        progress: 30,
+        role: 'PI'
+      },
+      {
+        id: 'p2',
+        name: '干眼症药物三期临床试验',
+        code: 'DRYEYE-2023-099',
+        status: 'ended',
+        progress: 100,
+        role: 'PI'
+      },
+      {
+        id: 'p3',
+        name: '视网膜病变筛查研究',
+        code: 'RETINA-2024-012',
+        status: 'active',
+        progress: 56,
+        role: 'PI'
+      }
+    ]
   }
 };
 
