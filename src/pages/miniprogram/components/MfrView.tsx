@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, User, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, User, ArrowLeft, LogOut } from 'lucide-react';
 import classNames from 'classnames';
 import { DB } from '../store';
+import { PhoneContainer } from './PhoneContainer';
+import { LoginView } from './LoginView';
 
-export const MfrView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const MfrView: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [tab, setTab] = useState<'home' | 'profile'>('home');
   const [screen, setScreen] = useState<'home' | 'detail'>('home');
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setTab('home');
+    setScreen('home');
+  };
 
   const renderHome = () => (
     <div className="flex flex-col h-full bg-slate-50 animate-fade-in">
@@ -17,9 +26,14 @@ export const MfrView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold ml-2">Sponsor</span>
           </div>
         </div>
-        <div className="relative cursor-pointer" onClick={() => setScreen('detail')}>
-          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
-            <User className="text-slate-600 w-5 h-5" />
+        <div className="relative cursor-pointer flex gap-3 items-center">
+          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-red-50 text-red-500 transition-colors" onClick={handleLogout} title="退出登录">
+            <LogOut className="w-5 h-5" />
+          </div>
+          <div className="relative cursor-pointer" onClick={() => setScreen('detail')}>
+            <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+              <User className="text-slate-600 w-5 h-5" />
+            </div>
           </div>
         </div>
       </div>
@@ -79,31 +93,36 @@ export const MfrView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     </div>
   );
 
-  return (
-    <div className="flex flex-col h-full relative">
-      <div className="absolute top-0 left-3 z-50 mt-10">
-        <button onClick={onBack} className="text-xs text-white bg-slate-800/50 px-2 py-1 rounded-md flex items-center backdrop-blur-sm hover:bg-slate-800/80 transition-colors">
-          <ArrowLeft size={14} className="mr-1" /> 退出
-        </button>
-      </div>
-      
-      <div className="flex-1 overflow-hidden relative">
-        {screen === 'home' && renderHome()}
-        {screen === 'detail' && renderDetail()}
-      </div>
+  if (!isLoggedIn) {
+    return (
+      <PhoneContainer>
+        <LoginView role="mfr" onLogin={() => setIsLoggedIn(true)} />
+      </PhoneContainer>
+    );
+  }
 
-      {screen === 'home' && (
-        <div className="bg-white border-t p-3 flex justify-around text-xs text-slate-500 shrink-0">
-          <div className={classNames("flex flex-col items-center cursor-pointer", tab === 'home' ? "text-purple-600" : "")} onClick={() => setTab('home')}>
-            <LayoutDashboard className="w-6 h-6 mb-1" />
-            工作台
-          </div>
-          <div className={classNames("flex flex-col items-center cursor-pointer", tab === 'profile' ? "text-purple-600" : "")} onClick={() => setTab('profile')}>
-            <User className="w-6 h-6 mb-1" />
-            我的
-          </div>
+  return (
+    <PhoneContainer>
+      <div className="flex flex-col h-full relative">
+        
+        <div className="flex-1 overflow-hidden relative mt-6">
+          {screen === 'home' && renderHome()}
+          {screen === 'detail' && renderDetail()}
         </div>
-      )}
-    </div>
+
+        {screen === 'home' && (
+          <div className="bg-white border-t p-3 flex justify-around text-xs text-slate-500 shrink-0">
+            <div className={classNames("flex flex-col items-center cursor-pointer", tab === 'home' ? "text-purple-600" : "")} onClick={() => setTab('home')}>
+              <LayoutDashboard className="w-6 h-6 mb-1" />
+              工作台
+            </div>
+            <div className={classNames("flex flex-col items-center cursor-pointer", tab === 'profile' ? "text-purple-600" : "")} onClick={() => setTab('profile')}>
+              <User className="w-6 h-6 mb-1" />
+              我的
+            </div>
+          </div>
+        )}
+      </div>
+    </PhoneContainer>
   );
 };
