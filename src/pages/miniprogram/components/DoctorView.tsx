@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutGrid, User, ArrowLeft, Bell, PlusCircle, Search, Plus, ChevronRight, MapPin } from 'lucide-react';
 import classNames from 'classnames';
-import { DB, utils } from '../store';
+import { DB, db, utils } from '../store';
 import { PhoneContainer } from './PhoneContainer';
 import { LoginView } from './LoginView';
 
@@ -39,6 +39,26 @@ export const DoctorView: React.FC = () => {
     age: '',
     diopter: ''
   });
+
+  const handleSubmitAppointment = () => {
+    const name = appointment.name.trim();
+    const phone = appointment.phone.trim();
+    if (!name || !phone) {
+      window.alert('请填写患者姓名和联系电话');
+      return;
+    }
+
+    db.addAppointmentFromDoctor({
+      name,
+      phone,
+      sex: appointment.sex,
+      age: appointment.age,
+      diopter: appointment.diopter
+    });
+
+    setAppointment({ name: '', phone: '', sex: '', age: '', diopter: '' });
+    setScreen('home');
+  };
 
   const renderNotifications = () => (
     <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
@@ -242,7 +262,7 @@ export const DoctorView: React.FC = () => {
           <button
             type="button"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-[16px] py-3.5 rounded-xl shadow-lg shadow-blue-600/25 active:scale-[0.99] transition-transform"
-            onClick={() => setScreen('home')}
+            onClick={handleSubmitAppointment}
           >
             提交预约
           </button>
