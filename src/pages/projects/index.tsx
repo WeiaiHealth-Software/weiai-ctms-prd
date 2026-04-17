@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useHeaderStore } from '../../store/useHeaderStore';
 import { ProjectCard } from '../../components/ui/ProjectCard';
 import { Plus, Search, Filter } from 'lucide-react';
+import { PROJECTS } from '../../mock/projects';
 
 export const ProjectList: React.FC = () => {
   const setTitle = useHeaderStore(state => state.setTitle);
@@ -13,44 +14,7 @@ export const ProjectList: React.FC = () => {
     setTitle('项目管理', '管理所有临床研究项目', [{ text: '所有角色', color: 'slate' }]);
   }, [setTitle]);
 
-  const projects = [
-    {
-      id: 'p1',
-      code: 'CHILD_ELESCREEN',
-      status: '进行中' as const,
-      title: '光刻微结构近视管理镜片在儿童青少年近视防控中的有效性及佩戴安全舒适性的随机对照临床研究',
-      date: '2025-12-25',
-      description: '主要目的：评价不同光刻微结构近视管理镜片对控制儿童青少年近视进展的有效性和佩戴的安全舒适性，探索对近视防控有效的离焦微透镜设计及光刻微结构近视管理镜片应用于近视防控的可行性。次要目的：了解和分析儿童青少年近视防控诊疗情况和相关影响因素，例如初发年龄、性别、佩戴时长、用眼习惯等。',
-      currentCount: 46,
-      totalCount: 100,
-      themeColor: 'brand' as const,
-      isFission: false
-    },
-    {
-      id: 'p2',
-      code: 'CARDIO_01',
-      status: '进行中' as const,
-      title: '冠心病介入治疗术后心脏康复分级干预策略的多中心随机对照研究',
-      date: '2024-06-30',
-      description: '本研究旨在评价冠心病患者在经皮冠状动脉介入治疗(PCI)后，采用不同级别的心脏康复干预策略(包括运动处方、营养指导、心理干预)对改善患者心肺运动耐量、降低主要不良心血管事件(MACE)发生率的作用。',
-      currentCount: 380,
-      totalCount: 1000,
-      themeColor: 'indigo' as const,
-      isFission: true
-    },
-    {
-      id: 'p3',
-      code: 'GLAUCOMA_PH3',
-      status: '已结束' as const,
-      title: '新型降眼压滴眼液在原发性开角型青光眼患者中的 III 期临床试验',
-      date: '2023-11-15',
-      description: '评估试验药物在原发性开角型青光眼或高眼压症患者中连续使用 12 周降低眼内压(IOP)的疗效和安全性。与现有的一线前列腺素类药物进行非劣效性比较。',
-      currentCount: 240,
-      totalCount: 240,
-      themeColor: 'brand' as const,
-      isFission: false
-    }
-  ];
+  const projects = PROJECTS;
 
   const filteredProjects = projects.filter(p => {
     if (filter === 'active') return p.status === '进行中';
@@ -67,7 +31,7 @@ export const ProjectList: React.FC = () => {
             className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === 'all' ? 'bg-white text-slate-800 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
             onClick={() => setFilter('all')}
           >
-            全部项目 <span className="ml-1 text-xs px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500">3</span>
+            全部项目 <span className="ml-1 text-xs px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500">{projects.length}</span>
           </button>
           <button 
             className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === 'active' ? 'bg-white text-slate-800 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
@@ -107,7 +71,7 @@ export const ProjectList: React.FC = () => {
           <ProjectCard
             key={project.id}
             {...project}
-            onClick={() => alert(`导航到项目详情: ${project.id}`)}
+            onClick={() => navigate(`/index/projects/${project.id}`)}
             onDelete={() => alert(`删除项目: ${project.id}`)}
           />
         ))}

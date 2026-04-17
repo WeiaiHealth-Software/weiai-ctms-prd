@@ -130,13 +130,16 @@ export const Sidebar: React.FC = () => {
 
         <div className="my-2 border-b border-slate-200"></div>
         <NavLink
-          to="/edc"
-          className="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-brand-600 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden"
+          to="/miniprogram"
+          className={({ isActive }) => classNames(
+            "flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+            isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
+          )}
         >
-          <span className="text-slate-400 group-hover:text-brand-500 flex-shrink-0">
+          <span className={classNames("flex-shrink-0", location.pathname.includes("/miniprogram") ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500")}>
             <Database size={20} />
           </span>
-          {!collapsed && <span className="ml-3 origin-left animate-fade-in">惟爱医疗软件架构</span>}
+          {!collapsed && <span className="ml-3 origin-left animate-fade-in">临床试验管理系统小程序</span>}
         </NavLink>
       </nav>
 
