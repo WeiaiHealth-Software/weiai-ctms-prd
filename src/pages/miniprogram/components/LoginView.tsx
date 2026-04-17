@@ -7,7 +7,7 @@ interface LoginViewProps {
 }
 
 export const LoginView: React.FC<LoginViewProps> = ({ role, onLogin }) => {
-  const [username, setUsername] = useState(role === 'doc' ? 'Dr.Li' : role === 'crc' ? 'crc01' : 'mfr01');
+  const [username, setUsername] = useState(role === 'doc' ? 'Dr.Li' : role === 'crc' ? 'CRC.Wang' : 'mfr01');
   const [password, setPassword] = useState('123456');
 
   const roleConfig = {

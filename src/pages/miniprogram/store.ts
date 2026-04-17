@@ -46,7 +46,7 @@ export const DB = {
   ],
   users: {
     doc: { name: '张三', role: 'doc' },
-    crc: { name: '王CRC', role: 'crc' },
+    crc: { name: '王同学', role: 'crc' },
     mfr: { name: '张经理', role: 'mfr' }
   },
   doctor: {
