@@ -1,4 +1,5 @@
 export const DB = {
+  events: new EventTarget(),
   project: {
     name: "青少年近视防控临床研究",
     code: "MYOPIA-2024-001",

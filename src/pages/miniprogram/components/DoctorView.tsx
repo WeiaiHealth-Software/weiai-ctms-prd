@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutGrid, User, ArrowLeft, Bell, PlusCircle, Search, Plus, ChevronRight, MapPin } from 'lucide-react';
 import classNames from 'classnames';
 import { DB, utils } from '../store';
@@ -7,7 +7,30 @@ import { LoginView } from './LoginView';
 
 export const DoctorView: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [screen, setScreen] = useState<'home' | 'appointment' | 'detail' | 'profile' | 'center' | 'projects'>('home');
+  const [screen, setScreen] = useState<'home' | 'appointment' | 'detail' | 'profile' | 'center' | 'projects' | 'notifications'>('home');
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    const handleCrcAction = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { type, patient, group } = customEvent.detail;
+      
+      const newNotif = {
+        id: Date.now(),
+        type: type,
+        title: type === 'enroll_success' ? '患者成功入组' : '患者入组失败',
+        time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+        content: type === 'enroll_success' 
+          ? `患者 ${patient.name} 已成功入组 ${group}。筛选号:S-IL0BI 受试者编号:ID-S7EZ1 随机号:R-6UZ7E 产品号:D-Z0AXV`
+          : `患者 ${patient.name} 筛选失败，原因：${customEvent.detail.reason || '不符合入组条件'}。`
+      };
+      
+      setNotifications(prev => [newNotif, ...prev]);
+    };
+
+    DB.events.addEventListener('crc_action', handleCrcAction);
+    return () => DB.events.removeEventListener('crc_action', handleCrcAction);
+  }, []);
   const [projectsFilter, setProjectsFilter] = useState<'all' | 'active' | 'ended'>('all');
   const [appointment, setAppointment] = useState({
     name: '',
@@ -16,6 +39,34 @@ export const DoctorView: React.FC = () => {
     age: '',
     diopter: ''
   });
+
+  const renderNotifications = () => (
+    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+      <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
+        <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
+          <ArrowLeft className="text-slate-600" width={22} />
+        </div>
+        <h2 className="font-bold text-[17px] w-full text-center text-slate-800 tracking-wide">消息通知</h2>
+      </div>
+
+      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
+        {notifications.length === 0 ? (
+          <div className="text-center text-slate-400 text-sm mt-20">暂无消息</div>
+        ) : (
+          notifications.map(n => (
+            <div key={n.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden">
+              <div className={`absolute top-0 left-0 w-1.5 h-full ${n.type === 'enroll_success' ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-bold text-slate-800 text-[15px]">{n.title}</h3>
+                <span className="text-[11px] text-slate-400">{n.time}</span>
+              </div>
+              <p className="text-[13px] text-slate-600 leading-relaxed">{n.content}</p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
 
   const renderHome = () => (
     <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
@@ -27,11 +78,13 @@ export const DoctorView: React.FC = () => {
             <span className="text-[11px] bg-blue-50 border border-blue-200 text-blue-600 px-2 py-0.5 rounded font-bold">医生</span>
           </div>
         </div>
-        <div className="relative">
+        <div className="relative" onClick={() => setScreen('notifications')}>
           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors">
             <Bell className="text-slate-600 w-5 h-5" />
           </div>
-          <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white"></div>
+          {notifications.length > 0 && (
+            <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
+          )}
         </div>
       </div>
       <div className="flex-1 overflow-y-auto no-scrollbar px-5 space-y-6 pb-6">
@@ -571,6 +624,7 @@ export const DoctorView: React.FC = () => {
           {screen === 'profile' && renderProfile()}
           {screen === 'center' && renderCenter()}
           {screen === 'projects' && renderProjects()}
+          {screen === 'notifications' && renderNotifications()}
         </div>
 
         <div className="bg-white border-t p-3 flex justify-around text-xs shrink-0">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutList, User, ArrowLeft, Bell, CheckCircle, Building2, FolderKanban, LogOut as LogOutIcon, ChevronRight, MapPin } from 'lucide-react';
 import classNames from 'classnames';
 import { DB } from '../store';
@@ -8,9 +8,59 @@ import { LoginView } from './LoginView';
 export const CrcView: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [tab, setTab] = useState<'home' | 'profile'>('home');
-  const [screen, setScreen] = useState<'home' | 'detail' | 'my-centers' | 'my-projects'>('home');
+  const [screen, setScreen] = useState<'home' | 'detail' | 'my-centers' | 'my-projects' | 'notifications'>('home');
   const [currentAppt, setCurrentAppt] = useState<any>(null);
   const [showModal, setShowModal] = useState<'success' | 'fail' | null>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    const handleDocAction = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { type, patient } = customEvent.detail;
+      
+      if (type === 'new_appointment') {
+        const newNotif = {
+          id: Date.now(),
+          title: '新预约申请',
+          time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+          content: `李医生提交了患者 ${patient.name} 的预约申请，请及时处理。`
+        };
+        
+        setNotifications(prev => [newNotif, ...prev]);
+      }
+    };
+
+    DB.events.addEventListener('doc_action', handleDocAction);
+    return () => DB.events.removeEventListener('doc_action', handleDocAction);
+  }, []);
+
+  const renderNotifications = () => (
+    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+      <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
+        <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
+          <ArrowLeft className="text-slate-600" width={22} />
+        </div>
+        <h2 className="font-bold text-[17px] w-full text-center text-slate-800 tracking-wide">消息通知</h2>
+      </div>
+
+      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
+        {notifications.length === 0 ? (
+          <div className="text-center text-slate-400 text-sm mt-20">暂无消息</div>
+        ) : (
+          notifications.map(n => (
+            <div key={n.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-bold text-slate-800 text-[15px]">{n.title}</h3>
+                <span className="text-[11px] text-slate-400">{n.time}</span>
+              </div>
+              <p className="text-[13px] text-slate-600 leading-relaxed">{n.content}</p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
 
   const renderHome = () => (
     <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
@@ -22,13 +72,13 @@ export const CrcView: React.FC = () => {
             <span className="text-[11px] bg-blue-50 border border-blue-200 text-blue-600 px-2 py-0.5 rounded font-bold">CRC</span>
           </div>
         </div>
-        <div className="relative">
+        <div className="relative" onClick={() => setScreen('notifications')}>
           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors">
             <Bell className="text-slate-600 w-5 h-5" />
           </div>
-          <div className="absolute top-2 right-2 w-4 h-4 bg-rose-500 rounded-full border-2 border-white flex items-center justify-center">
-            <span className="text-[8px] text-white font-bold transform scale-90">4</span>
-          </div>
+          {notifications.length > 0 && (
+            <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
+          )}
         </div>
       </div>
 
@@ -129,6 +179,30 @@ export const CrcView: React.FC = () => {
       </div>
     </div>
   );
+  const handleEnrollSuccess = () => {
+    DB.events.dispatchEvent(new CustomEvent('crc_action', {
+      detail: {
+        type: 'enroll_success',
+        patient: { name: currentAppt?.name || '张伟' },
+        group: '试验组 A'
+      }
+    }));
+    setShowModal(null);
+    setScreen('home');
+  };
+
+  const handleEnrollFail = () => {
+    DB.events.dispatchEvent(new CustomEvent('crc_action', {
+      detail: {
+        type: 'enroll_fail',
+        patient: { name: currentAppt?.name || '张伟' },
+        reason: '因个人原因退筛'
+      }
+    }));
+    setShowModal(null);
+    setScreen('home');
+  };
+
   const renderDetail = () => {
     const isReady = currentAppt?.id === '102';
 
@@ -238,10 +312,7 @@ export const CrcView: React.FC = () => {
                   </ul>
                   <div className="flex gap-3">
                     <button className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-[15px] bg-white" onClick={() => setShowModal(null)}>取消</button>
-                    <button className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-[15px] shadow-lg shadow-emerald-600/30" onClick={() => {
-                      setShowModal(null);
-                      setScreen('home');
-                    }}>确认执行</button>
+                    <button className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-[15px] shadow-lg shadow-emerald-600/30" onClick={handleEnrollSuccess}>确认执行</button>
                   </div>
                 </>
               ) : (
@@ -252,10 +323,7 @@ export const CrcView: React.FC = () => {
                     className="w-full bg-[#f8f9fa] border border-slate-200 rounded-xl p-4 text-[13px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/50 mb-6 min-h-[120px] resize-none placeholder:text-slate-400"
                     placeholder="请详细描述无法入组的原因..."
                   ></textarea>
-                  <button className="w-full py-3.5 rounded-xl bg-[#dc2626] text-white font-bold text-[16px] shadow-lg shadow-rose-600/30" onClick={() => {
-                    setShowModal(null);
-                    setScreen('home');
-                  }}>确认取消入组</button>
+                  <button className="w-full py-3.5 rounded-xl bg-[#dc2626] text-white font-bold text-[16px] shadow-lg shadow-rose-600/30" onClick={handleEnrollFail}>确认取消入组</button>
                 </>
               )}
             </div>
@@ -420,6 +488,7 @@ export const CrcView: React.FC = () => {
           {screen === 'detail' && renderDetail()}
           {screen === 'my-centers' && renderMyCenters()}
           {screen === 'my-projects' && renderMyProjects()}
+          {screen === 'notifications' && renderNotifications()}
         </div>
 
         {screen === 'home' && (

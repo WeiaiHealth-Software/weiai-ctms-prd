@@ -5,10 +5,10 @@ import classNames from 'classnames';
 
 interface HomePhoneProps {
   onSelectRole: (role: 'doc' | 'crc' | 'mfr') => void;
-  activeRole: 'doc' | 'crc' | 'mfr' | null;
+  activeRoles: ('doc' | 'crc' | 'mfr')[];
 }
 
-export const HomePhone: React.FC<HomePhoneProps> = ({ onSelectRole, activeRole }) => {
+export const HomePhone: React.FC<HomePhoneProps> = ({ onSelectRole, activeRoles }) => {
   return (
     <PhoneContainer>
       <div className="flex-1 overflow-y-auto no-scrollbar bg-white flex flex-col justify-center p-6 space-y-6 h-full relative">
@@ -22,11 +22,11 @@ export const HomePhone: React.FC<HomePhoneProps> = ({ onSelectRole, activeRole }
 
         <div onClick={() => onSelectRole('doc')} className={classNames(
           "bg-white p-4 rounded-xl shadow-md border flex items-center gap-4 cursor-pointer transition-all group",
-          activeRole === 'doc' ? "border-blue-500 ring-2 ring-blue-100" : "border-gray-100 hover:bg-gray-50"
+          activeRoles.includes('doc') ? "border-blue-500 ring-2 ring-blue-100 opacity-50 pointer-events-none" : "border-gray-100 hover:bg-gray-50"
         )}>
           <div className={classNames(
             "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
-            activeRole === 'doc' ? "bg-blue-600 text-white" : "bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white"
+            activeRoles.includes('doc') ? "bg-blue-600 text-white" : "bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white"
           )}>
             <Stethoscope className="w-7 h-7" />
           </div>
@@ -34,16 +34,16 @@ export const HomePhone: React.FC<HomePhoneProps> = ({ onSelectRole, activeRole }
             <h3 className="font-bold text-gray-800 text-lg">医生角色面板</h3>
             <p className="text-xs text-gray-400">Doctor / PI / Sub-I</p>
           </div>
-          <ChevronRight className={classNames("transition-colors", activeRole === 'doc' ? "text-blue-500" : "text-gray-300 group-hover:text-blue-500")} />
+          <ChevronRight className={classNames("transition-colors", activeRoles.includes('doc') ? "text-blue-500" : "text-gray-300 group-hover:text-blue-500")} />
         </div>
 
         <div onClick={() => onSelectRole('crc')} className={classNames(
           "bg-white p-4 rounded-xl shadow-md border flex items-center gap-4 cursor-pointer transition-all group",
-          activeRole === 'crc' ? "border-emerald-500 ring-2 ring-emerald-100" : "border-gray-100 hover:bg-gray-50"
+          activeRoles.includes('crc') ? "border-emerald-500 ring-2 ring-emerald-100 opacity-50 pointer-events-none" : "border-gray-100 hover:bg-gray-50"
         )}>
           <div className={classNames(
             "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
-            activeRole === 'crc' ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white"
+            activeRoles.includes('crc') ? "bg-emerald-600 text-white" : "bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white"
           )}>
             <ClipboardCheck className="w-7 h-7" />
           </div>
@@ -51,16 +51,16 @@ export const HomePhone: React.FC<HomePhoneProps> = ({ onSelectRole, activeRole }
             <h3 className="font-bold text-gray-800 text-lg">CRC角色面板</h3>
             <p className="text-xs text-gray-400">Coordinator</p>
           </div>
-          <ChevronRight className={classNames("transition-colors", activeRole === 'crc' ? "text-emerald-500" : "text-gray-300 group-hover:text-emerald-500")} />
+          <ChevronRight className={classNames("transition-colors", activeRoles.includes('crc') ? "text-emerald-500" : "text-gray-300 group-hover:text-emerald-500")} />
         </div>
 
         <div onClick={() => onSelectRole('mfr')} className={classNames(
           "bg-white p-4 rounded-xl shadow-md border flex items-center gap-4 cursor-pointer transition-all group",
-          activeRole === 'mfr' ? "border-purple-500 ring-2 ring-purple-100" : "border-gray-100 hover:bg-gray-50"
+          activeRoles.includes('mfr') ? "border-purple-500 ring-2 ring-purple-100 opacity-50 pointer-events-none" : "border-gray-100 hover:bg-gray-50"
         )}>
           <div className={classNames(
             "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
-            activeRole === 'mfr' ? "bg-purple-600 text-white" : "bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white"
+            activeRoles.includes('mfr') ? "bg-purple-600 text-white" : "bg-purple-100 text-purple-600 group-hover:bg-purple-600 group-hover:text-white"
           )}>
             <Building2 className="w-7 h-7" />
           </div>
@@ -68,7 +68,7 @@ export const HomePhone: React.FC<HomePhoneProps> = ({ onSelectRole, activeRole }
             <h3 className="font-bold text-gray-800 text-lg">厂家角色面板</h3>
             <p className="text-xs text-gray-400">Sponsor / Manager</p>
           </div>
-          <ChevronRight className={classNames("transition-colors", activeRole === 'mfr' ? "text-purple-500" : "text-gray-300 group-hover:text-purple-500")} />
+          <ChevronRight className={classNames("transition-colors", activeRoles.includes('mfr') ? "text-purple-500" : "text-gray-300 group-hover:text-purple-500")} />
         </div>
 
         <div className="absolute bottom-6 left-0 w-full text-center text-xs text-slate-400">
