@@ -41,7 +41,7 @@ export const CrcView: React.FC = () => {
     return () => DB.events.removeEventListener('db_updated', handleDbUpdated);
   }, []);
 
-  const renderHome = () => (
+  const renderNotifications = () => (
     <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
       <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
         <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
