@@ -132,7 +132,7 @@ export const Users: React.FC = () => {
   };
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="space-y-6 p-6">
       {/* 搜索与筛选区域 */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-end">
@@ -258,10 +258,11 @@ export const Users: React.FC = () => {
         </div>
       </div>
 
+      {/* 新增用户抽屉 */}
       {addOpen && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-slate-900/35 backdrop-blur-sm" onClick={() => setAddOpen(false)}></div>
-          <div className="absolute inset-y-0 right-0 w-full sm:w-[420px] bg-white border-l border-slate-200 shadow-2xl animate-fade-in-right flex flex-col">
+          <div className="absolute inset-y-0 right-0 w-full sm:w-[420px] bg-white border-l border-slate-200 shadow-2xl flex flex-col">
             <div className="px-6 py-5 border-b border-slate-100 flex items-start justify-between">
               <div>
                 <div className="text-lg font-black text-slate-900">新增用户</div>

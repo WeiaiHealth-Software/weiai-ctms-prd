@@ -59,7 +59,7 @@ export const ProjectDetail: React.FC = () => {
 
   if (!project) {
     return (
-      <div className="animate-fade-in">
+      <div>
         <div className="bg-white border border-slate-200 rounded-2xl p-6">
           <div className="text-lg font-bold text-slate-800 mb-2">未找到该项目</div>
           <button
@@ -176,7 +176,7 @@ export const ProjectDetail: React.FC = () => {
   };
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate('/index/projects')}

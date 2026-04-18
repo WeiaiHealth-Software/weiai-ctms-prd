@@ -14,7 +14,7 @@ export const Step2Dimensions: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8">
       <div>
         <h3 className="text-lg font-bold text-slate-900 mb-2">维度选择</h3>
         <p className="text-sm text-slate-500 mb-6">选择系统维护的自定义维度名称和选项，维度将决定后续的分组因子组合。</p>

@@ -61,7 +61,7 @@ export const DoctorView: React.FC = () => {
   };
 
   const renderNotifications = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
       <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
         <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
           <ArrowLeft className="text-slate-600" width={22} />
@@ -89,7 +89,7 @@ export const DoctorView: React.FC = () => {
   );
 
   const renderHome = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
       <div className="px-5 pt-12 pb-4 flex justify-between items-center">
         <div>
           <div className="text-slate-600 text-lg">Hi,</div>
@@ -160,7 +160,7 @@ export const DoctorView: React.FC = () => {
     const diopterOptions = DB.project.dimensions.diopter;
 
     return (
-      <div className="flex flex-col h-full bg-white animate-fade-in relative z-10">
+      <div className="flex flex-col h-full bg-white relative z-10">
         <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
           <div
             className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors"
@@ -272,7 +272,7 @@ export const DoctorView: React.FC = () => {
   };
 
   const renderDetail = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
       <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
         <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
           <ArrowLeft className="text-slate-600" width={22} />
@@ -431,7 +431,7 @@ export const DoctorView: React.FC = () => {
   );
 
   const renderProfile = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
       <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-10 pb-24">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[20px] font-black">
@@ -484,7 +484,7 @@ export const DoctorView: React.FC = () => {
   );
 
   const renderCenter = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
       <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
         <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('profile')}>
           <ArrowLeft className="text-slate-600" width={22} />
@@ -532,7 +532,7 @@ export const DoctorView: React.FC = () => {
         : DB.doctor.projects.filter(p => (projectsFilter === 'active' ? p.status === 'active' : p.status === 'ended'));
 
     return (
-      <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+      <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
         <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
           <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('profile')}>
             <ArrowLeft className="text-slate-600" width={22} />

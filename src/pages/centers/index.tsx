@@ -22,7 +22,7 @@ export const Centers: React.FC = () => {
   }));
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex justify-end mb-4">
         <button className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-brand-500/30 flex items-center gap-2 transition-all font-bold">
           <Plus className="w-4 h-4" /> 新增中心

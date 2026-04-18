@@ -28,7 +28,7 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="space-y-6 p-6">
       {/* Top 3 cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">

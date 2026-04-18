@@ -145,7 +145,7 @@ export const Roles: React.FC = () => {
   );
 
   return (
-    <div className="animate-fade-in h-[calc(100vh-140px)] flex flex-col">
+    <div className="h-[calc(100vh-140px)] flex flex-col p-6">
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-1 overflow-hidden">
         {/* Left: Role List */}
         <div className="w-[300px] border-r border-slate-100 bg-slate-50/30 flex flex-col flex-shrink-0">

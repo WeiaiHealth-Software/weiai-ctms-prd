@@ -119,7 +119,7 @@ export const CenterDetail: React.FC = () => {
 
   if (!center) {
     return (
-      <div className="animate-fade-in">
+      <div>
         <div className="bg-white border border-slate-200 rounded-2xl p-6">
           <div className="text-lg font-bold text-slate-800 mb-2">未找到该中心</div>
           <button className="px-4 py-2 rounded-xl bg-slate-800 text-white font-bold" onClick={() => navigate('/index/centers')}>
@@ -133,7 +133,7 @@ export const CenterDetail: React.FC = () => {
   const doctors = (center.doctors[activeDept] || []) as CenterStaff[];
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <button onClick={() => navigate('/index/centers')} className="flex items-center text-sm text-slate-500 hover:text-brand-600 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-1" /> 返回中心列表

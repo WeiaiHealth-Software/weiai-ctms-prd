@@ -44,12 +44,11 @@ export const Sidebar: React.FC = () => {
       collapsed ? "w-20" : "w-72"
     )}>
       <div className="relative h-20 flex items-center px-6 border-b border-slate-100 overflow-hidden whitespace-nowrap">
-        <div className="w-8 h-8 min-w-[2rem] rounded-lg flex items-center justify-center mr-3 bg-brand-600 text-white font-bold flex-shrink-0">
-          {/* 这里可以放 Logo SVG，暂时用文字代替 */}
-          W
+        <div className="w-8 h-8 min-w-[2rem] rounded-lg flex items-center justify-center mr-3 font-bold flex-shrink-0">
+          <img src="weiai.svg" alt="Weiai" />
         </div>
         {!collapsed && (
-          <div className="flex flex-col gap-2 origin-left animate-fade-in">
+          <div className="flex flex-col gap-2 origin-left">
             <h1 className="font-bold text-lg tracking-wide text-slate-800">惟翎 · 科研管理系统</h1>
           </div>
         )}
@@ -92,7 +91,7 @@ export const Sidebar: React.FC = () => {
           </button>
           
           {iwrsOpen && !collapsed && (
-            <div className="pl-4 space-y-1 animate-fade-in">
+            <div className="pl-4 space-y-1">
               {iwrsItems.map(item => (
                 <NavLink
                   key={item.path}

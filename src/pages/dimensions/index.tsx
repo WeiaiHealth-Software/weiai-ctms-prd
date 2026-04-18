@@ -26,7 +26,7 @@ export const Dimensions: React.FC = () => {
   const filteredDimensions = dimensionsData.filter(dim => filter === 'all' || dim.type === filter);
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
         <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-200/60 w-full sm:w-auto">
           {[

@@ -26,7 +26,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ role, onLogin }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#f8f9fa] p-8 justify-center animate-fade-in relative z-10">
+    <div className="flex flex-col h-full bg-[#f8f9fa] p-8 justify-center relative z-10">
       <div className="text-center mb-12">
         <div className={`w-20 h-20 rounded-2xl mx-auto flex items-center justify-center mb-6 ${config.bgClass} ${config.iconColor}`}>
           {config.icon}

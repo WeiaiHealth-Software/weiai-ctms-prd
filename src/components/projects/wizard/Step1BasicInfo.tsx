@@ -26,7 +26,7 @@ export const Step1BasicInfo: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-8 gap-6">
         <div className="md:col-span-6">
           <label className="block text-sm font-bold text-slate-700 mb-2">项目名称 <span className="text-red-500">*</span></label>

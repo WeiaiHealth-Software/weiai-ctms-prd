@@ -69,7 +69,7 @@ export const Departments: React.FC = () => {
   };
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex justify-start mb-6">
         <div className="bg-white p-3 rounded-2xl border border-slate-200 flex items-center gap-3 shadow-sm w-full max-w-2xl">
           <div className="relative" ref={dropdownRef}>

@@ -41,8 +41,8 @@ export const CrcView: React.FC = () => {
     return () => DB.events.removeEventListener('db_updated', handleDbUpdated);
   }, []);
 
-  const renderNotifications = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+  const renderHome = () => (
+    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
       <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
         <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
           <ArrowLeft className="text-slate-600" width={22} />
@@ -82,7 +82,7 @@ export const CrcView: React.FC = () => {
     const counterText = pendingCount > 99 ? '99+' : String(pendingCount);
 
     return (
-      <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+      <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
         <div className="px-5 pt-12 pb-4 flex justify-between items-center">
         <div>
           <div className="text-slate-600 text-lg">Hi,</div>
@@ -154,7 +154,7 @@ export const CrcView: React.FC = () => {
   };
 
   const renderProfile = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
       <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-12 space-y-4">
         
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-5">
@@ -232,7 +232,7 @@ export const CrcView: React.FC = () => {
     const isReady = currentAppt?.status === 'pending_confirm';
 
     return (
-      <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+      <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
         <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
           <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
             <ArrowLeft className="text-slate-600" width={22} />
@@ -359,7 +359,7 @@ export const CrcView: React.FC = () => {
   };
 
   const renderMyCenters = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
       <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
         <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
           <ArrowLeft className="text-slate-600" width={22} />
@@ -400,7 +400,7 @@ export const CrcView: React.FC = () => {
   );
 
   const renderMyProjects = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] animate-fade-in relative z-10">
+    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
       <div className="bg-white pt-10 px-3 pb-0 flex flex-col shadow-sm z-20 flex-none relative">
         <div className="flex items-center mb-4">
           <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
