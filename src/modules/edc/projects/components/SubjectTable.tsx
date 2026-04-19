@@ -1,8 +1,8 @@
 import { Eye } from 'lucide-react'
-import { Link, useParams } from 'react-router'
-import type { Subject } from '../../../types/subject'
-import { classNames } from '../../../lib/classNames'
-import { statusClassMap } from '../../../lib/statusMap'
+import { Link, useParams } from 'react-router-dom'
+import type { Subject } from '../../../../types/subject'
+import { classNames } from '../../../../lib/classNames'
+import { statusClassMap } from '../../../../lib/statusMap'
 
 type SubjectTableProps = {
   subjects: Subject[]

@@ -3,7 +3,7 @@ import Drawer from '../../../../components/overlay/Drawer'
 import SectionCard from '../../../../components/common/SectionCard'
 import InputBlock from '../../../../components/form/InputBlock'
 import SelectBlock from '../../../../components/form/SelectBlock'
-import type { Project } from '../../../types/project'
+import type { Project } from '../../../../types/project'
 
 type SubjectDrawerProps = {
   open: boolean

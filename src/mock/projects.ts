@@ -45,16 +45,16 @@ export type EnrollmentRow = {
 export const PROJECTS: ProjectSummary[] = [
   {
     id: 'p1',
-    code: 'CHILD_ELESCREEN',
+    code: 'XW09',
     status: '进行中',
-    title: '光刻微结构近视管理镜片在儿童青少年近视防控中的有效性及佩戴安全舒适性的随机对照临床研究',
+    title: '光刻微结构近视管理镜片在儿童青少年近视防控中的随机对照临床研究',
     date: '2025-12-25',
     description:
       '主要目的：评价不同光刻微结构近视管理镜片对控制儿童青少年近视进展的有效性和佩戴的安全舒适性，探索对近视防控有效的离焦微透镜设计及光刻微结构近视管理镜片应用于近视防控的可行性。次要目的：了解和分析儿童青少年近视防控诊疗情况和相关影响因素，例如初发年龄、性别、佩戴时长、用眼习惯等。',
-    leader: '徐医生',
-    collab: '王医生（徐州眼视光中心）、李医生（上海眼病中心）',
+    leader: '徐蔚',
+    collab: '王医生（徐州眼视光中心）、李医生（上海眼病防治中心）',
     crc: '张同学',
-    centers: ['徐州眼视光中心', '上海眼科中心'],
+    centers: ['徐州眼视光中心', '上海市眼病防治中心'],
     inclusionCriteria: [
       '年龄：6-14岁',
       '使用1%盐酸环喷托酯滴眼液（赛飞杰）睫状肌麻痹后，双眼均在-0.50D～-4.00D，双眼柱镜≤1.50D，屈光参差≤1.50D，最佳矫正视力5.0以上',
@@ -133,7 +133,7 @@ export const PROJECTS: ProjectSummary[] = [
 export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
   p1: [
     {
-      id: 'CHILD_ELESCREEN_0001',
+      id: 'XW09_0001',
       screenId: '0001',
       randomId: 'R-1001',
       drugId: 'D-A001',
@@ -147,7 +147,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '李医生'
     },
     {
-      id: 'CHILD_ELESCREEN_0002',
+      id: 'XW09_0002',
       screenId: '0002',
       randomId: 'R-1002',
       drugId: 'D-B001',
@@ -175,7 +175,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '王医生'
     },
     {
-      id: 'CHILD_ELESCREEN_0003',
+      id: 'XW09_0003',
       screenId: '0004',
       randomId: 'R-1003',
       drugId: 'D-A002',
@@ -189,7 +189,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '张主任'
     },
     {
-      id: 'CHILD_ELESCREEN_0004',
+      id: 'XW09_0004',
       screenId: '0005',
       randomId: 'R-1004',
       drugId: 'D-A003',
@@ -217,7 +217,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '王医生'
     },
     {
-      id: 'CHILD_ELESCREEN_0005',
+      id: 'XW09_0005',
       screenId: '0007',
       randomId: 'R-1005',
       drugId: 'D-B002',
@@ -231,7 +231,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '张主任'
     },
     {
-      id: 'CHILD_ELESCREEN_0006',
+      id: 'XW09_0006',
       screenId: '0008',
       randomId: 'R-1006',
       drugId: 'D-A004',
@@ -245,7 +245,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '李医生'
     },
     {
-      id: 'CHILD_ELESCREEN_0007',
+      id: 'XW09_0007',
       screenId: '0009',
       randomId: 'R-1007',
       drugId: 'D-B003',
@@ -259,7 +259,7 @@ export const ENROLLMENT_DATA: Record<string, EnrollmentRow[]> = {
       doctor: '赵医生'
     },
     {
-      id: 'CHILD_ELESCREEN_0008',
+      id: 'XW09_0008',
       screenId: '0010',
       randomId: 'R-1008',
       drugId: 'D-A005',

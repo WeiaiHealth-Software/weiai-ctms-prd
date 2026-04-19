@@ -2,21 +2,21 @@ import { Plus, Search, RefreshCw, Info } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useMemo, useState, useEffect } from 'react'
 import { useHeaderStore } from '../../../store/useHeaderStore'
+import { useEdcProjectStore } from '../../../store/useEdcProjectStore'
 import SectionCard from '../../../components/common/SectionCard'
 import StatCard from '../../../modules/edc/dashboard/StatCard'
 import Drawer from '../../../components/overlay/Drawer'
-import { projects as initialProjects } from '../../../data/edc/projects'
 import { PROJECTS as iwrsProjects, ProjectSummary } from '../../../mock/projects'
 import { classNames } from '../../../lib/classNames'
 import { statusClassMap } from '../../../lib/statusMap'
 import type { Project } from '../../../types/project'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 8
 
 export function ProjectListPage() {
   const setTitle = useHeaderStore(state => state.setTitle)
+  const { projects, addProject, removeProject } = useEdcProjectStore()
   const [search, setSearch] = useState('')
-  const [projects, setProjects] = useState(initialProjects)
   const [currentPage, setCurrentPage] = useState(1)
   const [isSyncDrawerOpen, setIsSyncDrawerOpen] = useState(false)
 
@@ -31,7 +31,6 @@ export function ProjectListPage() {
     // Check if it's already synced
     const exists = projects.find(p => p.code === iwrsProject.code)
     if (exists) {
-      alert(`项目 [${iwrsProject.code}] 已经存在于 EDC 系统中！`)
       return
     }
 
@@ -47,18 +46,15 @@ export function ProjectListPage() {
       desc: iwrsProject.description,
     }
 
-    setProjects(prev => [newEdcProject, ...prev])
-    alert(`项目 [${iwrsProject.code}] 同步成功！`)
+    addProject(newEdcProject)
   }
 
   const handleDelete = (projectId: string) => {
     const targetProject = projects.find((project) => project.id === projectId)
     if (!targetProject) return
 
-    const shouldDelete = window.confirm(`确认删除项目「${targetProject.name}」吗？`)
-    if (!shouldDelete) return
-
-    setProjects((prevProjects) => prevProjects.filter((project) => project.id !== projectId))
+    // IDE Webview issue workaround: avoid using window.confirm
+    removeProject(projectId)
   }
 
   const filteredProjects = useMemo(() => {
@@ -99,37 +95,37 @@ export function ProjectListPage() {
           title="进行中项目"
           value={String(stats.ongoingCount)}
           hint="当前核心执行项目"
-          className="border-emerald-200 bg-emerald-50"
+          className="border-emerald-200 bg-emerald-50 py-4"
           titleClassName="text-emerald-700"
-          valueClassName="text-emerald-800"
-          hintClassName="text-emerald-600"
+          valueClassName="text-emerald-800 text-xl"
+          hintClassName="text-emerald-600 mt-1"
         />
         <StatCard
           title="筹备中项目"
           value={String(stats.preparingCount)}
           hint="待配置表单与访视"
-          className="border-amber-200 bg-amber-50"
+          className="border-amber-200 bg-amber-50 py-4"
           titleClassName="text-amber-700"
-          valueClassName="text-amber-800"
-          hintClassName="text-amber-600"
+          valueClassName="text-amber-800 text-xl"
+          hintClassName="text-amber-600 mt-1"
         />
         <StatCard
           title="已结束项目"
           value={String(stats.finishedCount)}
           hint="已停止入组与随访"
-          className="border-slate-200 bg-slate-100"
+          className="border-slate-200 bg-slate-100 py-4"
           titleClassName="text-slate-600"
-          valueClassName="text-slate-700"
-          hintClassName="text-slate-500"
+          valueClassName="text-slate-700 text-xl"
+          hintClassName="text-slate-500 mt-1"
         />
         <StatCard
           title="累计受试者"
           value={String(stats.totalEnrolled)}
           hint="当前系统内所有项目合计"
-          className="border-blue-200 bg-blue-50"
+          className="border-blue-200 bg-blue-50 py-4"
           titleClassName="text-blue-700"
-          valueClassName="text-blue-800"
-          hintClassName="text-blue-600"
+          valueClassName="text-blue-800 text-xl"
+          hintClassName="text-blue-600 mt-1"
         />
       </div>
 
@@ -186,7 +182,16 @@ export function ProjectListPage() {
               {filteredProjects.length > 0 ? (
                 paginatedProjects.map((project) => (
                   <tr key={project.id} className="hover:bg-slate-50/80">
-                    <td className="px-4 py-4 font-medium text-slate-800">{project.name}</td>
+                    <td className="px-4 py-4 font-medium text-slate-800">
+                      <div className="flex items-center gap-2">
+                        {project.name}
+                        {iwrsProjects.some(iwrs => iwrs.code === project.code) && (
+                          <span className="text-xs text-indigo-600 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded-md font-medium shrink-0">
+                            已同步
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-4 text-slate-600 font-mono">{project.code}</td>
                     <td className="px-4 py-4 text-slate-600">{project.pi}</td>
                     {/* <td className="px-4 py-4 text-slate-600">{project.sponsor}</td> */}
@@ -281,7 +286,7 @@ export function ProjectListPage() {
         onClose={() => setIsSyncDrawerOpen(false)}
         title="同步 IWRS 项目"
         subtitle="将中央随机化系统中的项目同步至 EDC 电子数据采集系统"
-        width={800}
+        width="720px"
       >
         <div className="space-y-4">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">

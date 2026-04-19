@@ -1,15 +1,16 @@
 import { ArrowLeft, Filter, MoreHorizontal, UserPlus } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router'
-import SectionCard from '../../components/common/SectionCard'
-import TabButton from '../../components/common/TabButton'
-import StatCard from '../../modules/dashboard/StatCard'
-import SubjectTable from '../../modules/projects/components/SubjectTable'
-import SubjectDrawer from '../../modules/projects/drawers/SubjectDrawer'
-import { projects } from '../../data/projects'
-import { projectSubjects } from '../../data/subjects'
-import { classNames } from '../../lib/classNames'
-import { statusClassMap } from '../../lib/statusMap'
+import { useMemo, useState, useEffect } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { useEdcProjectStore } from '../../../store/useEdcProjectStore'
+import { useHeaderStore } from '../../../store/useHeaderStore'
+import SectionCard from '../../../components/common/SectionCard'
+import TabButton from '../../../components/common/TabButton'
+import StatCard from '../../../modules/edc/dashboard/StatCard'
+import SubjectTable from '../../../modules/edc/projects/components/SubjectTable'
+import SubjectDrawer from '../../../modules/edc/projects/drawers/SubjectDrawer'
+import { projectSubjects } from '../../../data/edc/subjects'
+import { classNames } from '../../../lib/classNames'
+import { statusClassMap } from '../../../lib/statusMap'
 
 type ProjectTabKey = 'subjects' | 'visits' | 'forms' | 'settings'
 
@@ -27,11 +28,22 @@ const projectBoundForms = [
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams()
+  const setTitle = useHeaderStore(state => state.setTitle)
+  const projects = useEdcProjectStore(state => state.projects)
   const [tab, setTab] = useState<ProjectTabKey>('subjects')
   const [showSubjectDrawer, setShowSubjectDrawer] = useState(false)
 
-  const project = useMemo(() => projects.find((p) => p.id === projectId) || null, [projectId])
+  const project = useMemo(() => projects.find((p) => p.id === projectId) || null, [projects, projectId])
   const subjects = projectId ? projectSubjects[projectId] || [] : []
+
+  useEffect(() => {
+    if (project) {
+      setTitle('项目详情', `项目代码：${project.code}`, [
+        { text: '开发者账户', color: 'indigo' },
+        { text: '超级管理员', color: 'purple' }
+      ])
+    }
+  }, [project, setTitle])
 
   if (!project) {
     return <div className="text-sm text-slate-500">未找到项目</div>
@@ -39,8 +51,8 @@ export default function ProjectDetailPage() {
 
   return (
     <>
-      <div className="space-y-6">
-        <Link to="/projects" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-700">
+      <div className="space-y-6 p-6">
+        <Link to="/index/edc/projects" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-700">
           <ArrowLeft className="w-4 h-4" />
           返回项目列表
         </Link>

@@ -8,7 +8,7 @@ type DrawerProps = {
   onClose: () => void
   children: React.ReactNode
   footer?: React.ReactNode
-  width?: number
+  width?: number | string
 }
 
 export default function Drawer({
@@ -23,9 +23,12 @@ export default function Drawer({
   if (!open) return null
 
   return (
-    <div className={`fixed inset-0 z-50 w-${width}`}>
+    <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-slate-900/35" onClick={onClose} />
-      <div className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl border-l border-slate-200 flex flex-col">
+      <div 
+        className="relative h-full bg-white shadow-2xl border-l border-slate-200 flex flex-col"
+        style={{ width: typeof width === 'number' ? `${width}px` : width, maxWidth: '100vw' }}
+      >
         <div className="px-6 py-5 border-b border-slate-200 flex items-start justify-between gap-4">
           <div>
             <div className="text-lg font-bold text-slate-900">{title}</div>
