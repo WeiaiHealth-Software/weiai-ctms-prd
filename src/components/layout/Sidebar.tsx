@@ -13,13 +13,17 @@ import {
   RefreshCw,
   ChevronDown,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  ClipboardList,
+  CalendarCheck,
+  FileBox
 } from 'lucide-react';
 import classNames from 'classnames';
 
 export const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [iwrsOpen, setIwrsOpen] = useState(true);
+  const [edcOpen, setEdcOpen] = useState(true);
   const location = useLocation();
 
   const navItems = [
@@ -29,6 +33,12 @@ export const Sidebar: React.FC = () => {
   const iwrsItems = [
     { path: '/index/projects', icon: <Folders size={20} />, label: '项目管理' },
     { path: '/index/dimensions', icon: <SlidersHorizontal size={20} />, label: '维度管理' },
+  ];
+
+  const edcItems = [
+    { path: '/index/edc/projects', icon: <Folders size={20} />, label: '项目管理' },
+    { path: '/index/edc/appointments', icon: <CalendarCheck size={20} />, label: '预约复查管理' },
+    { path: '/index/edc/templates', icon: <FileBox size={20} />, label: '表单样板间' },
   ];
 
   const otherItems = [
@@ -68,7 +78,7 @@ export const Sidebar: React.FC = () => {
             <span className={classNames("flex-shrink-0", location.pathname === item.path ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500")}>
               {item.icon}
             </span>
-            {!collapsed && <span className="ml-3 origin-left animate-fade-in">{item.label}</span>}
+            {!collapsed && <span className="ml-3 origin-left">{item.label}</span>}
           </NavLink>
         ))}
 
@@ -82,7 +92,7 @@ export const Sidebar: React.FC = () => {
             </span>
             {!collapsed && (
               <>
-                <span className="ml-3 flex-1 text-left animate-fade-in">IWRS 中央随机化</span>
+                <span className="ml-3 flex-1 text-left">IWRS 中央随机化</span>
                 <span className={classNames("transition-transform duration-300", iwrsOpen ? "rotate-180" : "")}>
                   <ChevronDown size={16} />
                 </span>
@@ -93,6 +103,45 @@ export const Sidebar: React.FC = () => {
           {iwrsOpen && !collapsed && (
             <div className="pl-4 space-y-1">
               {iwrsItems.map(item => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) => classNames(
+                    "flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+                    isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
+                  )}
+                >
+                  <span className={classNames("flex-shrink-0", location.pathname.includes(item.path) ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500")}>
+                    {item.icon}
+                  </span>
+                  <span className="ml-3">{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-1">
+          <button
+            onClick={() => setEdcOpen(!edcOpen)}
+            className="w-full flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-brand-600 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden"
+          >
+            <span className="text-slate-400 group-hover:text-brand-500 flex-shrink-0">
+              <ClipboardList size={20} />
+            </span>
+            {!collapsed && (
+              <>
+                <span className="ml-3 flex-1 text-left">EDC 电子数据采集</span>
+                <span className={classNames("transition-transform duration-300", edcOpen ? "rotate-180" : "")}>
+                  <ChevronDown size={16} />
+                </span>
+              </>
+            )}
+          </button>
+          
+          {edcOpen && !collapsed && (
+            <div className="pl-4 space-y-1">
+              {edcItems.map(item => (
                 <NavLink
                   key={item.path}
                   to={item.path}
@@ -123,7 +172,7 @@ export const Sidebar: React.FC = () => {
             <span className={classNames("flex-shrink-0", location.pathname.includes(item.path) ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500")}>
               {item.icon}
             </span>
-            {!collapsed && <span className="ml-3 origin-left animate-fade-in">{item.label}</span>}
+            {!collapsed && <span className="ml-3 origin-left">{item.label}</span>}
           </NavLink>
         ))}
 
@@ -138,7 +187,7 @@ export const Sidebar: React.FC = () => {
           <span className={classNames("flex-shrink-0", location.pathname.includes("/miniprogram") ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500")}>
             <Database size={20} />
           </span>
-          {!collapsed && <span className="ml-3 origin-left animate-fade-in">临床试验管理系统小程序</span>}
+          {!collapsed && <span className="ml-3 origin-left">临床试验管理系统小程序</span>}
         </NavLink>
       </nav>
 
@@ -148,7 +197,7 @@ export const Sidebar: React.FC = () => {
             <div className="w-8 h-8 min-w-[2rem] rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-brand-600 group-hover:border-brand-200 transition-all shadow-sm">
               <RefreshCw size={16} className="group-hover:rotate-180 transition-transform duration-700" />
             </div>
-            <div className="whitespace-nowrap animate-fade-in">
+            <div className="whitespace-nowrap">
               <p className="text-xs font-bold text-slate-600 font-mono">v1.0.0</p>
               <p className="text-[10px] text-slate-400 font-mono">react-migrated</p>
             </div>

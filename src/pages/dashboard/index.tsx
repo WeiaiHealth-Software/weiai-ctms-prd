@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import Chart from 'react-apexcharts';
 import { useHeaderStore } from '../../store/useHeaderStore';
-import { ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
+import { ArrowUp, ArrowDown, RefreshCw, Users, FileCheck, Clock } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const setTitle = useHeaderStore(state => state.setTitle);
@@ -98,6 +98,42 @@ export const Dashboard: React.FC = () => {
             <div className="w-full flex-1 min-h-[300px]">
                <Chart options={ageGenderOptions as any} series={ageGenderSeries} type="bar" height="100%" />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom section cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-start space-x-4">
+          <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+            <Users size={24} />
+          </div>
+          <div>
+            <h4 className="text-slate-800 font-semibold mb-1">今日新增受试者</h4>
+            <p className="text-2xl font-bold text-slate-900">42</p>
+            <p className="text-sm text-slate-500 mt-1">分布在 12 个活跃项目中</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-start space-x-4">
+          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+            <FileCheck size={24} />
+          </div>
+          <div>
+            <h4 className="text-slate-800 font-semibold mb-1">待处理的 Query</h4>
+            <p className="text-2xl font-bold text-slate-900">156</p>
+            <p className="text-sm text-slate-500 mt-1">较昨日减少 8%</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-start space-x-4">
+          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
+            <Clock size={24} />
+          </div>
+          <div>
+            <h4 className="text-slate-800 font-semibold mb-1">即将超期随访</h4>
+            <p className="text-2xl font-bold text-slate-900">28</p>
+            <p className="text-sm text-slate-500 mt-1">需要在 3 天内完成</p>
           </div>
         </div>
       </div>
