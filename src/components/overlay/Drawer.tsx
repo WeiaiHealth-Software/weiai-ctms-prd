@@ -8,6 +8,7 @@ type DrawerProps = {
   onClose: () => void
   children: React.ReactNode
   footer?: React.ReactNode
+  width?: number
 }
 
 export default function Drawer({
@@ -17,11 +18,12 @@ export default function Drawer({
   onClose,
   children,
   footer,
+  width = 720
 }: DrawerProps) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className={`fixed inset-0 z-50 w-${width}`}>
       <div className="absolute inset-0 bg-slate-900/35" onClick={onClose} />
       <div className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl border-l border-slate-200 flex flex-col">
         <div className="px-6 py-5 border-b border-slate-200 flex items-start justify-between gap-4">

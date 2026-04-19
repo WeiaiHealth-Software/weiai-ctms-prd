@@ -281,7 +281,7 @@ export function ProjectListPage() {
         onClose={() => setIsSyncDrawerOpen(false)}
         title="同步 IWRS 项目"
         subtitle="将中央随机化系统中的项目同步至 EDC 电子数据采集系统"
-        width="720px"
+        width={800}
       >
         <div className="space-y-4">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
