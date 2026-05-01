@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useProjectWizardStore } from '../../../store/useProjectWizardStore';
 import { Shuffle, SlidersHorizontal, Plus, AlertTriangle, Settings, GitFork } from 'lucide-react';
 
@@ -19,6 +20,13 @@ export const Step3Grouping: React.FC = () => {
   
   // 临时编辑裂变规则的状态
   const [editingRule, setEditingRule] = useState<any>(null);
+
+  const distributeCounts = (total: number, n: number) => {
+    if (!Number.isFinite(total) || total <= 0 || n <= 0) return Array.from({ length: n }, () => 0);
+    const base = Math.floor(total / n);
+    const remainder = total % n;
+    return Array.from({ length: n }, (_, i) => base + (i < remainder ? 1 : 0));
+  };
 
   const toggleGroupExpand = (groupId: string) => {
     setExpandedGroups(prev => ({
@@ -62,19 +70,31 @@ export const Step3Grouping: React.FC = () => {
 
   const handleSelectFissionGroup = (groupId: string) => {
     setSelectedFissionGroupId(groupId);
+    const stage1Count = groups.find(g => g.id === groupId)?.count ?? 0;
     
     // 初始化编辑规则
     if (fissionRules[groupId]) {
-      setEditingRule(JSON.parse(JSON.stringify(fissionRules[groupId])));
+      const cloned = JSON.parse(JSON.stringify(fissionRules[groupId]));
+      const subCount = Array.isArray(cloned?.subGroups) ? cloned.subGroups.length : 0;
+      const sum = Array.isArray(cloned?.subGroups)
+        ? cloned.subGroups.reduce((acc: number, s: any) => acc + (parseInt(String(s?.count ?? 0), 10) || 0), 0)
+        : 0;
+      if (subCount > 0 && sum === 0) {
+        const counts = distributeCounts(stage1Count, subCount);
+        cloned.subGroups = cloned.subGroups.map((s: any, idx: number) => ({ ...s, count: counts[idx] ?? 0 }));
+      }
+      setEditingRule(cloned);
     } else {
+      const counts = distributeCounts(stage1Count, 2);
+      const now = Date.now();
       setEditingRule({
         triggerMode: 'manual',
         days: 180,
         medicalNote: '',
         balanceStrategy: 'simple',
         subGroups: [
-          { id: `sub_${Date.now()}_1`, name: '裂变1组', count: 0, medicine: '' },
-          { id: `sub_${Date.now()}_2`, name: '裂变2组', count: 0, medicine: '' }
+          { id: `sub_${now}_1`, name: '裂变1组', count: counts[0] ?? 0, medicine: '' },
+          { id: `sub_${now}_2`, name: '裂变2组', count: counts[1] ?? 0, medicine: '' }
         ]
       });
     }
@@ -88,8 +108,8 @@ export const Step3Grouping: React.FC = () => {
           [selectedFissionGroupId]: editingRule
         }
       });
-      // 保存成功后不一定需要清空选择，保留在当前页即可
-      alert('裂变规则已保存');
+      setSelectedFissionGroupId(null);
+      setEditingRule(null);
     }
   };
 
@@ -315,22 +335,38 @@ export const Step3Grouping: React.FC = () => {
                   {groups.map(group => {
                     const isSelected = selectedFissionGroupId === group.id;
                     const hasRule = !!fissionRules[group.id];
+                    const rule = fissionRules[group.id];
                     return (
                       <div 
                         key={`s2-${group.id}`} 
-                        className={`bg-white p-4 rounded-xl border-2 transition-all h-[88px] flex items-center justify-between cursor-pointer ${isSelected ? 'border-brand-500 shadow-md ring-2 ring-brand-500/20' : 'border-slate-200 hover:border-brand-300 shadow-sm'}`}
+                        className={`bg-white p-4 rounded-xl border-2 transition-all cursor-pointer ${isSelected ? 'border-brand-500 shadow-md ring-2 ring-brand-500/20' : 'border-slate-200 hover:border-brand-300 shadow-sm'}`}
                         onClick={() => handleSelectFissionGroup(group.id)}
                       >
-                        <div>
+                        <div className="flex items-start justify-between gap-3">
                           <div className="font-bold text-slate-800">{group.name}</div>
-                          <div className="text-xs text-slate-500 mt-1">
-                            {hasRule ? <span className="text-brand-600 font-medium">已配置裂变</span> : '维持原组'}
-                          </div>
+                          <button className="flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700 whitespace-nowrap shrink-0">
+                            <Settings className="w-3.5 h-3.5" />
+                            {hasRule ? '编辑裂变' : '配置裂变'}
+                          </button>
                         </div>
-                        <button className="flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700">
-                          <Settings className="w-3.5 h-3.5" />
-                          {hasRule ? '编辑裂变' : '配置裂变'}
-                        </button>
+                        {hasRule ? (
+                          <div className="mt-3 space-y-2">
+                            {(rule?.subGroups || []).slice(0, 3).map((sub: any) => (
+                              <div
+                                key={sub.id}
+                                className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 flex items-center justify-between gap-3"
+                              >
+                                <div className="min-w-0">
+                                  <div className="text-[12px] font-bold text-slate-700 truncate">{sub.name}</div>
+                                  <div className="text-[10px] text-slate-400 truncate mt-0.5">{sub.medicine || '产品 产品名称'}</div>
+                                </div>
+                                <div className="text-[12px] font-bold text-slate-700 whitespace-nowrap">{sub.count} 人</div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-slate-500 mt-1">维持原组</div>
+                        )}
                       </div>
                     );
                   })}
@@ -538,56 +574,59 @@ export const Step3Grouping: React.FC = () => {
       )}
 
       {/* 裂变开启确认 Modal */}
-      {showFissionConfirm && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="p-6 sm:p-8">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-amber-100 rounded-full mb-5">
-                <AlertTriangle className="w-6 h-6 text-amber-600" />
-              </div>
-              <h3 className="text-xl font-bold text-center text-slate-800 mb-2">
-                开启二阶段裂变？
-              </h3>
-              <p className="text-center text-slate-500 mb-6 text-sm leading-relaxed">
-                请确保已完成一阶段分组配置，<span className="text-amber-600 font-bold">开启后不可更改一阶段设置</span>。
-              </p>
-              
-              <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 mb-6">
-                <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-200">
-                  <span className="text-xs font-bold text-slate-500">当前分组模式</span>
-                  <span className="text-xs font-bold text-slate-700 bg-white px-2 py-1 rounded border border-slate-200">{matchMode === 'random' ? '均匀分组 (Uniform)' : '自由分组 (Free)'}</span>
-                </div>
-                <div className="space-y-3">
-                  {groups.map(group => (
-                    <div key={group.id} className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-700">{group.name}</span>
-                        <span className="text-[10px] text-slate-400 bg-slate-200/50 px-1.5 py-0.5 rounded">{group.medicine || '无产品'}</span>
-                      </div>
-                      <span className="text-sm font-bold text-slate-600">{group.count}人</span>
+      {showFissionConfirm && typeof document !== 'undefined'
+        ? createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div className="p-6 sm:p-8">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto bg-amber-100 rounded-full mb-5">
+                    <AlertTriangle className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-center text-slate-800 mb-2">
+                    开启二阶段裂变？
+                  </h3>
+                  <p className="text-center text-slate-500 mb-6 text-sm leading-relaxed">
+                    请确保已完成一阶段分组配置，<span className="text-amber-600 font-bold">开启后不可更改一阶段设置</span>。
+                  </p>
+                  
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 mb-6">
+                    <div className="flex justify-between items-center mb-3 pb-3 border-b border-slate-200">
+                      <span className="text-xs font-bold text-slate-500">当前分组模式</span>
+                      <span className="text-xs font-bold text-slate-700 bg-white px-2 py-1 rounded border border-slate-200">{matchMode === 'random' ? '均匀分组 (Uniform)' : '自由分组 (Free)'}</span>
                     </div>
-                  ))}
+                    <div className="space-y-3">
+                      {groups.map(group => (
+                        <div key={group.id} className="flex justify-between items-center">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-sm font-bold text-slate-700 truncate">{group.name}</span>
+                            <span className="text-[10px] text-slate-400 bg-slate-200/50 px-1.5 py-0.5 rounded shrink-0">{group.medicine || '无产品'}</span>
+                          </div>
+                          <span className="text-sm font-bold text-slate-600 whitespace-nowrap">{group.count} 人</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowFissionConfirm(false)}
+                      className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors"
+                    >
+                      再想想
+                    </button>
+                    <button
+                      onClick={confirmEnableFission}
+                      className="flex-1 px-4 py-2.5 bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-95"
+                    >
+                      确认开启
+                    </button>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowFissionConfirm(false)}
-                  className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors"
-                >
-                  再想想
-                </button>
-                <button
-                  onClick={confirmEnableFission}
-                  className="flex-1 px-4 py-2.5 bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-95"
-                >
-                  确认开启
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 };
