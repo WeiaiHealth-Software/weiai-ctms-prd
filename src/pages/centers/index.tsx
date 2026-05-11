@@ -52,7 +52,6 @@ export const Centers: React.FC = () => {
                 <td className="px-6 py-4 text-slate-500 max-w-xs truncate">{center.description}</td>
                 <td className="px-6 py-4 text-slate-800 font-medium">
                   <div className="flex items-center gap-2 bg-slate-50 w-fit px-2 py-1 rounded-lg border border-slate-100">
-                    <img src={center.adminAvatar} className="w-6 h-6 rounded-md" alt={center.adminName} />
                     <span className="text-xs font-bold">{center.adminName}</span>
                   </div>
                 </td>

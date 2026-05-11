@@ -9,6 +9,19 @@ export const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  const permissionColorClass = useMemo(() => {
+    const map: Record<string, string> = {
+      slate: 'bg-slate-100 text-slate-700',
+      indigo: 'bg-indigo-100 text-indigo-700',
+      purple: 'bg-purple-100 text-purple-700',
+      emerald: 'bg-emerald-100 text-emerald-700',
+      amber: 'bg-amber-100 text-amber-700',
+      red: 'bg-red-100 text-red-700',
+      brand: 'bg-brand-100 text-brand-700'
+    };
+    return (color: string) => map[color] ?? map.slate;
+  }, []);
+
   const isPrivilegedUser = useMemo(() => {
     return permissions.some(p => p.text === '超级管理员' || p.text === '开发者账户');
   }, [permissions]);
@@ -50,7 +63,7 @@ export const Header: React.FC = () => {
             {permissions.map((perm, idx) => (
               <span
                 key={idx}
-                className={`px-2 py-0.5 text-xs font-normal rounded bg-${perm.color}-100 text-${perm.color}-700`}
+                className={`px-2 py-0.5 text-xs font-normal rounded ${permissionColorClass(perm.color)}`}
               >
                 {perm.text}
               </span>

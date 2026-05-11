@@ -15,6 +15,12 @@ type LogRow = {
 
 const TYPE_OPTIONS: Array<LogRow['type']> = ['系统日志', '数据操作日志', '登录审计'];
 
+const TYPE_BADGE_CLASS: Record<LogRow['type'], string> = {
+  系统日志: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+  数据操作日志: 'bg-sky-50 text-sky-700 border-sky-100',
+  登录审计: 'bg-amber-50 text-amber-700 border-amber-100'
+};
+
 const pad2 = (n: number) => String(n).padStart(2, '0');
 const formatDate = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 const parseDateTime = (s: string) => new Date(s.replace(' ', 'T'));
@@ -82,8 +88,8 @@ export const SystemLogs: React.FC = () => {
   ]);
 
   useEffect(() => {
-    setTitle('日志管理', '查看系统日志、数据操作日志与登录审计日志，支持筛选检索', [
-      { text: '占位页面', color: 'slate' }
+    setTitle('日志管理', '仅开发者账户可访问。查看系统日志、数据操作日志与登录审计日志，支持筛选检索', [
+      { text: '开发者账户', color: 'indigo' }
     ]);
   }, [setTitle]);
 
@@ -226,7 +232,9 @@ export const SystemLogs: React.FC = () => {
                 <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
                   <td className="px-6 py-4 text-slate-500 font-mono">{r.time}</td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border bg-slate-50 text-slate-600 border-slate-100">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border ${TYPE_BADGE_CLASS[r.type]}`}
+                    >
                       {r.type}
                     </span>
                   </td>
@@ -261,4 +269,3 @@ export const SystemLogs: React.FC = () => {
     </div>
   );
 };
-

@@ -13,6 +13,7 @@ import { Profile } from '@/pages/profile'
 import { Roles } from '@/pages/roles'
 import { SystemLogs } from '@/pages/system/logs'
 import { Users } from '@/pages/users'
+import { UserCreate } from '@/pages/users/create'
 
 // EDC 模块页面
 import { ProjectListPage as EdcProjects } from '@/pages/edc/projects/ProjectListPage'
@@ -35,6 +36,7 @@ export function AppRoutes() {
         <Route path="centers/:centerId" element={<CenterDetail />} />
         <Route path="roles" element={<Roles />} />
         <Route path="users" element={<Users />} />
+        <Route path="users/create" element={<UserCreate />} />
         <Route path="system/logs" element={<SystemLogs />} />
         <Route path="profile" element={<Profile />} />
         

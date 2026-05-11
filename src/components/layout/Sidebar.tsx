@@ -3,13 +3,13 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Shuffle, 
-  ShieldCheck, 
   Database,
   RefreshCw,
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
-  ClipboardList
+  ClipboardList,
+  ChartNoAxesGantt
 } from 'lucide-react';
 import classNames from 'classnames';
 
@@ -187,7 +187,7 @@ export const Sidebar: React.FC = () => {
                 systemActive ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500"
               )}
             >
-              <ShieldCheck size={20} />
+              <ChartNoAxesGantt size={20} />
             </span>
             {!collapsed && (
               <>
