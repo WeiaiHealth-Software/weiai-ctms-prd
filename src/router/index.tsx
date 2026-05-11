@@ -9,7 +9,9 @@ import { Dimensions } from '@/pages/dimensions'
 import { MiniProgram } from '@/pages/miniprogram'
 import { ProjectDetail } from '@/pages/projects/detail'
 import { ProjectList } from '@/pages/projects'
+import { Profile } from '@/pages/profile'
 import { Roles } from '@/pages/roles'
+import { SystemLogs } from '@/pages/system/logs'
 import { Users } from '@/pages/users'
 
 // EDC 模块页面
@@ -33,6 +35,8 @@ export function AppRoutes() {
         <Route path="centers/:centerId" element={<CenterDetail />} />
         <Route path="roles" element={<Roles />} />
         <Route path="users" element={<Users />} />
+        <Route path="system/logs" element={<SystemLogs />} />
+        <Route path="profile" element={<Profile />} />
         
         {/* EDC 子系统路由 */}
         <Route path="edc/projects" element={<EdcProjects />} />

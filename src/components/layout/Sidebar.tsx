@@ -3,20 +3,13 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Shuffle, 
-  Folders, 
-  SlidersHorizontal, 
-  Building2, 
-  Hospital, 
   ShieldCheck, 
-  Users, 
   Database,
   RefreshCw,
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
-  ClipboardList,
-  CalendarCheck,
-  FileBox
+  ClipboardList
 } from 'lucide-react';
 import classNames from 'classnames';
 
@@ -24,29 +17,39 @@ export const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [iwrsOpen, setIwrsOpen] = useState(true);
   const [edcOpen, setEdcOpen] = useState(true);
+  const [systemOpen, setSystemOpen] = useState(true);
   const location = useLocation();
+
+  const isPathActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
 
   const navItems = [
     { path: '/index', icon: <LayoutDashboard size={20} />, label: 'Dashboard 仪表盘' },
   ];
 
   const iwrsItems = [
-    { path: '/index/projects', icon: <Folders size={20} />, label: '项目管理' },
-    { path: '/index/dimensions', icon: <SlidersHorizontal size={20} />, label: '维度管理' },
+    { path: '/index/projects', label: '项目管理' },
+    { path: '/index/dimensions', label: '维度管理' },
   ];
 
   const edcItems = [
-    { path: '/index/edc/projects', icon: <Folders size={20} />, label: '项目管理' },
-    { path: '/index/edc/appointments', icon: <CalendarCheck size={20} />, label: '预约复查管理' },
-    { path: '/index/edc/templates', icon: <FileBox size={20} />, label: '表单样板间' },
+    { path: '/index/edc/projects', label: '项目管理' },
+    { path: '/index/edc/appointments', label: '预约复查管理' },
+    { path: '/index/edc/templates', label: '表单样板间' },
   ];
 
-  const otherItems = [
-    { path: '/index/departments', icon: <Hospital size={20} />, label: '科室管理' },
-    { path: '/index/centers', icon: <Building2 size={20} />, label: '中心管理' },
-    { path: '/index/roles', icon: <ShieldCheck size={20} />, label: '角色管理' },
-    { path: '/index/users', icon: <Users size={20} />, label: '用户管理' },
+  const systemItems = [
+    { path: '/index/departments', label: '科室管理' },
+    { path: '/index/centers', label: '中心管理' },
+    { path: '/index/roles', label: '角色管理' },
+    { path: '/index/users', label: '用户管理' },
+    { path: '/index/system/logs', label: '日志管理' },
   ];
+
+  const iwrsActive = iwrsItems.some(i => isPathActive(i.path));
+  const edcActive = edcItems.some(i => isPathActive(i.path));
+  const systemActive = systemItems.some(i => isPathActive(i.path));
 
   return (
     <aside className={classNames(
@@ -85,9 +88,17 @@ export const Sidebar: React.FC = () => {
         <div className="space-y-1">
           <button
             onClick={() => setIwrsOpen(!iwrsOpen)}
-            className="w-full flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-brand-600 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden"
+            className={classNames(
+              "w-full flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden hover:bg-slate-50 hover:text-brand-600",
+              iwrsActive ? "text-brand-600" : "text-slate-600"
+            )}
           >
-            <span className="text-slate-400 group-hover:text-brand-500 flex-shrink-0">
+            <span
+              className={classNames(
+                "flex-shrink-0",
+                iwrsActive ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500"
+              )}
+            >
               <Shuffle size={20} />
             </span>
             {!collapsed && (
@@ -101,20 +112,17 @@ export const Sidebar: React.FC = () => {
           </button>
           
           {iwrsOpen && !collapsed && (
-            <div className="pl-4 space-y-1">
+            <div className="space-y-1">
               {iwrsItems.map(item => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) => classNames(
-                    "flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+                    "flex items-center py-3 pr-4 pl-12 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
                     isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
                   )}
                 >
-                  <span className={classNames("flex-shrink-0", location.pathname.includes(item.path) ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500")}>
-                    {item.icon}
-                  </span>
-                  <span className="ml-3">{item.label}</span>
+                  <span>{item.label}</span>
                 </NavLink>
               ))}
             </div>
@@ -124,9 +132,17 @@ export const Sidebar: React.FC = () => {
         <div className="space-y-1">
           <button
             onClick={() => setEdcOpen(!edcOpen)}
-            className="w-full flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-brand-600 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden"
+            className={classNames(
+              "w-full flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden hover:bg-slate-50 hover:text-brand-600",
+              edcActive ? "text-brand-600" : "text-slate-600"
+            )}
           >
-            <span className="text-slate-400 group-hover:text-brand-500 flex-shrink-0">
+            <span
+              className={classNames(
+                "flex-shrink-0",
+                edcActive ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500"
+              )}
+            >
               <ClipboardList size={20} />
             </span>
             {!collapsed && (
@@ -140,41 +156,66 @@ export const Sidebar: React.FC = () => {
           </button>
           
           {edcOpen && !collapsed && (
-            <div className="pl-4 space-y-1">
+            <div className="space-y-1">
               {edcItems.map(item => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) => classNames(
-                    "flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+                    "flex items-center py-3 pr-4 pl-12 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
                     isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
                   )}
                 >
-                  <span className={classNames("flex-shrink-0", location.pathname.includes(item.path) ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500")}>
-                    {item.icon}
-                  </span>
-                  <span className="ml-3">{item.label}</span>
+                  <span>{item.label}</span>
                 </NavLink>
               ))}
             </div>
           )}
         </div>
 
-        {otherItems.map(item => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) => classNames(
-              "flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
-              isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
+        <div className="space-y-1">
+          <button
+            onClick={() => setSystemOpen(!systemOpen)}
+            className={classNames(
+              "w-full flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden hover:bg-slate-50 hover:text-brand-600",
+              systemActive ? "text-brand-600" : "text-slate-600"
             )}
           >
-            <span className={classNames("flex-shrink-0", location.pathname.includes(item.path) ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500")}>
-              {item.icon}
+            <span
+              className={classNames(
+                "flex-shrink-0",
+                systemActive ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500"
+              )}
+            >
+              <ShieldCheck size={20} />
             </span>
-            {!collapsed && <span className="ml-3 origin-left">{item.label}</span>}
-          </NavLink>
-        ))}
+            {!collapsed && (
+              <>
+                <span className="ml-3 flex-1 text-left">系统管理</span>
+                <span className={classNames("transition-transform duration-300", systemOpen ? "rotate-180" : "")}>
+                  <ChevronDown size={16} />
+                </span>
+              </>
+            )}
+          </button>
+
+          {systemOpen && !collapsed && (
+            <div className="space-y-1">
+              {systemItems.map(item => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) => classNames(
+                    "flex items-center py-3 pr-4 pl-12 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+                    isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
+                  )}
+                >
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="my-2 border-b border-slate-200"></div>
         <NavLink
