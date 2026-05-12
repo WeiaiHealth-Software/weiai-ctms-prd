@@ -1,3 +1,5 @@
+import Select from './Select';
+
 type SelectBlockProps = {
   label: string
   required?: boolean
@@ -19,18 +21,12 @@ export default function SelectBlock({
         {label}
         {required && <span className="text-rose-500 ml-1">*</span>}
       </label>
-      <select
+      <Select
         value={value || ''}
-        onChange={(e) => onChange?.(e.target.value)}
-        className="w-full h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-blue-500 bg-white"
-      >
-        <option value="">请选择</option>
-        {options.map((op) => (
-          <option key={op} value={op}>
-            {op}
-          </option>
-        ))}
-      </select>
+        onChange={(v) => onChange?.(v)}
+        placeholder="请选择"
+        options={options.map(op => ({ value: op, label: op }))}
+      />
     </div>
   )
 }

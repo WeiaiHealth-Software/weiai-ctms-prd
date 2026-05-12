@@ -26,7 +26,7 @@ export default function InputBlock({
         value={value || ''}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
-        className="w-full h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-blue-500 bg-white"
+        className="w-full h-11 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 bg-white"
       />
     </div>
   )

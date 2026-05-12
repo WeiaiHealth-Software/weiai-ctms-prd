@@ -229,7 +229,7 @@ export const Sidebar: React.FC = () => {
           <span className={classNames("flex-shrink-0", location.pathname.includes("/index/ui-spec") ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500")}>
             <Palette size={20} />
           </span>
-          {!collapsed && <span className="ml-3 origin-left">UI 组件规范</span>}
+          {!collapsed && <span className="ml-3 origin-left">系统 UI 组件规范</span>}
         </NavLink>
         <NavLink
           to="/miniprogram"

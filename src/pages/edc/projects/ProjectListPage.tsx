@@ -209,7 +209,7 @@ export function ProjectListPage() {
                     <td className="px-4 py-4 text-slate-600">{project.enrolled}</td>
                     <td className="px-4 py-4 text-right">
                       <div className="inline-flex items-center gap-2 text-sm">
-                        <Link to={`/index/edc/projects/${project.id}`} className="cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-800">
+                        <Link to={`/index/edc/projects/${project.id}`} className="cursor-pointer rounded-md px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-800">
                           查看详情
                         </Link>
                         <span className="text-slate-300">|</span>
