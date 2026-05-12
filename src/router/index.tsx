@@ -12,6 +12,7 @@ import { ProjectList } from '@/pages/projects'
 import { Profile } from '@/pages/profile'
 import { Roles } from '@/pages/roles'
 import { SystemLogs } from '@/pages/system/logs'
+import { UiSpec } from '@/pages/ui-spec'
 import { Users } from '@/pages/users'
 import { UserCreate } from '@/pages/users/create'
 
@@ -39,6 +40,7 @@ export function AppRoutes() {
         <Route path="users/create" element={<UserCreate />} />
         <Route path="system/logs" element={<SystemLogs />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="ui-spec" element={<UiSpec />} />
         
         {/* EDC 子系统路由 */}
         <Route path="edc/projects" element={<EdcProjects />} />

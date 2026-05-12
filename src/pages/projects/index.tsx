@@ -155,14 +155,14 @@ export const ProjectList: React.FC = () => {
                   <td className="px-6 py-4 text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-3">
                       <button 
-                        onClick={() => navigate(`/index/projects/${project.id}`)}
-                        className="text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors"
+                        onClick={() => navigate(`/index/projects/${project.id}`)} 
+                        className="cursor-pointer p-2 rounded-md bg-brand-50 hover:bg-brand-100 text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors"
                       >
                         查看详情
                       </button>
                       <button 
                         onClick={() => handleDeleteClick(project.id, project.title)}
-                        className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
+                        className="cursor-pointer text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
                       >
                         删除
                       </button>

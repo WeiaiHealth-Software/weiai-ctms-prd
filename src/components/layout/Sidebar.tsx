@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   Shuffle, 
   Database,
+  Palette,
   RefreshCw,
   ChevronDown,
   PanelLeftClose,
@@ -218,6 +219,18 @@ export const Sidebar: React.FC = () => {
         </div>
 
         <div className="my-2 border-b border-slate-200"></div>
+        <NavLink
+          to="/index/ui-spec"
+          className={({ isActive }) => classNames(
+            "flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+            isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
+          )}
+        >
+          <span className={classNames("flex-shrink-0", location.pathname.includes("/index/ui-spec") ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500")}>
+            <Palette size={20} />
+          </span>
+          {!collapsed && <span className="ml-3 origin-left">UI 组件规范</span>}
+        </NavLink>
         <NavLink
           to="/miniprogram"
           className={({ isActive }) => classNames(
