@@ -112,7 +112,20 @@ export const Users: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-sm">
               {filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="px-6 py-4 font-bold text-slate-800">{user.name}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={[
+                          'w-9 h-9 rounded-2xl border border-slate-200 flex items-center justify-center text-xs font-black',
+                          user.avatarBgClass ?? 'bg-slate-50',
+                          user.avatarTextClass ?? 'text-slate-400'
+                        ].join(' ')}
+                      >
+                        {user.avatarText || 'A'}
+                      </div>
+                      <div className="font-bold text-slate-800">{user.name}</div>
+                    </div>
+                  </td>
                   <td className="px-6 py-4 text-slate-600">{user.account}</td>
                   <td className="px-6 py-4 text-slate-500 font-mono">{user.phone}</td>
                   <td className="px-6 py-4">

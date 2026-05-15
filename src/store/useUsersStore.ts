@@ -10,6 +10,9 @@ export type UserRow = {
   orgClass: string;
   role: string;
   roleClass: string;
+  avatarText?: string;
+  avatarBgClass?: string;
+  avatarTextClass?: string;
   createdAt: string;
 };
 
@@ -19,6 +22,9 @@ type CreateUserPayload = {
   phone: string;
   org: string;
   role: string;
+  avatarText?: string;
+  avatarBgClass?: string;
+  avatarTextClass?: string;
   createdAt?: string;
 };
 
@@ -33,6 +39,33 @@ const formatDate = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${
 const getOrgClass = (orgLabel: string) =>
   ORG_OPTIONS.find(o => o.label === orgLabel)?.className ?? 'bg-slate-50 text-slate-600 border-slate-100';
 
+const getAvatarText = (name: string) => {
+  const v = name.trim();
+  if (!v) return '';
+  const first = v[0] ?? '';
+  return /[a-zA-Z]/.test(first) ? first.toUpperCase() : first;
+};
+
+const AVATAR_TONES = [
+  { bgClass: 'bg-indigo-50', textClass: 'text-indigo-700' },
+  { bgClass: 'bg-sky-50', textClass: 'text-sky-700' },
+  { bgClass: 'bg-emerald-50', textClass: 'text-emerald-700' },
+  { bgClass: 'bg-amber-50', textClass: 'text-amber-700' },
+  { bgClass: 'bg-violet-50', textClass: 'text-violet-700' },
+  { bgClass: 'bg-rose-50', textClass: 'text-rose-700' }
+] as const;
+
+const hashString = (s: string) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+};
+
+const getAvatarToneByKey = (key: string) => {
+  const idx = hashString(key) % AVATAR_TONES.length;
+  return AVATAR_TONES[idx]!;
+};
+
 export const useUsersStore = create<UsersState>((set, get) => ({
   users: [
     {
@@ -44,6 +77,9 @@ export const useUsersStore = create<UsersState>((set, get) => ({
       orgClass: 'bg-indigo-50 text-indigo-600 border-indigo-100',
       role: '系统管理员',
       roleClass: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+      avatarText: getAvatarText('王伟'),
+      avatarBgClass: getAvatarToneByKey('wangwei_admin').bgClass,
+      avatarTextClass: getAvatarToneByKey('wangwei_admin').textClass,
       createdAt: '2023-01-10'
     },
     {
@@ -55,6 +91,9 @@ export const useUsersStore = create<UsersState>((set, get) => ({
       orgClass: 'bg-indigo-50 text-indigo-600 border-indigo-100',
       role: 'CRC协调员',
       roleClass: 'bg-amber-50 text-amber-600 border-amber-100',
+      avatarText: getAvatarText('李静'),
+      avatarBgClass: getAvatarToneByKey('lijing_crc').bgClass,
+      avatarTextClass: getAvatarToneByKey('lijing_crc').textClass,
       createdAt: '2023-01-12'
     },
     {
@@ -66,6 +105,9 @@ export const useUsersStore = create<UsersState>((set, get) => ({
       orgClass: 'bg-sky-50 text-sky-600 border-sky-100',
       role: '主研医生',
       roleClass: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+      avatarText: getAvatarText('张强'),
+      avatarBgClass: getAvatarToneByKey('zhangqiang_doc').bgClass,
+      avatarTextClass: getAvatarToneByKey('zhangqiang_doc').textClass,
       createdAt: '2023-02-01'
     },
     {
@@ -77,6 +119,9 @@ export const useUsersStore = create<UsersState>((set, get) => ({
       orgClass: 'bg-sky-50 text-sky-600 border-sky-100',
       role: '研究护士',
       roleClass: 'bg-slate-50 text-slate-600 border-slate-100',
+      avatarText: getAvatarText('周敏'),
+      avatarBgClass: getAvatarToneByKey('zhoumin_nurse').bgClass,
+      avatarTextClass: getAvatarToneByKey('zhoumin_nurse').textClass,
       createdAt: '2023-02-03'
     },
     {
@@ -88,6 +133,9 @@ export const useUsersStore = create<UsersState>((set, get) => ({
       orgClass: 'bg-emerald-50 text-emerald-600 border-emerald-100',
       role: '中心管理员',
       roleClass: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+      avatarText: getAvatarText('刘洋'),
+      avatarBgClass: getAvatarToneByKey('liuyang_admin').bgClass,
+      avatarTextClass: getAvatarToneByKey('liuyang_admin').textClass,
       createdAt: '2023-03-01'
     },
     {
@@ -99,6 +147,9 @@ export const useUsersStore = create<UsersState>((set, get) => ({
       orgClass: 'bg-emerald-50 text-emerald-600 border-emerald-100',
       role: '主要研究者',
       roleClass: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+      avatarText: getAvatarText('赵磊'),
+      avatarBgClass: getAvatarToneByKey('zhaolei_doc').bgClass,
+      avatarTextClass: getAvatarToneByKey('zhaolei_doc').textClass,
       createdAt: '2023-03-05'
     }
   ],
@@ -107,6 +158,8 @@ export const useUsersStore = create<UsersState>((set, get) => ({
     const now = new Date();
     const createdAt = payload.createdAt ?? formatDate(now);
     const roleClass = getRoleBadgeClass(payload.role);
+    const avatarText = payload.avatarText ?? getAvatarText(payload.name);
+    const avatarTone = getAvatarToneByKey(payload.account);
 
     set(state => ({
       users: [
@@ -119,6 +172,9 @@ export const useUsersStore = create<UsersState>((set, get) => ({
           orgClass: getOrgClass(payload.org),
           role: payload.role,
           roleClass,
+          avatarText,
+          avatarBgClass: payload.avatarBgClass ?? avatarTone.bgClass,
+          avatarTextClass: payload.avatarTextClass ?? avatarTone.textClass,
           createdAt
         },
         ...state.users
