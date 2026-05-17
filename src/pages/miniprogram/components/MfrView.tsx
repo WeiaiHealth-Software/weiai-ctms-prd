@@ -78,12 +78,6 @@ export const MfrView: React.FC = () => {
 
   const renderDetail = () => (
     <div className="flex flex-col h-full bg-slate-50 animate-fade-in">
-      <div className="bg-white pt-10 px-3 pb-4 flex items-center shadow-sm z-10 flex-none relative">
-        <div className="absolute left-3 cursor-pointer p-2 -ml-2" onClick={() => setScreen('home')}>
-          <ArrowLeft className="text-slate-500" width={20} />
-        </div>
-        <h2 className="font-bold text-lg w-full text-center">数据概览</h2>
-      </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4 flex items-center justify-center text-slate-400">
         <div className="text-center">
           <p>由于双盲要求，厂家端仅可查看宏观统计数据</p>
@@ -101,11 +95,14 @@ export const MfrView: React.FC = () => {
     );
   }
 
+  const headerTitle = screen === 'detail' ? '数据概览' : tab === 'profile' ? '我的' : undefined;
+  const headerOnBack = screen === 'detail' ? () => setScreen('home') : undefined;
+
   return (
-    <PhoneContainer>
+    <PhoneContainer title={headerTitle} onBack={headerOnBack}>
       <div className="flex flex-col h-full relative">
         
-        <div className="flex-1 overflow-hidden relative mt-6">
+        <div className="flex-1 overflow-hidden relative">
           {screen === 'home' && renderHome()}
           {screen === 'detail' && renderDetail()}
         </div>

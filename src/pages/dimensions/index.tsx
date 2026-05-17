@@ -43,7 +43,7 @@ export const Dimensions: React.FC = () => {
             </button>
           ))}
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 transition-all active:scale-95 w-full sm:w-auto justify-center">
+        <button className="flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 transition-all active:scale-95 w-full sm:w-auto justify-center">
           <Plus className="w-4 h-4" /> 新增维度
         </button>
       </div>

@@ -115,6 +115,7 @@ export type Appointment = {
   id_no: string;
   r_no: string;
   drug_no: string;
+  closeReason?: string;
 };
 
 const formatTimeHHmm = (d: Date) =>

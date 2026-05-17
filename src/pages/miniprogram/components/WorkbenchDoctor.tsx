@@ -1,46 +1,58 @@
 import React from 'react';
-import { Plus, AlertTriangle, Pill } from 'lucide-react';
+import { Plus, AlertTriangle, Pill, Bell, Hospital } from 'lucide-react';
 
-const WorkbenchDoctor: React.FC = () => {
+interface WorkbenchDoctorProps {
+  onOpenNotifications?: () => void;
+  unreadCount?: number;
+  onStartAppointment?: () => void;
+}
+
+const WorkbenchDoctor: React.FC<WorkbenchDoctorProps> = ({ onOpenNotifications, unreadCount = 0, onStartAppointment }) => {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-      {/* Header Content */}
-      <div className="flex justify-between items-center mb-4 px-5">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">早安，张主任</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            当前有 <span className="text-rose-600 font-bold">3</span> 条重要反馈待确认
-          </p>
-        </div>
-        <img
-          src="https://ui-avatars.com/api/?name=张&background=4F46E5&color=fff"
-          alt="Doctor Avatar"
-          className="w-12 h-12 rounded-full border-2 border-white shadow-md"
-        />
-      </div>
-      
-      {/* 模块状态 (Doctor) */}
-      <div className="flex gap-3 mb-6 px-5">
-        <div className="flex-1 bg-indigo-50 rounded-xl p-3 border border-indigo-100">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-            <span className="text-xs font-bold text-indigo-700">在研项目</span>
+      <div className="px-5 pt-6 pb-4 bg-white shadow-sm mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src="https://ui-avatars.com/api/?name=张&background=4F46E5&color=fff"
+              alt="Doctor Avatar"
+              className="w-12 h-12 rounded-full border-2 border-white shadow-md shrink-0"
+            />
+            <div className="min-w-0">
+              <div className="flex items-center gap-1 text-xl font-bold text-gray-900 truncate">
+                徐蔚
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 shrink-0">
+                  医生
+                </span>
+              </div>
+              <div className="mt-1 flex items-center gap-2 min-w-0">
+                <p className="flex items-center gap-1 text-sm text-gray-500 truncate">
+                  <Hospital className="w-5 h-5 text-gray-600 mr-1" />
+                  上海眼病防治中心
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="text-xs text-indigo-600">3 个进行中</div>
-        </div>
-        <div className="flex-1 bg-rose-50 rounded-xl p-3 border border-rose-100">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-            <span className="text-xs font-bold text-rose-700">核心预警</span>
+
+          <div className="relative cursor-pointer" onClick={onOpenNotifications}>
+            <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition">
+              <Bell className="text-gray-600 w-5 h-5" />
+            </div>
+            {unreadCount > 0 && (
+              <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+            )}
           </div>
-          <div className="text-xs text-rose-600">2 异常 · 1 待审</div>
         </div>
       </div>
 
       {/* Doctor Workbench Content */}
       <div className="px-5">
         {/* 快捷入口 (Quick Action) */}
-        <button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-5 shadow-lg shadow-blue-600/30 text-white mb-6 relative overflow-hidden transform active:scale-[0.98] transition">
+        <button
+          type="button"
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-5 shadow-lg shadow-blue-600/30 text-white mb-6 relative overflow-hidden transform active:scale-[0.98] transition"
+          onClick={onStartAppointment}
+        >
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
           <div className="flex items-center justify-between relative z-10">
             <div className="text-left">

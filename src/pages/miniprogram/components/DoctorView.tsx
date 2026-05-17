@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutGrid, User, ArrowLeft, Bell, ChevronRight, MapPin, FolderKanban } from 'lucide-react';
+import { LayoutGrid, User, ChevronRight, MapPin, FolderKanban } from 'lucide-react';
 import classNames from 'classnames';
-import { DB, db, utils } from '../store';
+import { DB, db } from '../store';
 import { PhoneContainer } from './PhoneContainer';
 import { LoginView } from './LoginView';
 import WorkbenchDoctor from './WorkbenchDoctor';
@@ -51,7 +51,7 @@ export const DoctorView: React.FC = () => {
       return;
     }
 
-    db.addAppointmentFromDoctor({
+    const appt = db.addAppointmentFromDoctor({
       name,
       phone,
       sex: appointment.sex,
@@ -59,20 +59,20 @@ export const DoctorView: React.FC = () => {
       diopter: appointment.diopter
     });
 
+    window.alert(
+      `提交成功！\n状态：待CRC确认\n${
+        appt.status === 'pending_confirm'
+          ? '维度齐全，已锁定名额，等待CRC确认。'
+          : '维度未填写完整，可由CRC后续补充，等待CRC确认。'
+      }`
+    );
+
     setAppointment({ name: '', phone: '', sex: '', age: '', diopter: '' });
     setScreen('home');
   };
 
   const renderNotifications = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
-      <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
-        <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
-          <ArrowLeft className="text-slate-600" width={22} />
-        </div>
-        <h2 className="font-bold text-[17px] w-full text-center text-slate-800 tracking-wide">消息通知</h2>
-      </div>
-
-      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
+    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar p-4 space-y-4 pb-10">
         {notifications.length === 0 ? (
           <div className="text-center text-slate-400 text-sm mt-20">暂无消息</div>
         ) : (
@@ -87,7 +87,6 @@ export const DoctorView: React.FC = () => {
             </div>
           ))
         )}
-      </div>
     </div>
   );
 
@@ -100,16 +99,6 @@ export const DoctorView: React.FC = () => {
 
     return (
       <div className="flex flex-col h-full bg-white relative z-10">
-        <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
-          <div
-            className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors"
-            onClick={() => setScreen('home')}
-          >
-            <ArrowLeft className="text-slate-600" width={22} />
-          </div>
-          <h2 className="font-bold text-[17px] w-full text-center text-slate-800 tracking-wide">填写预约信息</h2>
-        </div>
-
         <div className="flex-1 overflow-y-auto no-scrollbar pb-28">
           <div className="px-4 pt-4 pb-6">
             <div className="mb-5">
@@ -211,8 +200,8 @@ export const DoctorView: React.FC = () => {
   };
 
   const renderProfile = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
-      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-10 pb-24">
+    <div className="flex flex-col h-full bg-slate-50 relative z-10">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-4 pb-16">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[20px] font-black">
             李
@@ -267,18 +256,7 @@ export const DoctorView: React.FC = () => {
   );
 
   const renderCenter = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
-      <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
-        <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => {
-          setScreen('home');
-          setTab('profile');
-        }}>
-          <ArrowLeft className="text-slate-600" width={22} />
-        </div>
-        <h2 className="font-bold text-[17px] w-full text-center text-slate-800 tracking-wide">我的中心</h2>
-      </div>
-
-      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
+    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar p-4 space-y-4 pb-16">
         {DB.doctor.centers.map(c => (
           <div key={c.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
             <div className="flex items-start justify-between gap-3 mb-2">
@@ -307,9 +285,35 @@ export const DoctorView: React.FC = () => {
             </div>
           </div>
         ))}
-      </div>
     </div>
   );
+
+  const headerTitle =
+    screen === 'home'
+      ? tab === 'projects'
+        ? '我的项目'
+        : tab === 'profile'
+          ? '我的'
+          : undefined
+      : screen === 'notifications'
+        ? '消息通知'
+        : screen === 'appointment'
+          ? '填写预约信息'
+          : screen === 'detail'
+            ? '项目详情'
+            : screen === 'center'
+              ? '我的中心'
+              : undefined;
+
+  const headerOnBack =
+    screen === 'notifications' || screen === 'appointment' || screen === 'detail'
+      ? () => setScreen('home')
+      : screen === 'center'
+        ? () => {
+            setScreen('home');
+            setTab('profile');
+          }
+        : undefined;
 
   if (!isLoggedIn) {
     return (
@@ -320,15 +324,23 @@ export const DoctorView: React.FC = () => {
   }
 
   return (
-    <PhoneContainer>
+    <PhoneContainer title={headerTitle} onBack={headerOnBack}>
       <div className="flex flex-col h-full relative">
-        <div className="flex-1 overflow-hidden relative mt-6 bg-[#f8f9fa]">
-          {screen === 'home' && tab === 'home' && <div className="h-full overflow-y-auto pb-24"><WorkbenchDoctor /></div>}
+        <div className="flex-1 overflow-hidden relative bg-slate-50">
+          {screen === 'home' && tab === 'home' && (
+            <div className="h-full overflow-y-auto pb-24">
+              <WorkbenchDoctor
+                onOpenNotifications={() => setScreen('notifications')}
+                unreadCount={notifications.length}
+                onStartAppointment={() => setScreen('appointment')}
+              />
+            </div>
+          )}
           {screen === 'home' && tab === 'projects' && <ProjectList onNavigateToDetail={() => setScreen('detail')} />}
           {screen === 'home' && tab === 'profile' && renderProfile()}
           
           {screen === 'appointment' && renderAppointment()}
-          {screen === 'detail' && <ProjectDetail onBack={() => setScreen('home')} />}
+          {screen === 'detail' && <ProjectDetail />}
           {screen === 'center' && renderCenter()}
           {screen === 'notifications' && renderNotifications()}
         </div>

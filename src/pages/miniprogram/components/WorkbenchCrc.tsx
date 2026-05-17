@@ -1,67 +1,101 @@
 import React from 'react';
-import { ClipboardList, FileText, Package, AlertTriangle, Bell } from 'lucide-react';
+import { ClipboardList, FileText, Package, AlertTriangle, Bell, Hospital } from 'lucide-react';
+import { Appointment } from '../store';
 
 interface WorkbenchCrcProps {
   onOpenNotifications?: () => void;
   unreadCount?: number;
+  pendingAppointments?: Appointment[];
+  onViewAppointment?: (appointmentId: string) => void;
 }
 
-const WorkbenchCrc: React.FC<WorkbenchCrcProps> = ({ onOpenNotifications, unreadCount = 0 }) => {
+const WorkbenchCrc: React.FC<WorkbenchCrcProps> = ({
+  onOpenNotifications,
+  unreadCount = 0,
+  pendingAppointments = [],
+  onViewAppointment,
+}) => {
+  const topPending = pendingAppointments.slice(0, 3);
   return (
     <>
-      <div className="px-5 pt-6 pb-4 bg-white rounded-b-3xl shadow-sm mb-4">
+      <div className="px-5 pt-6 pb-4 bg-white shadow-sm mb-4">
         {/* Header Content */}
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">早安，李协调员</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              当前有 <span className="text-blue-600 font-bold">5</span> 项待办任务
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative cursor-pointer" onClick={onOpenNotifications}>
-              <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition">
-                <Bell className="text-gray-600 w-5 h-5" />
-              </div>
-              {unreadCount > 0 && (
-                <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
-              )}
-            </div>
-            <img 
-              src="https://ui-avatars.com/api/?name=李&background=0D8ABC&color=fff" 
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src="https://ui-avatars.com/api/?name=李&background=0D8ABC&color=fff"
               alt="Avatar"
-              className="w-12 h-12 rounded-full border-2 border-white shadow-md" 
+              className="w-12 h-12 rounded-full border-2 border-white shadow-md shrink-0"
             />
-          </div>
-        </div>
-        
-        {/* 模块状态 (CRC) */}
-        <div className="flex gap-3 mb-2">
-          <div className="flex-1 bg-blue-50 rounded-xl p-3 border border-blue-100">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <span className="text-xs font-bold text-blue-700">IWRS 系统</span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1 text-xl font-bold text-gray-900 truncate">
+                李敏
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 shrink-0">
+                  CRC
+                </span>
+              </div>
+              <div className="mt-1 flex items-center gap-2 min-w-0">
+                <p className="text-sm text-gray-500 truncate">
+                  <Hospital className="w-5 h-5 mr-1 inline-block" />
+                  上海眼病防治中心
+                </p>
+              </div>
             </div>
-            <div className="text-xs text-blue-600">3 待随机 · 2 待发药</div>
           </div>
-          <div className="flex-1 bg-emerald-50 rounded-xl p-3 border border-emerald-100">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-              <span className="text-xs font-bold text-emerald-700">EDC 系统</span>
+
+          <div className="relative cursor-pointer" onClick={onOpenNotifications}>
+            <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center hover:bg-gray-100 transition">
+              <Bell className="text-gray-600 w-5 h-5" />
             </div>
-            <div className="text-xs text-emerald-600">12 待录入 · 4 质疑</div>
+            {unreadCount > 0 && (
+              <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+            )}
           </div>
         </div>
       </div>
 
       {/* CRC Workbench Content */}
-      <div className="px-5 pb-20">
+      <div className="px-5 pb-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold text-gray-800">待办事项</h2>
           <span className="text-sm text-blue-600">按优先级排序</span>
         </div>
 
         <div className="space-y-3">
+          {topPending.map(a => {
+            const badge =
+              a.status === 'pending_confirm'
+                ? { text: '待确认', cls: 'text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded' }
+                : { text: '待补全', cls: 'text-xs font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded' };
+            return (
+              <div
+                key={a.id}
+                className="bg-white p-4 rounded-xl border border-blue-100 shadow-sm relative overflow-hidden"
+              >
+                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-6 h-6 rounded bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <ClipboardList className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-xs font-bold text-blue-700">IWRS - 预约患者</span>
+                  </div>
+                  <span className={badge.cls}>{badge.text}</span>
+                </div>
+                <div className="text-[10px] text-gray-400 mb-1">{a.time}</div>
+                <h3 className="font-bold text-gray-800 text-sm mb-1">预约患者 {a.name}</h3>
+                <p className="text-xs text-gray-500 mb-3">来自：{a.doctor}</p>
+                <button
+                  type="button"
+                  className="w-full py-2.5 bg-blue-50 text-blue-700 border border-blue-200 text-sm font-bold rounded-lg hover:bg-blue-100 transition"
+                  onClick={() => onViewAppointment?.(a.id)}
+                >
+                  处理预约
+                </button>
+              </div>
+            );
+          })}
+
           {/* IWRS 任务卡片 (Blue) */}
           <div className="bg-white p-4 rounded-xl border border-blue-100 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>

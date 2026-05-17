@@ -1,31 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutList, User, ArrowLeft, Building2, FolderKanban, LogOut as LogOutIcon, ChevronRight, MapPin } from 'lucide-react';
+import { LayoutList, User, Building2, FolderKanban, LogOut as LogOutIcon, ChevronRight, MapPin } from 'lucide-react';
 import classNames from 'classnames';
-import { DB } from '../store';
+import { Appointment, DB, db } from '../store';
 import { PhoneContainer } from './PhoneContainer';
 import { LoginView } from './LoginView';
 import WorkbenchCrc from './WorkbenchCrc';
 import { ProjectList } from './ProjectList';
 import ProjectDetail from './ProjectDetail';
+import { CrcAppointmentPage } from './CrcAppointmentPage';
 
 export const CrcView: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [tab, setTab] = useState<'home' | 'projects' | 'profile'>('home');
-  const [screen, setScreen] = useState<'home' | 'detail' | 'my-centers' | 'my-projects' | 'notifications'>('home');
+  const [screen, setScreen] = useState<'home' | 'detail' | 'my-centers' | 'my-projects' | 'notifications' | 'appointment'>('home');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [, setDbVersion] = useState(0);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleDocAction = (e: Event) => {
       const customEvent = e as CustomEvent;
-      const { type, patient, doctor } = customEvent.detail;
+      const { type, patient, doctor, appointment } = customEvent.detail;
       
       if (type === 'new_appointment') {
         const newNotif = {
           id: Date.now(),
           title: '新预约申请',
           time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-          content: `${doctor || '医生'}提交了患者 ${patient.name} 的预约申请，请及时处理。`
+          content: `${doctor || '医生'}提交了患者 ${patient.name} 的预约申请，请及时处理。`,
+          appointmentId: appointment?.id
         };
         
         setNotifications(prev => [newNotif, ...prev]);
@@ -42,16 +45,15 @@ export const CrcView: React.FC = () => {
     return () => DB.events.removeEventListener('db_updated', handleDbUpdated);
   }, []);
 
-  const renderNotifications = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
-      <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
-        <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
-          <ArrowLeft className="text-slate-600" width={22} />
-        </div>
-        <h2 className="font-bold text-[17px] w-full text-center text-slate-800 tracking-wide">消息通知</h2>
-      </div>
+  const pendingAppointments = db.getPendingAppointments();
 
-      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
+  const openAppointment = (appointmentId: string) => {
+    setSelectedAppointmentId(appointmentId);
+    setScreen('appointment');
+  };
+
+  const renderNotifications = () => (
+    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar p-4 space-y-4 pb-16">
         {notifications.length === 0 ? (
           <div className="text-center text-slate-400 text-sm mt-20">暂无消息</div>
         ) : (
@@ -63,17 +65,27 @@ export const CrcView: React.FC = () => {
                 <span className="text-[11px] text-slate-400">{n.time}</span>
               </div>
               <p className="text-[13px] text-slate-600 leading-relaxed">{n.content}</p>
+              {n.appointmentId && (
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 font-bold text-[13px] hover:bg-blue-100 transition-colors"
+                    onClick={() => openAppointment(n.appointmentId)}
+                  >
+                    处理预约
+                  </button>
+                </div>
+              )}
             </div>
           ))
         )}
-      </div>
     </div>
   );
 
 
   const renderProfile = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
-      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-12 space-y-4">
+    <div className="flex flex-col h-full bg-slate-50 relative z-10">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-4 space-y-4 pb-16">
         
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-5">
           <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[24px] font-black shrink-0">
@@ -118,15 +130,7 @@ export const CrcView: React.FC = () => {
   );
 
   const renderMyCenters = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
-      <div className="bg-white pt-10 px-3 pb-3 flex items-center shadow-sm z-20 flex-none relative">
-        <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
-          <ArrowLeft className="text-slate-600" width={22} />
-        </div>
-        <h2 className="font-bold text-[17px] w-full text-center text-slate-800 tracking-wide">我的中心</h2>
-      </div>
-
-      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
+    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar p-4 space-y-4 pb-16">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
           <div className="flex justify-between items-start mb-3">
             <h3 className="font-bold text-slate-800 text-[16px]">北京协和医院眼科中心</h3>
@@ -154,28 +158,20 @@ export const CrcView: React.FC = () => {
             <a className="text-[13px] text-blue-600 font-bold cursor-pointer">查看详情</a>
           </div>
         </div>
-      </div>
     </div>
   );
 
   const renderMyProjects = () => (
-    <div className="flex flex-col h-full bg-[#f8f9fa] relative z-10">
-      <div className="bg-white pt-10 px-3 pb-0 flex flex-col shadow-sm z-20 flex-none relative">
-        <div className="flex items-center mb-4">
-          <div className="absolute left-3 cursor-pointer p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors" onClick={() => setScreen('home')}>
-            <ArrowLeft className="text-slate-600" width={22} />
-          </div>
-          <h2 className="font-bold text-[17px] w-full text-center text-slate-800 tracking-wide">我的项目</h2>
-        </div>
-        
-        <div className="flex bg-slate-100 p-1 rounded-xl mx-2 mb-3">
+    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar pb-16">
+      <div className="sticky top-0 z-10 bg-slate-50 px-4 pt-4 pb-3">
+        <div className="flex bg-slate-100 p-1 rounded-xl">
           <div className="flex-1 text-center py-1.5 bg-blue-600 text-white rounded-lg text-[13px] font-bold shadow-sm">全部</div>
           <div className="flex-1 text-center py-1.5 text-slate-500 rounded-lg text-[13px] font-medium">进行中</div>
           <div className="flex-1 text-center py-1.5 text-slate-500 rounded-lg text-[13px] font-medium">已结束</div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
+      <div className="px-4 space-y-4 pb-16">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-bold text-slate-800 text-[15px] leading-tight flex-1 pr-2">青少年近视防控临床研究</h3>
@@ -262,39 +258,98 @@ export const CrcView: React.FC = () => {
     );
   }
 
-  if (screen === 'detail') {
-    return <ProjectDetail onBack={() => setScreen('home')} />;
-  }
+  const headerTitle =
+    screen === 'home'
+      ? tab === 'projects'
+        ? '我的项目'
+        : tab === 'profile'
+          ? '我的'
+          : undefined
+      : screen === 'notifications'
+        ? '消息通知'
+        : screen === 'appointment'
+          ? '处理预约'
+        : screen === 'my-centers'
+          ? '我的中心'
+          : screen === 'my-projects'
+            ? '我的项目'
+            : screen === 'detail'
+              ? '项目详情'
+              : undefined;
+
+  const headerOnBack =
+    screen === 'notifications' || screen === 'detail'
+      ? () => setScreen('home')
+      : screen === 'appointment'
+        ? () => {
+            setScreen('home');
+            setTab('home');
+          }
+      : screen === 'my-centers' || screen === 'my-projects'
+        ? () => {
+            setScreen('home');
+            setTab('profile');
+          }
+        : undefined;
 
   return (
-    <PhoneContainer>
+    <PhoneContainer title={headerTitle} onBack={headerOnBack}>
       <div className="flex flex-col h-full relative">
         
-        <div className="flex-1 overflow-hidden relative mt-6 bg-[#f8f9fa]">
-          {tab === 'home' && screen === 'home' && <WorkbenchCrc onOpenNotifications={() => setScreen('notifications')} unreadCount={notifications.length} />}
+        <div className="flex-1 overflow-hidden relative bg-slate-50">
+          {tab === 'home' && screen === 'home' && (
+            <div className="h-full overflow-y-auto no-scrollbar pb-24">
+              <WorkbenchCrc
+                onOpenNotifications={() => setScreen('notifications')}
+                unreadCount={notifications.length}
+                pendingAppointments={pendingAppointments as Appointment[]}
+                onViewAppointment={(id) => openAppointment(id)}
+              />
+            </div>
+          )}
           {tab === 'projects' && screen === 'home' && <ProjectList onNavigateToDetail={() => setScreen('detail')} />}
           {tab === 'profile' && screen === 'home' && renderProfile()}
           {screen === 'my-centers' && renderMyCenters()}
           {screen === 'my-projects' && renderMyProjects()}
           {screen === 'notifications' && renderNotifications()}
+          {screen === 'appointment' && selectedAppointmentId && (
+            <CrcAppointmentPage appointmentId={selectedAppointmentId} onDone={() => { setScreen('home'); setTab('home'); }} />
+          )}
+          {screen === 'detail' && <ProjectDetail />}
         </div>
 
-        {screen === 'home' && (
-          <div className="bg-white border-t p-3 flex justify-around text-xs text-slate-500 shrink-0 relative z-20">
-            <div className={classNames("flex flex-col items-center cursor-pointer", tab === 'home' ? "text-emerald-600" : "")} onClick={() => setTab('home')}>
-              <LayoutList className="w-6 h-6 mb-1" />
-              工作台
-            </div>
-            <div className={classNames("flex flex-col items-center cursor-pointer", tab === 'projects' ? "text-emerald-600" : "")} onClick={() => setTab('projects')}>
-              <FolderKanban className="w-6 h-6 mb-1" />
-              项目
-            </div>
-            <div className={classNames("flex flex-col items-center cursor-pointer", tab === 'profile' ? "text-emerald-600" : "")} onClick={() => setTab('profile')}>
-              <User className="w-6 h-6 mb-1" />
-              我的
-            </div>
+        <div className="bg-white border-t p-3 flex justify-around text-xs text-slate-500 shrink-0 relative z-20">
+          <div
+            className={classNames("flex flex-col items-center cursor-pointer", tab === 'home' ? "text-emerald-600" : "")}
+            onClick={() => {
+              setScreen('home');
+              setTab('home');
+            }}
+          >
+            <LayoutList className="w-6 h-6 mb-1" />
+            工作台
           </div>
-        )}
+          <div
+            className={classNames("flex flex-col items-center cursor-pointer", tab === 'projects' ? "text-emerald-600" : "")}
+            onClick={() => {
+              setScreen('home');
+              setTab('projects');
+            }}
+          >
+            <FolderKanban className="w-6 h-6 mb-1" />
+            项目
+          </div>
+          <div
+            className={classNames("flex flex-col items-center cursor-pointer", tab === 'profile' ? "text-emerald-600" : "")}
+            onClick={() => {
+              setScreen('home');
+              setTab('profile');
+            }}
+          >
+            <User className="w-6 h-6 mb-1" />
+            我的
+          </div>
+        </div>
       </div>
     </PhoneContainer>
   );

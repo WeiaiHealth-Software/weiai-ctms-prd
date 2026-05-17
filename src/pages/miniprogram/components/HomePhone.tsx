@@ -12,7 +12,7 @@ export const HomePhone: React.FC<HomePhoneProps> = ({ onSelectRole, activeRoles 
   return (
     <PhoneContainer>
       <div className="flex-1 overflow-y-auto no-scrollbar bg-white flex flex-col justify-center p-6 space-y-6 h-full relative">
-        <div className="text-center mb-8">
+        <div className="text-center -mt-2">
           <div className="w-20 h-20 bg-brand-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-brand-200 mb-4">
             <Activity className="text-white w-10 h-10" />
           </div>

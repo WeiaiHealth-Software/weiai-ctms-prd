@@ -9,9 +9,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onNavigateToDetail }) 
   const [activeTab, setActiveTab] = useState<'iwrs' | 'edc'>('iwrs');
 
   return (
-    <div className="flex-1 overflow-y-auto pb-24">
-      <div className="px-5 pt-6 pb-2 sticky top-0 bg-[#f8fafc] z-40">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">我的项目</h1>
+    <div className="flex-1 overflow-y-auto pb-16">
+      <div className="px-5 pt-4 pb-2 sticky top-0 bg-[#f8fafc] z-40">
         <div className="relative">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
           <input

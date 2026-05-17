@@ -85,7 +85,7 @@ export const Users: React.FC = () => {
 
           <div className="flex items-end justify-end lg:pl-6">
             <button
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-sm font-bold text-white shadow-lg shadow-brand-500/30 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-sm font-bold text-white shadow-lg shadow-brand-500/30 transition-all"
               onClick={() => navigate('/index/users/create')}
             >
               <UserPlus className="w-4 h-4" /> 新增用户

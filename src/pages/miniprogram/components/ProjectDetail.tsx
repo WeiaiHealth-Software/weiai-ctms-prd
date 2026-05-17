@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  ChevronLeft, 
   Plus, 
   Search, 
   ChevronRight,
@@ -8,23 +7,11 @@ import {
   Link
 } from 'lucide-react';
 
-interface ProjectDetailProps {
-  onBack?: () => void;
-}
-
-const ProjectDetail: React.FC<ProjectDetailProps> = ({ onBack }) => {
+const ProjectDetail: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'iwrs' | 'edc'>('iwrs');
 
   return (
     <div className="flex flex-col h-full relative z-10 bg-gray-50">
-      {/* 顶部导航 */}
-      <header className="bg-white px-4 py-3 flex items-center border-b border-gray-200 z-40">
-          <button className="text-gray-500 mr-4" onClick={onBack}>
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-lg font-bold flex-1 text-center mr-10">项目详情</h1>
-        </header>
-
         <main className="flex-1 overflow-y-auto p-4 pb-10 scrollbar-hide" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
           {/* 项目宏观信息卡片 */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-5 relative overflow-hidden">
