@@ -5,12 +5,19 @@ import { useProjectWizardStore } from '../../../store/useProjectWizardStore';
 import { Step1BasicInfo } from './Step1BasicInfo';
 import { Step2Dimensions } from './Step2Dimensions';
 import { Step3Grouping } from './Step3Grouping';
+import { Step4Fission } from './Step4Fission';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 export const ProjectWizard: React.FC = () => {
-  const { currentStep, setStep, reset } = useProjectWizardStore();
+  const { currentStep, setStep, reset, isFissionMode } = useProjectWizardStore();
   const setTitle = useHeaderStore(state => state.setTitle);
   const navigate = useNavigate();
+
+  const totalSteps = isFissionMode ? 4 : 3;
+
+  useEffect(() => {
+    if (!isFissionMode && currentStep > 3) setStep(3);
+  }, [currentStep, isFissionMode, setStep]);
 
   useEffect(() => {
     setTitle('创建新项目', '请按照向导指引完成临床研究项目的各项初始化配置', [
@@ -24,7 +31,7 @@ export const ProjectWizard: React.FC = () => {
   };
 
   const handleNext = () => {
-    if (currentStep < 3) {
+    if (currentStep < totalSteps) {
       setStep(currentStep + 1);
     } else {
       // 提交逻辑
@@ -47,16 +54,17 @@ export const ProjectWizard: React.FC = () => {
           <div className="absolute top-4 left-0 right-0 h-1 bg-slate-100 rounded-full -z-10 overflow-hidden">
             <div 
               className="h-full bg-brand-500 transition-all duration-500 ease-out" 
-              style={{ width: `${(currentStep - 1) * 50}%` }}
+              style={{ width: `${totalSteps <= 1 ? 0 : ((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
             ></div>
           </div>
           
           {[
             { step: 1, title: '基础设置', desc: '项目基本信息' },
             { step: 2, title: '维度选择', desc: '配置实验维度' },
-            { step: 3, title: '分组配置', desc: '设定分组与人数' }
+            { step: 3, title: '分组配置', desc: '设定分组与人数' },
+            ...(isFissionMode ? [{ step: 4, title: '裂变配置', desc: '配置二阶段裂变' }] : [])
           ].map((item) => (
-            <div key={item.step} className="flex flex-col items-center w-1/3 group cursor-pointer" onClick={() => setStep(item.step)}>
+            <div key={item.step} className="flex flex-col items-center flex-1 group cursor-pointer" onClick={() => setStep(item.step)}>
               <div className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm transition-all ring-4 ring-white ${
                 currentStep >= item.step 
                   ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30 scale-110' 
@@ -81,6 +89,7 @@ export const ProjectWizard: React.FC = () => {
           {currentStep === 1 && <Step1BasicInfo />}
           {currentStep === 2 && <Step2Dimensions />}
           {currentStep === 3 && <Step3Grouping />}
+          {currentStep === 4 && isFissionMode && <Step4Fission />}
         </div>
       </div>
 
@@ -103,8 +112,8 @@ export const ProjectWizard: React.FC = () => {
             onClick={handleNext} 
             className="px-8 py-2.5 rounded-xl bg-brand-600 text-white font-bold shadow-xl shadow-brand-500/30 hover:bg-brand-700 transition-all transform hover:-translate-y-0.5 active:scale-95 flex items-center gap-2"
           >
-            {currentStep === 3 ? '完成创建' : '下一步'} 
-            {currentStep !== 3 && <ArrowRight className="w-4 h-4" />}
+            {currentStep === totalSteps ? '完成创建' : '下一步'} 
+            {currentStep !== totalSteps && <ArrowRight className="w-4 h-4" />}
           </button>
         </div>
       </div>

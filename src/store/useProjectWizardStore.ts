@@ -50,7 +50,6 @@ export interface ProjectWizardState {
     factors: Record<string, number>; // key: 因子名称, value: 人数
   }[];
   fissionConfig: {
-    triggerMode: 'manual' | 'auto';
     balanceStrategy: 'simple' | 'dimension' | 'manual';
     days: number;
     medicalNote: string;
@@ -94,7 +93,6 @@ const initialState = {
     { id: 'g2', name: '对照组', medicine: '安慰剂', count: 50, factors: { '默认': 50 } }
   ],
   fissionConfig: {
-    triggerMode: 'manual' as const,
     balanceStrategy: 'simple' as const,
     days: 180,
     medicalNote: ''

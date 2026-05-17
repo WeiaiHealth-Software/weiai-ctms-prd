@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useHeaderStore } from '../../store/useHeaderStore';
-import { ENROLLMENT_DATA, PROJECTS, type EnrollmentRow } from '../../mock/projects';
-import { ArrowLeft, Search, Filter, Plus, Eye, AlarmClock } from 'lucide-react';
+import { ENROLLMENT_DATA, PROJECTS, type EnrollmentRow, type ProjectStatus } from '../../mock/projects';
+import { ArrowLeft, Search, Filter, Plus, Eye, AlarmClock, Rocket, AlertTriangle } from 'lucide-react';
 
 type TableFilter =
   | 'all'
@@ -30,6 +30,8 @@ export const ProjectDetail: React.FC = () => {
   const [search, setSearch] = useState('');
   const [blindMode, setBlindMode] = useState(false);
   const [criteriaOpen, setCriteriaOpen] = useState(false);
+  const [startModalOpen, setStartModalOpen] = useState(false);
+  const [statusOverride, setStatusOverride] = useState<ProjectStatus | null>(null);
 
   useEffect(() => {
     if (!project) return;
@@ -73,7 +75,9 @@ export const ProjectDetail: React.FC = () => {
     );
   }
 
-  const ended = project.status === '已结束';
+  const status = statusOverride ?? project.status;
+  const ended = status === '已结束';
+  const readyToStart = status === '未开始';
 
   const renderDrugId = (r: EnrollmentRow) => {
     if (!project.isFission || !r.isFissioned || !r.drugIdStage1 || !r.drugIdStage2) return r.drugId;
@@ -198,6 +202,16 @@ export const ProjectDetail: React.FC = () => {
             <Eye className="w-4 h-4 mr-1" />
             <span>盲态切换</span>
           </button>
+          {readyToStart && (
+            <button
+              type="button"
+              onClick={() => setStartModalOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 text-xs justify-center font-bold rounded-lg shadow-lg border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <Rocket className="w-4 h-4" />
+              启动项目
+            </button>
+          )}
           <button
             onClick={() => alert('录入受试者')}
             disabled={ended}
@@ -221,7 +235,7 @@ export const ProjectDetail: React.FC = () => {
               <h2 className="text-2xl font-bold text-slate-800">{project.title}</h2>
             </div>
             <div className="flex items-center gap-4 text-slate-500 text-sm mb-4 font-mono flex-wrap">
-              {project.status === '进行中' ? (
+              {status === '进行中' ? (
                 <div className="flex items-center gap-2">
                   <span className="flex h-3 w-3 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -231,6 +245,14 @@ export const ProjectDetail: React.FC = () => {
                     进行中
                   </span>
                 </div>
+              ) : status === '未开始' ? (
+                <span className="flex justify-center items-center gap-2 px-2 py-1 bg-orange-50 text-orange-700 text-xs font-bold rounded border border-orange-200">
+                  待启动
+                </span>
+              ) : status === '初始化' ? (
+                <span className="flex justify-center items-center gap-2 px-2 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded border border-blue-200">
+                  初始化
+                </span>
               ) : (
                 <span className="flex justify-center items-center gap-2 px-2 py-1 bg-slate-50 text-slate-500 text-xs font-bold rounded border border-slate-200">
                   已结束
@@ -446,6 +468,42 @@ export const ProjectDetail: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {startModalOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-brand-50 rounded-full mb-5 border border-brand-100">
+                <AlertTriangle className="w-6 h-6 text-brand-600" />
+              </div>
+              <h3 className="text-xl font-bold text-center text-slate-800 mb-2">确认启动项目？</h3>
+              <p className="text-center text-slate-500 mb-6 text-sm leading-relaxed">
+                确认启动 <span className="font-bold text-slate-700">"{project.title}"</span> 项目。
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setStartModalOpen(false)}
+                  className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStartModalOpen(false);
+                    setStatusOverride('进行中');
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-95"
+                >
+                  确认
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

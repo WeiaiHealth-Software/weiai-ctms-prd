@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useProjectWizardStore } from '../../../store/useProjectWizardStore';
-import { Shuffle, SlidersHorizontal, Plus, AlertTriangle, Settings, GitFork } from 'lucide-react';
+import { Shuffle, SlidersHorizontal, Plus, AlertTriangle } from 'lucide-react';
 
 export const Step3Grouping: React.FC = () => {
   const { 
@@ -10,25 +10,13 @@ export const Step3Grouping: React.FC = () => {
     isFissionMode, 
     groups, 
     dimensionFactors,
-    fissionConfig,
-    fissionRules,
-    updateGrouping 
+    updateGrouping,
+    setStep
   } = useProjectWizardStore();
 
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [showFissionConfirm, setShowFissionConfirm] = useState(false);
-  const [selectedFissionGroupId, setSelectedFissionGroupId] = useState<string | null>(null);
   
-  // 临时编辑裂变规则的状态
-  const [editingRule, setEditingRule] = useState<any>(null);
-
-  const distributeCounts = (total: number, n: number) => {
-    if (!Number.isFinite(total) || total <= 0 || n <= 0) return Array.from({ length: n }, () => 0);
-    const base = Math.floor(total / n);
-    const remainder = total % n;
-    return Array.from({ length: n }, (_, i) => base + (i < remainder ? 1 : 0));
-  };
-
   const toggleGroupExpand = (groupId: string) => {
     setExpandedGroups(prev => ({
       ...prev,
@@ -60,59 +48,13 @@ export const Step3Grouping: React.FC = () => {
       setShowFissionConfirm(true);
     } else {
       updateGrouping({ isFissionMode: false });
-      setSelectedFissionGroupId(null);
-      setEditingRule(null);
     }
   };
 
   const confirmEnableFission = () => {
     updateGrouping({ isFissionMode: true });
     setShowFissionConfirm(false);
-  };
-
-  const handleSelectFissionGroup = (groupId: string) => {
-    setSelectedFissionGroupId(groupId);
-    const stage1Count = groups.find(g => g.id === groupId)?.count ?? 0;
-    
-    // 初始化编辑规则
-    if (fissionRules[groupId]) {
-      const cloned = JSON.parse(JSON.stringify(fissionRules[groupId]));
-      const subCount = Array.isArray(cloned?.subGroups) ? cloned.subGroups.length : 0;
-      const sum = Array.isArray(cloned?.subGroups)
-        ? cloned.subGroups.reduce((acc: number, s: any) => acc + (parseInt(String(s?.count ?? 0), 10) || 0), 0)
-        : 0;
-      if (subCount > 0 && sum === 0) {
-        const counts = distributeCounts(stage1Count, subCount);
-        cloned.subGroups = cloned.subGroups.map((s: any, idx: number) => ({ ...s, count: counts[idx] ?? 0 }));
-      }
-      setEditingRule(cloned);
-    } else {
-      const counts = distributeCounts(stage1Count, 2);
-      const now = Date.now();
-      setEditingRule({
-        subGroups: [
-          { id: `sub_${now}_1`, name: '裂变1组', count: counts[0] ?? 0, medicine: '' },
-          { id: `sub_${now}_2`, name: '裂变2组', count: counts[1] ?? 0, medicine: '' }
-        ]
-      });
-    }
-  };
-
-  const saveFissionRule = () => {
-    if (selectedFissionGroupId && editingRule) {
-      updateGrouping({
-        fissionRules: {
-          ...fissionRules,
-          [selectedFissionGroupId]: { subGroups: editingRule.subGroups }
-        }
-      });
-      setSelectedFissionGroupId(null);
-      setEditingRule(null);
-    }
-  };
-
-  const updateFissionConfig = (patch: Partial<typeof fissionConfig>) => {
-    updateGrouping({ fissionConfig: { ...fissionConfig, ...patch } });
+    setStep(4);
   };
 
   return (
@@ -140,8 +82,23 @@ export const Step3Grouping: React.FC = () => {
         </div>
       </div>
 
-      {!isFissionMode ? (
-        <div className="space-y-8">
+      {isFissionMode && (
+        <div className="mb-8 bg-brand-50 border border-brand-100 rounded-2xl p-5 flex items-start justify-between gap-4">
+          <div>
+            <div className="text-sm font-bold text-brand-800">已开启二阶段裂变</div>
+            <div className="text-xs text-brand-700 mt-1">一阶段分组配置保留不变，裂变配置在下一步完成。</div>
+          </div>
+          <button
+            type="button"
+            className="px-4 py-2 rounded-xl bg-brand-600 text-white font-bold text-sm shadow-lg shadow-brand-500/20 hover:bg-brand-700 transition-all active:scale-95 whitespace-nowrap"
+            onClick={() => setStep(4)}
+          >
+            前往裂变配置
+          </button>
+        </div>
+      )}
+
+      <div className="space-y-8">
           {/* Grouping Mode */}
           <div>
             <h4 className="text-sm font-bold text-slate-700 mb-3">选择分组模式</h4>
@@ -310,269 +267,7 @@ export const Step3Grouping: React.FC = () => {
           <button onClick={handleAddGroup} className="w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold hover:border-brand-400 hover:text-brand-600 hover:bg-brand-50 transition-all flex justify-center items-center gap-2 shadow-sm">
             <Plus className="w-5 h-5" /> 增加新的分组
           </button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-sm font-bold text-slate-900">裂变通用配置</div>
-                <div className="text-xs text-slate-500 mt-1">触发方式、平衡策略与入组时长在此统一配置</div>
-              </div>
-              <div className="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
-                Stage 2 规则
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
-              <div>
-                <div className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
-                  <GitFork className="w-4 h-4 text-brand-500" /> 触发机制
-                </div>
-                <div className="flex bg-slate-100 p-1 rounded-lg">
-                  <button
-                    type="button"
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${fissionConfig.triggerMode === 'manual' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    onClick={() => updateFissionConfig({ triggerMode: 'manual' })}
-                  >
-                    主动触发
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${fissionConfig.triggerMode === 'auto' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    onClick={() => updateFissionConfig({ triggerMode: 'auto' })}
-                  >
-                    自动触发
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
-                  <Shuffle className="w-4 h-4 text-brand-500" /> 平衡策略
-                </div>
-                <div className="flex bg-slate-100 p-1 rounded-lg">
-                  {[
-                    { id: 'simple', label: '简单随机' },
-                    { id: 'dimension', label: '维度平衡' },
-                    { id: 'manual', label: '主动分配' }
-                  ].map(s => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${fissionConfig.balanceStrategy === s.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                      onClick={() => updateFissionConfig({ balanceStrategy: s.id as 'simple' | 'dimension' | 'manual' })}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="text-sm font-bold text-slate-700 mb-2">入组时长门槛</div>
-                <div className="relative">
-                  <input
-                    type="number"
-                    className="w-full text-sm border-slate-200 rounded-lg focus:border-brand-500 focus:ring-1 focus:ring-brand-500 py-2 pr-10"
-                    value={fissionConfig.days}
-                    onChange={(e) => updateFissionConfig({ days: parseInt(e.target.value) || 0 })}
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">天</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <div className="text-xs font-bold text-slate-600 mb-2">医学指标要求（备注）</div>
-              <input
-                type="text"
-                className="w-full text-sm border-slate-200 rounded-lg focus:border-brand-500 focus:ring-1 focus:ring-brand-500 py-2"
-                placeholder="例如：视功能指标大于 0.8"
-                value={fissionConfig.medicalNote}
-                onChange={(e) => updateFissionConfig({ medicalNote: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-6 h-[540px]">
-            {/* 左侧：分组结构 */}
-            <div className="flex-1 bg-slate-50/50 rounded-2xl border border-slate-200 p-6 flex flex-col h-full">
-              <h4 className="text-sm font-bold text-slate-800 mb-1">项目分组结构</h4>
-              <p className="text-xs text-slate-500 mb-6">配置第一阶段及裂变后的第二阶段分组逻辑</p>
-              
-              <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                <div className="flex gap-6">
-                  {/* 第一阶段 */}
-                  <div className="flex-1 space-y-4">
-                    <h5 className="text-sm font-bold text-slate-700 mb-4 pb-2 border-b border-slate-200">第一阶段 (Stage 1)</h5>
-                    {groups.map(group => (
-                      <div key={`s1-${group.id}`} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm h-[88px] flex flex-col justify-center">
-                        <div className="font-bold text-slate-800">{group.name}</div>
-                        <div className="text-xs text-slate-500 mt-1">占比 {totalCount > 0 ? Math.round((group.count / totalCount) * 100) : 0}% ({group.count}人)</div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* 第二阶段 */}
-                  <div className="flex-1 space-y-4">
-                    <h5 className="text-sm font-bold text-slate-700 mb-4 pb-2 border-b border-slate-200">第二阶段 (Stage 2)</h5>
-                    {groups.map(group => {
-                      const isSelected = selectedFissionGroupId === group.id;
-                      const hasRule = !!fissionRules[group.id];
-                      const rule = fissionRules[group.id];
-                      return (
-                        <div 
-                          key={`s2-${group.id}`} 
-                          className={`bg-white p-4 rounded-xl border-2 transition-all cursor-pointer ${isSelected ? 'border-brand-500 shadow-md ring-2 ring-brand-500/20' : 'border-slate-200 hover:border-brand-300 shadow-sm'}`}
-                          onClick={() => handleSelectFissionGroup(group.id)}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="font-bold text-slate-800">{group.name}</div>
-                            <button type="button" className="flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700 whitespace-nowrap shrink-0">
-                              <Settings className="w-3.5 h-3.5" />
-                              {hasRule ? '编辑子组' : '配置子组'}
-                            </button>
-                          </div>
-                          {hasRule ? (
-                            <div className="mt-3 space-y-2">
-                              {(rule?.subGroups || []).slice(0, 3).map((sub: any) => (
-                                <div
-                                  key={sub.id}
-                                  className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 flex items-center justify-between gap-3"
-                                >
-                                  <div className="min-w-0">
-                                    <div className="text-[12px] font-bold text-slate-700 truncate">{sub.name}</div>
-                                    <div className="text-[10px] text-slate-400 truncate mt-0.5">{sub.medicine || '产品 产品名称'}</div>
-                                  </div>
-                                  <div className="text-[12px] font-bold text-slate-700 whitespace-nowrap">{sub.count} 人</div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-xs text-slate-500 mt-1">维持原组</div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 右侧：裂变子组配置 */}
-            <div className="w-[400px] bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full">
-              {selectedFissionGroupId && editingRule ? (
-                <>
-                  <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
-                    <div>
-                      <h4 className="font-bold text-slate-800">裂变子组配置</h4>
-                      <p className="text-xs text-slate-500 mt-0.5">仅配置子组名称、人数与产品</p>
-                    </div>
-                    <div className="text-xs font-bold text-slate-700 bg-slate-200/50 px-2 py-1 rounded">
-                      针对 {groups.find(g => g.id === selectedFissionGroupId)?.name}
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-3">
-                    {editingRule.subGroups.map((sub: any, idx: number) => (
-                      <div key={sub.id} className="bg-slate-50 p-3 rounded-xl border border-slate-100 relative group">
-                        {editingRule.subGroups.length > 2 && (
-                          <button 
-                            type="button"
-                            className="absolute top-2 right-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => {
-                              const newSubs = editingRule.subGroups.filter((_: any, i: number) => i !== idx);
-                              setEditingRule({ ...editingRule, subGroups: newSubs });
-                            }}
-                          >
-                            <Settings className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        <div className="flex gap-3 mb-2">
-                          <div className="flex-1">
-                            <input 
-                              type="text" 
-                              value={sub.name}
-                              onChange={(e) => {
-                                const newSubs = [...editingRule.subGroups];
-                                newSubs[idx].name = e.target.value;
-                                setEditingRule({ ...editingRule, subGroups: newSubs });
-                              }}
-                              className="w-full text-sm font-bold bg-transparent border-b border-dashed border-slate-300 focus:border-brand-500 focus:outline-none px-1 py-0.5"
-                            />
-                          </div>
-                          <div className="w-20 relative">
-                            <input 
-                              type="number" 
-                              value={sub.count}
-                              onChange={(e) => {
-                                const newSubs = [...editingRule.subGroups];
-                                newSubs[idx].count = parseInt(e.target.value) || 0;
-                                setEditingRule({ ...editingRule, subGroups: newSubs });
-                              }}
-                              className="w-full text-sm text-center bg-white border border-slate-200 rounded px-1 py-1 pr-5"
-                            />
-                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">人</span>
-                          </div>
-                        </div>
-                        <div>
-                          <input 
-                            type="text" 
-                            value={sub.medicine}
-                            onChange={(e) => {
-                              const newSubs = [...editingRule.subGroups];
-                              newSubs[idx].medicine = e.target.value;
-                              setEditingRule({ ...editingRule, subGroups: newSubs });
-                            }}
-                            placeholder="产品 产品名称"
-                            className="w-full text-xs bg-transparent border-none focus:ring-0 p-0 text-slate-500"
-                          />
-                        </div>
-                      </div>
-                    ))}
-
-                    {editingRule.subGroups.length < 3 && (
-                      <button 
-                        type="button"
-                        className="w-full py-2.5 border border-dashed border-slate-300 rounded-xl text-xs font-bold text-slate-500 hover:text-brand-600 hover:border-brand-300 hover:bg-brand-50 transition-colors flex justify-center items-center gap-1"
-                        onClick={() => {
-                          setEditingRule({
-                            ...editingRule,
-                            subGroups: [
-                              ...editingRule.subGroups,
-                              { id: `sub_${Date.now()}`, name: `裂变${editingRule.subGroups.length + 1}组`, count: 0, medicine: '' }
-                            ]
-                          })
-                        }}
-                      >
-                        <Plus className="w-3.5 h-3.5" /> 增加子组(最多3个)
-                      </button>
-                    )}
-                  </div>
-                  
-                  <div className="p-4 border-t border-slate-100 bg-white rounded-b-2xl">
-                    <button 
-                      onClick={saveFissionRule}
-                      className="w-full py-2.5 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 shadow-lg shadow-brand-500/30 transition-all active:scale-95"
-                    >
-                      保存子组
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-50/30 rounded-2xl">
-                  <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
-                    <GitFork className="w-8 h-8 text-slate-400" />
-                  </div>
-                  <h4 className="text-slate-600 font-bold mb-1">暂未选择需要配置裂变的分组</h4>
-                  <p className="text-sm text-slate-400">请在左侧点击分组进行配置</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* 裂变开启确认 Modal */}
       {showFissionConfirm && typeof document !== 'undefined'

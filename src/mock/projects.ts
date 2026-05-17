@@ -1,4 +1,4 @@
-export type ProjectStatus = '进行中' | '已结束';
+export type ProjectStatus = '初始化' | '未开始' | '进行中' | '已结束';
 
 export type ProjectSummary = {
   id: string;
@@ -43,6 +43,44 @@ export type EnrollmentRow = {
 };
 
 export const PROJECTS: ProjectSummary[] = [
+  {
+    id: 'p0_init',
+    code: 'MYOPIA_INIT',
+    status: '初始化',
+    title: '青少年近视防控临床研究（初始化中）',
+    date: '2026-05-15',
+    description:
+      '项目已完成基础信息录入，但尚未完成维度选择、分组配置等关键初始化步骤，项目未启动。',
+    leader: '徐蔚',
+    collab: '李医生（上海眼病防治中心）',
+    crc: '张同学',
+    centers: ['上海市眼病防治中心'],
+    inclusionCriteria: [],
+    exclusionCriteria: [],
+    currentCount: 0,
+    totalCount: 150,
+    themeColor: 'brand',
+    isFission: false
+  },
+  {
+    id: 'p0_ready',
+    code: 'MYOPIA_READY',
+    status: '未开始',
+    title: '青少年近视防控临床研究（待启动）',
+    date: '2026-05-12',
+    description:
+      '项目已完成全部初始化配置，当前处于未开始状态，等待正式启动后开展入组与随机分配。',
+    leader: '徐蔚',
+    collab: '王医生（徐州眼视光中心）、李医生（上海眼病防治中心）',
+    crc: '张同学',
+    centers: ['徐州眼视光中心', '上海市眼病防治中心'],
+    inclusionCriteria: ['年龄：6-14岁', '已签署知情同意书'],
+    exclusionCriteria: ['研究者判断不适合纳入'],
+    currentCount: 0,
+    totalCount: 100,
+    themeColor: 'brand',
+    isFission: false
+  },
   {
     id: 'p1',
     code: 'XW09',

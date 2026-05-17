@@ -117,11 +117,31 @@ export const ProjectList: React.FC = () => {
                     <span className="font-bold text-slate-800 leading-relaxed">{project.title}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold border ${project.status === '进行中' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold border ${
+                        project.status === '进行中'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : project.status === '初始化'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : project.status === '未开始'
+                              ? 'bg-orange-50 text-orange-700 border-orange-200'
+                              : 'bg-slate-50 text-slate-500 border-slate-200'
+                      }`}
+                    >
                       {project.status === '进行中' && (
                         <span className="flex h-2 w-2 relative">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                      )}
+                      {project.status === '初始化' && (
+                        <span className="flex h-2 w-2 relative">
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                        </span>
+                      )}
+                      {project.status === '未开始' && (
+                        <span className="flex h-2 w-2 relative">
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                         </span>
                       )}
                       {project.status === '已结束' && (
@@ -158,7 +178,7 @@ export const ProjectList: React.FC = () => {
                         onClick={() => navigate(`/index/projects/${project.id}`)} 
                         className="cursor-pointer p-2 rounded-md bg-brand-50 hover:bg-brand-100 text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors"
                       >
-                        查看详情
+                        {project.status === '初始化' ? '配置' : '查看详情'}
                       </button>
                       <button 
                         onClick={() => handleDeleteClick(project.id, project.title)}
