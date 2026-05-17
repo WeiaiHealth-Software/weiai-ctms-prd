@@ -106,14 +106,14 @@ export const ProjectList: React.FC = () => {
                     <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-bold border bg-brand-50 text-brand-600 border-brand-100">
                       {project.code}
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
                     {project.isFission && (
-                      <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100">
-                        <GitFork className="w-3 h-3" />
+                      <span className="mr-2 inline-flex items-center gap-1 px-1 py-0 rounded text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                        <GitFork className="w-2 h-2" />
                         裂变
                       </span>
                     )}
-                  </td>
-                  <td className="px-6 py-4">
                     <span className="font-bold text-slate-800 leading-relaxed">{project.title}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

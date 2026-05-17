@@ -1,6 +1,8 @@
 import React from 'react';
 import { useProjectWizardStore } from '../../../store/useProjectWizardStore';
 import { Plus, X } from 'lucide-react';
+import Select from '@/components/form/Select';
+import MultiSelect from '@/components/form/MultiSelect';
 
 export const Step1BasicInfo: React.FC = () => {
   const { basicInfo, updateBasicInfo } = useProjectWizardStore();
@@ -108,48 +110,48 @@ export const Step1BasicInfo: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="md:col-span-1 relative">
           <label className="block text-sm font-bold text-slate-700 mb-2">关联研究中心 <span className="text-red-500">*</span></label>
-          <select 
-            className="w-full rounded-lg border-slate-300 bg-slate-50 border px-3 py-2.5 text-sm focus:border-brand-500 focus:bg-white focus:ring-1 focus:ring-brand-500 transition-colors"
-            value={basicInfo.centers[0] || ''}
-            onChange={(e) => updateBasicInfo({ centers: [e.target.value] })}
-          >
-            <option value="">已选择 1 个中心</option>
-            <option value="1">上海眼病防治中心</option>
-            <option value="2">北京同仁医院</option>
-          </select>
+          <MultiSelect
+            value={basicInfo.centers}
+            onChange={(v) => updateBasicInfo({ centers: v })}
+            placeholder="请选择研究中心..."
+            options={[
+              { value: '1', label: '上海眼病防治中心' },
+              { value: '2', label: '北京同仁医院' }
+            ]}
+          />
         </div>
         <div className="md:col-span-1 relative">
           <label className="block text-sm font-bold text-slate-700 mb-2">项目负责人 <span className="text-red-500">*</span></label>
-          <select 
-            className="w-full rounded-lg border-slate-300 bg-slate-50 border px-3 py-2.5 text-sm focus:border-brand-500 focus:bg-white focus:ring-1 focus:ring-brand-500 transition-colors"
+          <Select
             value={basicInfo.leader}
-            onChange={(e) => updateBasicInfo({ leader: e.target.value })}
-          >
-            <option value="">请选择负责人...</option>
-            <option value="admin">王强 (徐州眼视光中心)</option>
-          </select>
+            onChange={(v) => updateBasicInfo({ leader: v })}
+            placeholder="请选择负责人..."
+            options={[
+              { value: 'admin', label: '王强 (徐州眼视光中心)' }
+            ]}
+          />
         </div>
         <div className="md:col-span-1 relative">
           <label className="block text-sm font-bold text-slate-700 mb-2">协作医生</label>
-          <select 
-            className="w-full rounded-lg border-slate-300 bg-slate-50 border px-3 py-2.5 text-sm focus:border-brand-500 focus:bg-white focus:ring-1 focus:ring-brand-500 transition-colors"
+          <Select
             value={basicInfo.collab}
-            onChange={(e) => updateBasicInfo({ collab: e.target.value })}
-          >
-            <option value="">请选择协作医生...</option>
-            <option value="doctor1">李医生</option>
-          </select>
+            onChange={(v) => updateBasicInfo({ collab: v })}
+            placeholder="请选择协作医生..."
+            options={[
+              { value: 'doctor1', label: '李医生' }
+            ]}
+          />
         </div>
         <div className="md:col-span-1 relative">
           <label className="block text-sm font-bold text-slate-700 mb-2">临床研究协调员 CRC <span className="text-red-500">*</span></label>
-          <select 
-            className="w-full rounded-lg border-slate-300 bg-slate-50 border px-3 py-2.5 text-sm focus:border-brand-500 focus:bg-white focus:ring-1 focus:ring-brand-500 transition-colors"
+          <Select
             value={basicInfo.crc}
-            onChange={(e) => updateBasicInfo({ crc: e.target.value })}
-          >
-            <option value="">已选择 1 人</option>
-            <option value="crc1">张协调员</option>
-          </select>
+            onChange={(v) => updateBasicInfo({ crc: v })}
+            placeholder="请选择 CRC..."
+            options={[
+              { value: 'crc1', label: '张协调员' }
+            ]}
+          />
         </div>
       </div>
 
