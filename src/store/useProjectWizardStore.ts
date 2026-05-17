@@ -49,14 +49,20 @@ export interface ProjectWizardState {
     count: number;
     factors: Record<string, number>; // key: 因子名称, value: 人数
   }[];
-  fissionRules: Record<string, any>; // key: groupId, value: 裂变规则
+  fissionConfig: {
+    triggerMode: 'manual' | 'auto';
+    balanceStrategy: 'simple' | 'dimension' | 'manual';
+    days: number;
+    medicalNote: string;
+  };
+  fissionRules: Record<string, { subGroups: { id: string; name: string; count: number; medicine: string }[] }>; // key: groupId
 
   // Actions
   setIsOpen: (isOpen: boolean) => void;
   setStep: (step: number) => void;
   updateBasicInfo: (info: Partial<ProjectWizardState['basicInfo']>) => void;
   updateDimensions: (dims: string[]) => void;
-  updateGrouping: (config: Partial<Pick<ProjectWizardState, 'totalCount' | 'matchMode' | 'isFissionMode' | 'groups' | 'fissionRules'>>) => void;
+  updateGrouping: (config: Partial<Pick<ProjectWizardState, 'totalCount' | 'matchMode' | 'isFissionMode' | 'groups' | 'fissionConfig' | 'fissionRules'>>) => void;
   reset: () => void;
 }
 
@@ -87,6 +93,12 @@ const initialState = {
     { id: 'g1', name: '实验组', medicine: '产品A', count: 50, factors: { '默认': 50 } },
     { id: 'g2', name: '对照组', medicine: '安慰剂', count: 50, factors: { '默认': 50 } }
   ],
+  fissionConfig: {
+    triggerMode: 'manual' as const,
+    balanceStrategy: 'simple' as const,
+    days: 180,
+    medicalNote: ''
+  },
   fissionRules: {}
 };
 
