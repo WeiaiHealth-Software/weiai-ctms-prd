@@ -1,5 +1,42 @@
 export type ProjectStatus = '初始化' | '未开始' | '进行中' | '已结束';
 
+export type ProjectConfigSnapshot = {
+  createdAt: string;
+  basicInfo: {
+    name: string;
+    code: string;
+    randomPrefix: string;
+    productPrefix: string;
+    isShared: boolean;
+    isBlind: boolean;
+    description: string;
+    centers: string[];
+    leader: string;
+    collab: string;
+    crc: string;
+    inclusionCriteria: string[];
+    exclusionCriteria: string[];
+  };
+  selectedDimensions: string[];
+  dimensionFactors: string[];
+  totalCount: number;
+  matchMode: 'random' | 'free';
+  isFissionMode: boolean;
+  groups: {
+    id: string;
+    name: string;
+    medicine: string;
+    count: number;
+    factors: Record<string, number>;
+  }[];
+  fissionConfig: {
+    balanceStrategy: 'simple' | 'dimension' | 'manual';
+    days: number;
+    medicalNote: string;
+  };
+  fissionRules: Record<string, { subGroups: { id: string; name: string; count: number; medicine: string }[] }>;
+};
+
 export type ProjectSummary = {
   id: string;
   code: string;
@@ -18,6 +55,7 @@ export type ProjectSummary = {
   totalCount: number;
   themeColor: 'brand' | 'indigo';
   isFission: boolean;
+  configSnapshot?: ProjectConfigSnapshot;
 };
 
 export type EnrollmentRowStatus = 'enrolled' | 'failed' | 'pending';

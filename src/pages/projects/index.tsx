@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHeaderStore } from '../../store/useHeaderStore';
 import { Plus, Search, Filter, GitFork, AlertTriangle } from 'lucide-react';
-import { PROJECTS } from '../../mock/projects';
+import { useProjectsStore } from '../../store/useProjectsStore';
 
 export const ProjectList: React.FC = () => {
   const setTitle = useHeaderStore(state => state.setTitle);
@@ -10,12 +10,11 @@ export const ProjectList: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'active' | 'ended'>('all');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<{id: string, name: string} | null>(null);
+  const projects = useProjectsStore((s) => s.projects);
 
   useEffect(() => {
     setTitle('项目管理', '管理所有临床研究项目', [{ text: '所有角色', color: 'slate' }]);
   }, [setTitle]);
-
-  const projects = PROJECTS;
 
   const filteredProjects = projects.filter(p => {
     if (filter === 'active') return p.status === '进行中';

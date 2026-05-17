@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHeaderStore } from '../../../store/useHeaderStore';
 import { useProjectWizardStore } from '../../../store/useProjectWizardStore';
+import { useProjectsStore } from '../../../store/useProjectsStore';
 import { Step1BasicInfo } from './Step1BasicInfo';
 import { Step2Dimensions } from './Step2Dimensions';
 import { Step3Grouping } from './Step3Grouping';
@@ -9,9 +10,23 @@ import { Step4Fission } from './Step4Fission';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 export const ProjectWizard: React.FC = () => {
-  const { currentStep, setStep, reset, isFissionMode } = useProjectWizardStore();
+  const {
+    currentStep,
+    setStep,
+    reset,
+    isFissionMode,
+    basicInfo,
+    selectedDimensions,
+    dimensionFactors,
+    totalCount,
+    matchMode,
+    groups,
+    fissionConfig,
+    fissionRules
+  } = useProjectWizardStore();
   const setTitle = useHeaderStore(state => state.setTitle);
   const navigate = useNavigate();
+  const addProject = useProjectsStore((s) => s.addProject);
 
   const totalSteps = isFissionMode ? 4 : 3;
 
@@ -34,9 +49,41 @@ export const ProjectWizard: React.FC = () => {
     if (currentStep < totalSteps) {
       setStep(currentStep + 1);
     } else {
-      // 提交逻辑
-      console.log('提交项目配置');
-      handleClose();
+      const now = new Date();
+      const id = `p_${now.getTime()}`;
+      const date = now.toISOString().slice(0, 10);
+      addProject({
+        id,
+        code: basicInfo.code || `CODE_${String(now.getTime()).slice(-6)}`,
+        status: '未开始',
+        title: basicInfo.name || '未命名项目',
+        date,
+        description: basicInfo.description || '',
+        leader: basicInfo.leader,
+        collab: basicInfo.collab,
+        crc: basicInfo.crc,
+        centers: basicInfo.centers,
+        inclusionCriteria: basicInfo.inclusionCriteria,
+        exclusionCriteria: basicInfo.exclusionCriteria,
+        currentCount: 0,
+        totalCount,
+        themeColor: 'brand',
+        isFission: isFissionMode,
+        configSnapshot: {
+          createdAt: now.toISOString(),
+          basicInfo,
+          selectedDimensions,
+          dimensionFactors,
+          totalCount,
+          matchMode,
+          isFissionMode,
+          groups,
+          fissionConfig,
+          fissionRules
+        }
+      });
+      reset();
+      navigate(`/index/projects/${id}`);
     }
   };
 

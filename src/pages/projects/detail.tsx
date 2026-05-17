@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useHeaderStore } from '../../store/useHeaderStore';
-import { ENROLLMENT_DATA, PROJECTS, type EnrollmentRow, type ProjectStatus } from '../../mock/projects';
-import { ArrowLeft, Search, Filter, Plus, Eye, AlarmClock, Rocket, AlertTriangle } from 'lucide-react';
+import { ENROLLMENT_DATA, type EnrollmentRow } from '../../mock/projects';
+import { useProjectsStore } from '../../store/useProjectsStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { AVAILABLE_DIMENSIONS } from '../../constants/dimensions';
+import { ArrowLeft, Search, Filter, Plus, Eye, AlarmClock, Rocket, AlertTriangle, Settings } from 'lucide-react';
 
 type TableFilter =
   | 'all'
@@ -23,7 +26,10 @@ export const ProjectDetail: React.FC = () => {
   const navigate = useNavigate();
   const setTitle = useHeaderStore((s) => s.setTitle);
 
-  const project = useMemo(() => PROJECTS.find((p) => p.id === projectId), [projectId]);
+  const projects = useProjectsStore((s) => s.projects);
+  const updateProjectStatus = useProjectsStore((s) => s.updateProjectStatus);
+  const isAdmin = useAuthStore((s) => s.role === 'admin');
+  const project = useMemo(() => projects.find((p) => p.id === projectId), [projectId, projects]);
   const data = useMemo(() => ENROLLMENT_DATA[projectId || ''] || [], [projectId]);
 
   const [filter, setFilter] = useState<TableFilter>('all');
@@ -31,7 +37,7 @@ export const ProjectDetail: React.FC = () => {
   const [blindMode, setBlindMode] = useState(false);
   const [criteriaOpen, setCriteriaOpen] = useState(false);
   const [startModalOpen, setStartModalOpen] = useState(false);
-  const [statusOverride, setStatusOverride] = useState<ProjectStatus | null>(null);
+  const [configModalOpen, setConfigModalOpen] = useState(false);
 
   useEffect(() => {
     if (!project) return;
@@ -75,9 +81,10 @@ export const ProjectDetail: React.FC = () => {
     );
   }
 
-  const status = statusOverride ?? project.status;
+  const status = project.status;
   const ended = status === '已结束';
   const readyToStart = status === '未开始';
+  const configSnapshot = project.configSnapshot;
 
   const renderDrugId = (r: EnrollmentRow) => {
     if (!project.isFission || !r.isFissioned || !r.drugIdStage1 || !r.drugIdStage2) return r.drugId;
@@ -202,6 +209,16 @@ export const ProjectDetail: React.FC = () => {
             <Eye className="w-4 h-4 mr-1" />
             <span>盲态切换</span>
           </button>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setConfigModalOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 text-xs justify-center font-bold rounded-lg shadow-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <Settings className="w-4 h-4" />
+              配置详情
+            </button>
+          )}
           {readyToStart && (
             <button
               type="button"
@@ -493,13 +510,195 @@ export const ProjectDetail: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setStartModalOpen(false);
-                    setStatusOverride('进行中');
+                    updateProjectStatus(project.id, '进行中');
                   }}
                   className="flex-1 px-4 py-2.5 bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-95"
                 >
                   确认
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {configModalOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <div className="text-lg font-black text-slate-800">项目配置详情</div>
+                <div className="text-xs text-slate-500 mt-0.5 font-mono">{project.code}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfigModalOpen(false)}
+                className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-100"
+              >
+                关闭
+              </button>
+            </div>
+
+            <div className="p-6 max-h-[70vh] overflow-auto">
+              {!configSnapshot ? (
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-600 text-sm">
+                  当前项目暂无配置快照（仅在创建完成时会记录一份配置详情）。
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                      <div className="text-xs text-slate-500 font-bold mb-1">创建时间</div>
+                      <div className="text-sm font-bold text-slate-800">{new Date(configSnapshot.createdAt).toLocaleString()}</div>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                      <div className="text-xs text-slate-500 font-bold mb-1">匹配模式</div>
+                      <div className="text-sm font-bold text-slate-800">{configSnapshot.matchMode === 'random' ? '随机分配' : '自由分配'}</div>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                      <div className="text-xs text-slate-500 font-bold mb-1">样本量</div>
+                      <div className="text-sm font-bold text-slate-800">{configSnapshot.totalCount}</div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                    <div className="px-5 py-3 bg-slate-50 border-b border-slate-100 text-sm font-black text-slate-800">基础信息</div>
+                    <div className="p-5 grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <div className="text-xs text-slate-500 font-bold mb-1">项目名称</div>
+                        <div className="font-bold text-slate-800">{configSnapshot.basicInfo.name}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-500 font-bold mb-1">项目码</div>
+                        <div className="font-bold text-slate-800 font-mono">{configSnapshot.basicInfo.code}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-500 font-bold mb-1">随机码前缀</div>
+                        <div className="font-bold text-slate-800">{configSnapshot.basicInfo.randomPrefix}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-500 font-bold mb-1">产品码前缀</div>
+                        <div className="font-bold text-slate-800">{configSnapshot.basicInfo.productPrefix}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-500 font-bold mb-1">是否共享数据</div>
+                        <div className="font-bold text-slate-800">{configSnapshot.basicInfo.isShared ? '共享' : '不共享'}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-500 font-bold mb-1">是否双盲</div>
+                        <div className="font-bold text-slate-800">{configSnapshot.basicInfo.isBlind ? '开启' : '关闭'}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                    <div className="px-5 py-3 bg-slate-50 border-b border-slate-100 text-sm font-black text-slate-800">维度选择</div>
+                    <div className="p-5">
+                      <div className="flex flex-wrap gap-2">
+                        {(configSnapshot.selectedDimensions.length ? configSnapshot.selectedDimensions : ['默认']).map((id) => {
+                          const d = AVAILABLE_DIMENSIONS.find((x) => x.id === id);
+                          const label = d ? d.name : id;
+                          return (
+                            <span
+                              key={id}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border bg-brand-50 text-brand-700 border-brand-100"
+                            >
+                              {label}
+                            </span>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-3 text-xs text-slate-500">
+                        因子组合：<span className="font-mono">{configSnapshot.dimensionFactors.length}</span> 种
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                    <div className="px-5 py-3 bg-slate-50 border-b border-slate-100 text-sm font-black text-slate-800">分组配置（Stage 1）</div>
+                    <div className="p-5 space-y-3">
+                      {configSnapshot.groups.map((g) => (
+                        <div key={g.id} className="rounded-2xl border border-slate-200 overflow-hidden">
+                          <div className="px-4 py-3 bg-white flex items-center justify-between">
+                            <div className="font-black text-slate-800">{g.name}</div>
+                            <div className="text-xs font-bold text-slate-500">
+                              人数 <span className="text-slate-800">{g.count}</span>
+                            </div>
+                          </div>
+                          <div className="px-4 pb-4">
+                            <div className="text-xs text-slate-500 font-bold mb-2">产品</div>
+                            <div className="text-sm font-bold text-slate-800">{g.medicine}</div>
+                            <div className="mt-3 grid grid-cols-2 gap-2">
+                              {Object.entries(g.factors).map(([k, v]) => (
+                                <div key={k} className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 border border-slate-200">
+                                  <span className="text-xs font-bold text-slate-600">{k}</span>
+                                  <span className="text-xs font-black text-slate-800">{v}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {configSnapshot.isFissionMode && (
+                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                      <div className="px-5 py-3 bg-slate-50 border-b border-slate-100 text-sm font-black text-slate-800">裂变配置（Stage 2）</div>
+                      <div className="p-5 space-y-4">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                            <div className="text-xs text-slate-500 font-bold mb-1">平衡策略</div>
+                            <div className="text-sm font-bold text-slate-800">
+                              {configSnapshot.fissionConfig.balanceStrategy === 'simple'
+                                ? '简单随机'
+                                : configSnapshot.fissionConfig.balanceStrategy === 'dimension'
+                                  ? '维度平衡'
+                                  : '主动分配'}
+                            </div>
+                          </div>
+                          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                            <div className="text-xs text-slate-500 font-bold mb-1">入组时长门槛</div>
+                            <div className="text-sm font-bold text-slate-800">{configSnapshot.fissionConfig.days} 天</div>
+                          </div>
+                          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                            <div className="text-xs text-slate-500 font-bold mb-1">医学指标备注</div>
+                            <div className="text-sm font-bold text-slate-800">{configSnapshot.fissionConfig.medicalNote || '—'}</div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          {Object.entries(configSnapshot.fissionRules).map(([groupId, rule]) => {
+                            const group = configSnapshot.groups.find((g) => g.id === groupId);
+                            const title = group ? group.name : groupId;
+                            return (
+                              <div key={groupId} className="rounded-2xl border border-slate-200 overflow-hidden">
+                                <div className="px-4 py-3 bg-white flex items-center justify-between">
+                                  <div className="font-black text-slate-800">针对 {title}</div>
+                                  <div className="text-xs font-bold text-slate-500">
+                                    子组 <span className="text-slate-800">{rule.subGroups.length}</span>
+                                  </div>
+                                </div>
+                                <div className="px-4 pb-4 space-y-2">
+                                  {rule.subGroups.map((sg) => (
+                                    <div key={sg.id} className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 border border-slate-200">
+                                      <div className="min-w-0">
+                                        <div className="text-sm font-black text-slate-800 truncate">{sg.name}</div>
+                                        <div className="text-xs text-slate-500 truncate">{sg.medicine}</div>
+                                      </div>
+                                      <div className="text-xs font-black text-slate-800">{sg.count} 人</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
