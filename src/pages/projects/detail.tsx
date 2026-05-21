@@ -6,6 +6,8 @@ import { useProjectsStore } from '../../store/useProjectsStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { AVAILABLE_DIMENSIONS } from '../../constants/dimensions';
 import { ArrowLeft, Search, Filter, Plus, Eye, AlarmClock, Rocket, AlertTriangle, Settings } from 'lucide-react';
+import Drawer from '../../components/overlay/Drawer';
+import SectionCard from '../../components/common/SectionCard';
 
 type TableFilter =
   | 'all'
@@ -38,6 +40,8 @@ export const ProjectDetail: React.FC = () => {
   const [criteriaOpen, setCriteriaOpen] = useState(false);
   const [startModalOpen, setStartModalOpen] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [subjectDrawerOpen, setSubjectDrawerOpen] = useState(false);
+  const [activeSubject, setActiveSubject] = useState<EnrollmentRow | null>(null);
 
   useEffect(() => {
     if (!project) return;
@@ -113,10 +117,20 @@ export const ProjectDetail: React.FC = () => {
     );
   };
 
+  const openSubject = (r: EnrollmentRow) => {
+    setActiveSubject(r);
+    setSubjectDrawerOpen(true);
+  };
+
+  const closeSubject = () => {
+    setSubjectDrawerOpen(false);
+    setActiveSubject(null);
+  };
+
   const renderActions = (r: EnrollmentRow) => {
     if (r.status === 'failed') {
       return (
-        <button className="text-slate-400 hover:text-brand-600 font-medium text-sm" onClick={() => alert('查看详情')}>
+        <button className="text-slate-400 hover:text-brand-600 font-medium text-sm" onClick={() => openSubject(r)}>
           查看详情
         </button>
       );
@@ -139,7 +153,7 @@ export const ProjectDetail: React.FC = () => {
 
     if (!project.isFission) {
       return (
-        <button className="text-slate-400 hover:text-brand-600 font-medium text-sm" onClick={() => alert('查看详情')}>
+        <button className="text-slate-400 hover:text-brand-600 font-medium text-sm" onClick={() => openSubject(r)}>
           查看详情
         </button>
       );
@@ -151,7 +165,7 @@ export const ProjectDetail: React.FC = () => {
           <button className="text-slate-300 cursor-not-allowed font-medium text-xs flex items-center gap-1 px-2 py-1" disabled>
             已裂变
           </button>
-          <button className="text-slate-400 hover:text-brand-600 font-medium text-sm" onClick={() => alert('详情')}>
+          <button className="text-slate-400 hover:text-brand-600 font-medium text-sm" onClick={() => openSubject(r)}>
             详情
           </button>
         </div>
@@ -172,7 +186,7 @@ export const ProjectDetail: React.FC = () => {
           >
             裂变
           </button>
-          <button className="text-slate-400 hover:text-brand-600 font-medium text-sm" onClick={() => alert('详情')}>
+          <button className="text-slate-400 hover:text-brand-600 font-medium text-sm" onClick={() => openSubject(r)}>
             详情
           </button>
         </div>
@@ -180,7 +194,7 @@ export const ProjectDetail: React.FC = () => {
     }
 
     return (
-      <button className="text-slate-400 hover:text-brand-600 font-medium text-sm" onClick={() => alert('详情')}>
+      <button className="text-slate-400 hover:text-brand-600 font-medium text-sm" onClick={() => openSubject(r)}>
         详情
       </button>
     );
@@ -430,34 +444,30 @@ export const ProjectDetail: React.FC = () => {
           <table className="min-w-full">
             <thead>
               <tr className="bg-slate-50/80 text-slate-500 text-xs uppercase tracking-wider">
-                {!blindMode && <th className="px-6 py-4 font-semibold">筛选号</th>}
-                <th className="px-6 py-4 font-semibold">受试者编号</th>
-                {!blindMode && <th className="px-6 py-4 font-semibold">随机号</th>}
-                {!blindMode && <th className="px-6 py-4 font-semibold">产品号</th>}
+                {!blindMode && <th className="px-6 py-4 font-semibold text-center">筛选号</th>}
+                <th className="px-6 py-4 font-semibold text-center">受试者编号</th>
                 <th className="px-6 py-4 font-semibold">姓名</th>
-                <th className="px-6 py-4 font-semibold">年龄</th>
-                <th className="px-6 py-4 font-semibold">指标</th>
-                {!blindMode && <th className="px-6 py-4 font-semibold">分组</th>}
-                {!blindMode && <th className="px-6 py-4 font-semibold">维度标签</th>}
-                <th className="px-6 py-4 font-semibold">推荐医生</th>
-                {project.isFission && !blindMode && <th className="px-6 py-4 font-semibold">裂变状态</th>}
+                <th className="px-6 py-4 font-semibold text-center">年龄</th>
+                <th className="px-6 py-4 font-semibold text-center">屈光度</th>
+                {!blindMode && <th className="px-6 py-4 font-semibold text-center">分组</th>}
+                {!blindMode && <th className="px-6 py-4 font-semibold text-center">维度标签</th>}
+                <th className="px-6 py-4 font-semibold text-center">推荐医生</th>
+                {project.isFission && !blindMode && <th className="px-6 py-4 font-semibold text-center">裂变状态</th>}
                 <th className="px-6 py-4 font-semibold text-right">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
               {rows.map((r, idx) => (
                 <tr key={`${r.id}-${idx}`} className="hover:bg-slate-50/80 transition-colors">
-                  {!blindMode && <td className="px-6 py-4 font-mono font-medium text-slate-600">{r.screenId}</td>}
-                  <td className="px-6 py-4 font-mono font-medium text-slate-600">{r.id}</td>
-                  {!blindMode && <td className="px-6 py-4 font-mono text-slate-600">{r.randomId}</td>}
-                  {!blindMode && <td className="px-6 py-4 font-mono text-slate-600">{renderDrugId(r)}</td>}
-                  <td className="px-6 py-4 font-semibold text-slate-800">{r.name}</td>
-                  <td className="px-6 py-4 text-slate-600">{r.age}</td>
-                  <td className="px-6 py-4 text-slate-600">{r.indicator}</td>
-                  {!blindMode && <td className="px-6 py-4">{renderGroup(r)}</td>}
+                  {!blindMode && <td className="px-6 py-4 font-mono font-medium text-slate-600 text-center">{r.screenId}</td>}
+                  <td className="px-6 py-4 font-mono font-medium text-slate-600 text-center">{r.id}</td>
+                  <td className="px-6 py-4 font-semibold text-slate-800 text-center">{r.name}</td>
+                  <td className="px-6 py-4 text-slate-600 text-center">{r.age}</td>
+                  <td className="px-6 py-4 text-slate-600 text-center font-mono">{r.indicator}</td>
+                  {!blindMode && <td className="px-6 py-4 text-center"><div className="flex justify-center">{renderGroup(r)}</div></td>}
                   {!blindMode && (
-                    <td className="px-6 py-4">
-                      <div className="flex gap-1 flex-wrap">
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex gap-1 flex-wrap justify-center">
                         {r.tags.length ? (
                           r.tags.map((t) => (
                             <span key={t} className="px-1.5 py-0.5 rounded border border-slate-200 text-xs text-slate-500">
@@ -470,9 +480,9 @@ export const ProjectDetail: React.FC = () => {
                       </div>
                     </td>
                   )}
-                  <td className="px-6 py-4 font-medium text-slate-600">{r.doctor || '--'}</td>
+                  <td className="px-6 py-4 font-medium text-slate-600 text-center">{r.doctor || '--'}</td>
                   {project.isFission && !blindMode && (
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${STAGE_BADGE[r.stage || '--']}`}>
                         {r.stage || '--'}
                       </span>
@@ -485,6 +495,132 @@ export const ProjectDetail: React.FC = () => {
           </table>
         </div>
       </div>
+
+      <Drawer
+        open={subjectDrawerOpen}
+        title="受试者详情"
+        subtitle={activeSubject ? `受试者编号：${activeSubject.id}` : undefined}
+        onClose={closeSubject}
+        width={760}
+      >
+        {activeSubject && (
+          <div className="space-y-5">
+            <SectionCard title="基础信息">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-xs text-slate-500 font-bold mb-1">姓名</div>
+                  <div className="font-bold text-slate-800">{activeSubject.name}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-bold mb-1">年龄</div>
+                  <div className="font-bold text-slate-800">{activeSubject.age}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-bold mb-1">屈光度</div>
+                  <div className="font-bold text-slate-800 font-mono">{activeSubject.indicator}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-bold mb-1">推荐医生</div>
+                  <div className="font-bold text-slate-800">{activeSubject.doctor || '--'}</div>
+                </div>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="编号信息">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-xs text-slate-500 font-bold mb-1">筛选号</div>
+                  <div className="font-bold text-slate-800 font-mono">{activeSubject.screenId || '--'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-bold mb-1">受试者编号</div>
+                  <div className="font-bold text-slate-800 font-mono">{activeSubject.id || '--'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-bold mb-1">随机号</div>
+                  <div className="font-bold text-slate-800 font-mono">{activeSubject.randomId || '--'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-bold mb-1">产品号</div>
+                  <div className="font-bold text-slate-800 font-mono">{renderDrugId(activeSubject) || '--'}</div>
+                </div>
+                {project.isFission && (
+                  <>
+                    <div>
+                      <div className="text-xs text-slate-500 font-bold mb-1">产品号（Stage 1）</div>
+                      <div className="font-bold text-slate-800 font-mono">{activeSubject.drugIdStage1 || '--'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-500 font-bold mb-1">产品号（Stage 2）</div>
+                      <div className="font-bold text-slate-800 font-mono">{activeSubject.drugIdStage2 || '--'}</div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </SectionCard>
+
+            <SectionCard title="分组信息">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-xs text-slate-500 font-bold mb-1">研究组</div>
+                  <div className="flex items-center gap-2">{renderGroup(activeSubject)}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-bold mb-1">裂变状态</div>
+                  {project.isFission ? (
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${STAGE_BADGE[activeSubject.stage || '--']}`}
+                    >
+                      {activeSubject.stage || '--'}
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">--</span>
+                  )}
+                </div>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="维度信息">
+              <div className="space-y-4">
+                <div className="flex gap-1 flex-wrap">
+                  {activeSubject.tags.length ? (
+                    activeSubject.tags.map((t) => (
+                      <span key={t} className="px-2 py-0.5 rounded-lg border border-slate-200 text-xs text-slate-600 bg-white">
+                        {t}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-slate-400">--</span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  {AVAILABLE_DIMENSIONS.map((d) => {
+                    let value = '--';
+                    if (d.id === 'gender') {
+                      value = activeSubject.tags.find(t => t === '男' || t === '女') ?? '--';
+                    } else if (d.id === 'age') {
+                      value = activeSubject.tags.find(t => t.includes('岁')) ?? '--';
+                    } else if (d.id === 'diopter') {
+                      const num = Number(String(activeSubject.indicator).replace(/[^\d.-]/g, ''));
+                      if (!Number.isNaN(num)) {
+                        if (num >= -1.0 && num <= -0.5) value = '-1.0~-0.5';
+                        else if (num >= -0.4 && num <= 0) value = '-0.4~0';
+                      }
+                    }
+                    return (
+                      <div key={d.id} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <div className="text-xs font-bold text-slate-500">{d.name}</div>
+                        <div className="mt-1 font-bold text-slate-800">{value}</div>
+                        <div className="mt-1 text-[11px] text-slate-500 leading-relaxed">{d.desc}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </SectionCard>
+          </div>
+        )}
+      </Drawer>
 
       {startModalOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
