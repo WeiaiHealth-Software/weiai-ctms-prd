@@ -5,9 +5,10 @@ import { ENROLLMENT_DATA, type EnrollmentRow } from '../../mock/projects';
 import { useProjectsStore } from '../../store/useProjectsStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { AVAILABLE_DIMENSIONS } from '../../constants/dimensions';
-import { ArrowLeft, Search, Filter, Plus, Eye, AlarmClock, Rocket, AlertTriangle, Settings } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Plus, Eye, AlarmClock, Rocket, AlertTriangle, Settings, Hospital } from 'lucide-react';
 import Drawer from '../../components/overlay/Drawer';
 import SectionCard from '../../components/common/SectionCard';
+import Select from '../../components/form/Select';
 
 type TableFilter =
   | 'all'
@@ -327,7 +328,7 @@ export const ProjectDetail: React.FC = () => {
             <ul className="space-y-3">
               {(project.centers || []).map((c) => (
                 <li key={c} className="flex items-center text-sm font-medium text-slate-700">
-                  <span className="w-2 h-2 rounded-full bg-brand-500 mr-2"></span>
+                  <Hospital className="w-4 h-4 mr-1.5" />
                   {c}
                 </li>
               ))}
@@ -404,13 +405,12 @@ export const ProjectDetail: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="text-lg font-bold text-slate-900">受试者列表</div>
-            <div className="text-sm text-slate-500 mt-1">筛选、匹配与裂变状态追踪</div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center w-full md:w-auto">
             <div className="relative flex-1 sm:w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -418,45 +418,47 @@ export const ProjectDetail: React.FC = () => {
                 onChange={(e) => setSearch(e.target.value)}
                 type="text"
                 placeholder="搜索受试者姓名..."
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                className="w-full h-10 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
               />
             </div>
-            <div className="relative">
-              <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+            <div className="relative w-full sm:w-44">
+              <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 z-10">
                 <Filter className="w-4 h-4 text-slate-400" />
               </div>
-              <select
+              <Select
                 value={filter}
-                onChange={(e) => setFilter(e.target.value as TableFilter)}
-                className="pl-9 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-              >
-                <option value="all">全部</option>
-                <option value="participated">已入组</option>
-                <option value="not_participated">未入组</option>
-                <option value="match_failed">匹配失败</option>
-                <option value="pending">待处理</option>
-              </select>
+                onChange={(v) => setFilter(v as TableFilter)}
+                options={[
+                  { value: 'all', label: '全部' },
+                  { value: 'participated', label: '已入组' },
+                  { value: 'not_participated', label: '未入组' },
+                  { value: 'match_failed', label: '匹配失败' },
+                  { value: 'pending', label: '待处理' }
+                ]}
+                className="w-full"
+                triggerClassName="h-10 pl-9 pr-10 bg-slate-50 hover:bg-slate-50 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+              />
             </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-100" id="data-table-wrapper">
-          <table className="min-w-full">
-            <thead>
-              <tr className="bg-slate-50/80 text-slate-500 text-xs uppercase tracking-wider">
-                {!blindMode && <th className="px-6 py-4 font-semibold text-center">筛选号</th>}
-                <th className="px-6 py-4 font-semibold text-center">受试者编号</th>
-                <th className="px-6 py-4 font-semibold">姓名</th>
-                <th className="px-6 py-4 font-semibold text-center">年龄</th>
-                <th className="px-6 py-4 font-semibold text-center">屈光度</th>
-                {!blindMode && <th className="px-6 py-4 font-semibold text-center">分组</th>}
-                {!blindMode && <th className="px-6 py-4 font-semibold text-center">维度标签</th>}
-                <th className="px-6 py-4 font-semibold text-center">推荐医生</th>
-                {project.isFission && !blindMode && <th className="px-6 py-4 font-semibold text-center">裂变状态</th>}
-                <th className="px-6 py-4 font-semibold text-right">操作</th>
+        <div className="overflow-x-auto" id="data-table-wrapper">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
+              <tr>
+                {!blindMode && <th className="px-6 py-4 whitespace-nowrap text-center">筛选号</th>}
+                <th className="px-6 py-4 whitespace-nowrap text-center">受试者编号</th>
+                <th className="px-6 py-4 whitespace-nowrap text-center">姓名</th>
+                <th className="px-6 py-4 whitespace-nowrap text-center">年龄</th>
+                <th className="px-6 py-4 whitespace-nowrap text-center">屈光度</th>
+                {!blindMode && <th className="px-6 py-4 whitespace-nowrap text-center">分组</th>}
+                {!blindMode && <th className="px-6 py-4 whitespace-nowrap text-center">维度标签</th>}
+                <th className="px-6 py-4 whitespace-nowrap text-center">推荐医生</th>
+                {project.isFission && !blindMode && <th className="px-6 py-4 whitespace-nowrap text-center">裂变状态</th>}
+                <th className="px-6 py-4 whitespace-nowrap text-right">操作</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody className="divide-y divide-slate-100 text-slate-700">
               {rows.map((r, idx) => (
                 <tr key={`${r.id}-${idx}`} className="hover:bg-slate-50/80 transition-colors">
                   {!blindMode && <td className="px-6 py-4 font-mono font-medium text-slate-600 text-center">{r.screenId}</td>}
@@ -464,7 +466,11 @@ export const ProjectDetail: React.FC = () => {
                   <td className="px-6 py-4 font-semibold text-slate-800 text-center">{r.name}</td>
                   <td className="px-6 py-4 text-slate-600 text-center">{r.age}</td>
                   <td className="px-6 py-4 text-slate-600 text-center font-mono">{r.indicator}</td>
-                  {!blindMode && <td className="px-6 py-4 text-center"><div className="flex justify-center">{renderGroup(r)}</div></td>}
+                  {!blindMode && (
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex justify-center">{renderGroup(r)}</div>
+                    </td>
+                  )}
                   {!blindMode && (
                     <td className="px-6 py-4 text-center">
                       <div className="flex gap-1 flex-wrap justify-center">
@@ -499,7 +505,6 @@ export const ProjectDetail: React.FC = () => {
       <Drawer
         open={subjectDrawerOpen}
         title="受试者详情"
-        subtitle={activeSubject ? `受试者编号：${activeSubject.id}` : undefined}
         onClose={closeSubject}
         width={760}
       >

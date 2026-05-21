@@ -15,6 +15,7 @@ export type SelectProps = {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  triggerClassName?: string;
 };
 
 export default function Select({
@@ -23,7 +24,8 @@ export default function Select({
   options,
   placeholder = '请选择',
   disabled,
-  className
+  className,
+  triggerClassName
 }: SelectProps) {
   const triggerId = useId();
   const listboxId = useMemo(() => `${triggerId}-listbox`, [triggerId]);
@@ -132,7 +134,8 @@ export default function Select({
         className={classNames(
           'w-full h-11 rounded-xl border border-slate-200 px-3 text-sm bg-white text-left flex items-center justify-between gap-3',
           'outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500',
-          disabled ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'hover:bg-slate-50'
+          disabled ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'hover:bg-slate-50',
+          triggerClassName
         )}
       >
         <span className={classNames('truncate', selected ? 'text-slate-700' : 'text-slate-400')}>
