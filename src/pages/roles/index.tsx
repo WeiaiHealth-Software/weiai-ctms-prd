@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useHeaderStore } from '../../store/useHeaderStore';
-import { Plus, RefreshCw, ShieldAlert, Smartphone } from 'lucide-react';
+import { AlertTriangle, LockKeyhole, Plus, RefreshCw, ShieldAlert, Smartphone, Trash2 } from 'lucide-react';
+import { useUsersStore } from '@/store/useUsersStore';
 
 const PERMISSION_MODULES = [
   {
@@ -68,8 +69,10 @@ const PERMISSION_MODULES = [
 
 export const Roles: React.FC = () => {
   const setTitle = useHeaderStore(state => state.setTitle);
+  const downgradeUsersByRole = useUsersStore(state => state.downgradeUsersByRole);
   const [activeRole, setActiveRole] = useState('superadmin');
   const [isEditMode, setIsEditMode] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     setTitle('角色权限控制', '管理系统角色与功能权限', [
@@ -78,16 +81,27 @@ export const Roles: React.FC = () => {
     ]);
   }, [setTitle]);
 
-  const roles = [
+  const [roles, setRoles] = useState(() => [
     { id: 'superadmin', name: '超级管理员', desc: '拥有系统所有功能的操作权限', hasShield: true },
     { id: 'dev', name: '开发者', desc: '系统维护与开发人员', hasShield: true },
     { id: 'centeradmin', name: '中心管理员', desc: '负责管理分中心事务与人员' },
     { id: 'pi', name: '主要研究者 (PI)', desc: '负责项目临床研究执行与管理' },
     { id: 'crc', name: 'CRC 协调员', desc: '协助研究者进行非医学性事务' },
-    { id: 'mfr', name: '厂家', desc: '配置厂家角色的账号不能登录 Web ...', hasPhone: true }
-  ];
+    { id: 'mfr', name: '厂家', desc: '配置厂家角色的账号不能登录 Web ...', hasPhone: true },
+    { id: 'base', name: '基础角色', desc: '系统最基础的角色，无任何权限，仅具备登录的能力' }
+  ]);
 
   const currentRole = roles.find(r => r.id === activeRole) || roles[0];
+  const isSystemRole = ['superadmin', 'dev', 'base'].includes(currentRole.id);
+
+  const handleDeleteRole = () => {
+    if (!currentRole || isSystemRole) return;
+    downgradeUsersByRole(currentRole.name);
+    setRoles(prev => prev.filter(r => r.id !== currentRole.id));
+    setIsEditMode(false);
+    setActiveRole('superadmin');
+    setDeleteOpen(false);
+  };
 
   const renderSuperAdminState = () => (
     <div className="flex-1 flex items-center justify-center bg-slate-50/30 p-8">
@@ -97,6 +111,30 @@ export const Roles: React.FC = () => {
         </div>
         <h3 className="text-xl font-black text-slate-800 tracking-wide mb-2">最高权限账户</h3>
         <p className="text-sm text-slate-500">当前角色拥有系统的所有操作权限，无需单独配置。</p>
+      </div>
+    </div>
+  );
+
+  const renderDevState = () => (
+    <div className="flex-1 flex items-center justify-center bg-slate-50/30 p-8">
+      <div className="w-full max-w-4xl border border-slate-200 border-dashed rounded-2xl bg-slate-50/50 p-12 flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 border border-indigo-100 shadow-sm">
+          <ShieldAlert className="w-8 h-8" />
+        </div>
+        <h3 className="text-xl font-black text-slate-800 tracking-wide mb-2">系统维护账户</h3>
+        <p className="text-sm text-slate-500">当前角色用于系统维护与开发调试，权限无需单独配置。</p>
+      </div>
+    </div>
+  );
+
+  const renderBaseRoleState = () => (
+    <div className="flex-1 flex items-center justify-center bg-slate-50/30 p-8">
+      <div className="w-full max-w-4xl border border-slate-200 border-dashed rounded-2xl bg-slate-50/50 p-12 flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-500 mb-6 border border-slate-200 shadow-sm">
+          <LockKeyhole className="w-8 h-8" />
+        </div>
+        <h3 className="text-xl font-black text-slate-800 tracking-wide mb-2">系统基础角色</h3>
+        <p className="text-sm text-slate-500">当前角色无任何操作权限，仅具备登录能力（用于未分配角色的兜底）。</p>
       </div>
     </div>
   );
@@ -176,9 +214,10 @@ export const Roles: React.FC = () => {
                     <h4 className={`font-bold text-base truncate ${activeRole === role.id ? 'text-brand-800' : 'text-slate-700'}`}>
                       {role.name}
                     </h4>
-                    {role.hasShield && (
-                      <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                    {role.id === 'base' && (
+                      <LockKeyhole className="w-4 h-4 text-slate-400 flex-shrink-0" />
                     )}
+                    {role.hasShield && <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0" />}
                     {role.hasPhone && (
                       <Smartphone className="w-4 h-4 text-brand-500 flex-shrink-0" />
                     )}
@@ -209,24 +248,74 @@ export const Roles: React.FC = () => {
                 <span>切换为{currentRole.name}</span>
               </button>
               
-              {!currentRole.hasShield && (
-                <button 
-                  onClick={() => setIsEditMode(!isEditMode)} 
-                  className={`px-6 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
-                    isEditMode 
-                      ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/30' 
-                      : 'bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-500/30'
-                  }`}
-                >
-                  {isEditMode ? '保存配置' : '编辑权限配置'}
-                </button>
+              {!isSystemRole && (
+                <>
+                  <button
+                    onClick={() => setIsEditMode(!isEditMode)}
+                    className={`px-6 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
+                      isEditMode
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/30'
+                        : 'bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-500/30'
+                    }`}
+                  >
+                    {isEditMode ? '保存配置' : '编辑权限配置'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteOpen(true)}
+                    className="w-11 h-11 rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center shadow-lg shadow-red-500/10"
+                    aria-label="删除角色"
+                    title="删除角色"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </>
               )}
             </div>
           </div>
           
-          {currentRole.hasShield ? renderSuperAdminState() : renderPermissionMatrix()}
+          {currentRole.id === 'superadmin'
+            ? renderSuperAdminState()
+            : currentRole.id === 'dev'
+              ? renderDevState()
+              : currentRole.id === 'base'
+                ? renderBaseRoleState()
+                : renderPermissionMatrix()}
         </div>
       </div>
+
+      {deleteOpen && !isSystemRole && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-50 rounded-full mb-5 border border-red-100">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-xl font-black text-center text-slate-800 mb-2">确认删除此角色？</h3>
+              <p className="text-center text-slate-500 mb-6 text-sm leading-relaxed">
+                删除 <span className="font-bold text-slate-700">"{currentRole.name}"</span> 后，所有关联的用户将会被降级成基础角色。
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDeleteOpen(false)}
+                  className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteRole}
+                  className="flex-1 px-4 py-2.5 bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 hover:bg-red-700 transition-all active:scale-95"
+                >
+                  删除
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

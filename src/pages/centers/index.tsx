@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react';
 import { useHeaderStore } from '../../store/useHeaderStore';
-import { Building2, Plus, Eye, Trash2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Building2, Hospital, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { CENTERS } from '../../mock/centers';
 
 export const Centers: React.FC = () => {
   const setTitle = useHeaderStore(state => state.setTitle);
-  const navigate = useNavigate();
 
   useEffect(() => {
     setTitle('中心管理', '管理多中心临床试验的各个分中心信息', [
@@ -44,8 +43,8 @@ export const Centers: React.FC = () => {
             {centers.map((center) => (
               <tr key={center.id} className="hover:bg-slate-50/80 transition-colors group">
                 <td className="px-6 py-4 font-bold text-slate-800 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${center.iconClass}`}>
-                    <Building2 className="w-5 h-5" />
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center`}>
+                    <Hospital className="w-5 h-5" />
                   </div>
                   {center.name}
                 </td>
@@ -58,15 +57,11 @@ export const Centers: React.FC = () => {
                 <td className="px-6 py-4 text-slate-400 font-mono text-xs">{center.createdAt}</td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button
-                      className="p-2 text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors"
-                      title="查看详情"
-                      onClick={() => navigate(`/index/centers/${center.id}`)}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="删除">
-                      <Trash2 className="w-4 h-4" />
+                    <Link to={`/index/centers/${center.id}`} className="cursor-pointer rounded-md px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-800">
+                      查看详情
+                    </Link>
+                    <button className="p-2 text-red-600 rounded-lg transition-colors" title="删除">
+                      删除
                     </button>
                   </div>
                 </td>

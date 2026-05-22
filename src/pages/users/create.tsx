@@ -97,14 +97,10 @@ export const UserCreate: React.FC = () => {
     const phone = form.phone.trim();
     const org = form.org;
     const password = form.password.trim();
-    const rolesText = form.roles.join('、');
+    const rolesText = form.roles.join('、') || '基础角色';
 
     if (!account || !password || !phone || !name || !org) {
       window.alert('请填写账号、密码、手机号、姓名与所属组织');
-      return;
-    }
-    if (!rolesText) {
-      window.alert('请选择至少一个角色');
       return;
     }
 
@@ -313,8 +309,7 @@ export const UserCreate: React.FC = () => {
                 !form.password.trim() ||
                 !form.phone.trim() ||
                 !form.name.trim() ||
-                !form.org ||
-                form.roles.length === 0
+                !form.org
               }
             >
               创建用户

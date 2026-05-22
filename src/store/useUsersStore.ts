@@ -21,7 +21,7 @@ type CreateUserPayload = {
   account: string;
   phone: string;
   org: string;
-  role: string;
+  role?: string;
   avatarText?: string;
   avatarBgClass?: string;
   avatarTextClass?: string;
@@ -31,6 +31,7 @@ type CreateUserPayload = {
 type UsersState = {
   users: UserRow[];
   createUser: (payload: CreateUserPayload) => void;
+  downgradeUsersByRole: (roleName: string) => void;
 };
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -65,6 +66,10 @@ const getAvatarToneByKey = (key: string) => {
   const idx = hashString(key) % AVATAR_TONES.length;
   return AVATAR_TONES[idx]!;
 };
+
+const BASE_ROLE_NAME = '基础角色';
+
+const normalizeRole = (s: string) => s.replace(/\s+/g, '').replace(/[()（）]/g, '');
 
 export const useUsersStore = create<UsersState>((set, get) => ({
   users: [
@@ -157,7 +162,8 @@ export const useUsersStore = create<UsersState>((set, get) => ({
     const maxId = get().users.reduce((m, u) => Math.max(m, u.id), 0);
     const now = new Date();
     const createdAt = payload.createdAt ?? formatDate(now);
-    const roleClass = getRoleBadgeClass(payload.role);
+    const role = payload.role?.trim() || BASE_ROLE_NAME;
+    const roleClass = getRoleBadgeClass(role);
     const avatarText = payload.avatarText ?? getAvatarText(payload.name);
     const avatarTone = getAvatarToneByKey(payload.account);
 
@@ -170,7 +176,7 @@ export const useUsersStore = create<UsersState>((set, get) => ({
           phone: payload.phone,
           org: payload.org,
           orgClass: getOrgClass(payload.org),
-          role: payload.role,
+          role,
           roleClass,
           avatarText,
           avatarBgClass: payload.avatarBgClass ?? avatarTone.bgClass,
@@ -179,6 +185,20 @@ export const useUsersStore = create<UsersState>((set, get) => ({
         },
         ...state.users
       ]
+    }));
+  },
+  downgradeUsersByRole: (roleName) => {
+    const target = normalizeRole(roleName);
+    if (!target) return;
+    const nextRole = BASE_ROLE_NAME;
+    const nextRoleClass = getRoleBadgeClass(nextRole);
+
+    set(state => ({
+      users: state.users.map(u => {
+        const current = normalizeRole(u.role);
+        if (!current.includes(target)) return u;
+        return { ...u, role: nextRole, roleClass: nextRoleClass };
+      })
     }));
   }
 }));
