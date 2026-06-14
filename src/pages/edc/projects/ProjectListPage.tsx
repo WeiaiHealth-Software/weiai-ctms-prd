@@ -4,14 +4,13 @@ import { useMemo, useState, useEffect } from 'react'
 import { useHeaderStore } from '../../../store/useHeaderStore'
 import { useEdcProjectStore } from '../../../store/useEdcProjectStore'
 import SectionCard from '../../../components/common/SectionCard'
-import StatCard from '../../../modules/edc/dashboard/StatCard'
 import Drawer from '../../../components/overlay/Drawer'
 import { PROJECTS as iwrsProjects, ProjectSummary } from '../../../mock/projects'
 import { classNames } from '../../../lib/classNames'
 import { statusClassMap } from '../../../lib/statusMap'
 import type { Project } from '../../../types/project'
 
-const PAGE_SIZE = 8
+const PAGE_SIZE = 10
 
 export function ProjectListPage() {
   const setTitle = useHeaderStore(state => state.setTitle)
@@ -43,6 +42,7 @@ export function ProjectListPage() {
       centers: iwrsProject.centers || [],
       status: iwrsProject.status === '进行中' ? '筹备中' : '已结束', // Default to 筹备中
       enrolled: 0, // Fresh sync, no baseline yet
+      targetEnrollment: iwrsProject.totalCount,
       desc: iwrsProject.description,
     }
 
@@ -67,20 +67,6 @@ export function ProjectListPage() {
     )
   }, [projects, search])
 
-  const stats = useMemo(() => {
-    const ongoingCount = projects.filter((project) => project.status === '进行中').length
-    const preparingCount = projects.filter((project) => project.status === '筹备中').length
-    const finishedCount = projects.filter((project) => project.status === '已结束').length
-    const totalEnrolled = projects.reduce((sum, project) => sum + project.enrolled, 0)
-
-    return {
-      ongoingCount,
-      preparingCount,
-      finishedCount,
-      totalEnrolled,
-    }
-  }, [projects])
-
   const totalPages = Math.max(1, Math.ceil(filteredProjects.length / PAGE_SIZE))
   const safeCurrentPage = Math.min(currentPage, totalPages)
   const paginatedProjects = useMemo(() => {
@@ -90,47 +76,9 @@ export function ProjectListPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard
-          title="进行中项目"
-          value={String(stats.ongoingCount)}
-          hint="当前核心执行项目"
-          className="border-emerald-200 bg-emerald-50 py-4"
-          titleClassName="text-emerald-700"
-          valueClassName="text-emerald-800 text-xl"
-          hintClassName="text-emerald-600 mt-1"
-        />
-        <StatCard
-          title="筹备中项目"
-          value={String(stats.preparingCount)}
-          hint="待配置表单与访视"
-          className="border-amber-200 bg-amber-50 py-4"
-          titleClassName="text-amber-700"
-          valueClassName="text-amber-800 text-xl"
-          hintClassName="text-amber-600 mt-1"
-        />
-        <StatCard
-          title="已结束项目"
-          value={String(stats.finishedCount)}
-          hint="已停止入组与随访"
-          className="border-slate-200 bg-slate-100 py-4"
-          titleClassName="text-slate-600"
-          valueClassName="text-slate-700 text-xl"
-          hintClassName="text-slate-500 mt-1"
-        />
-        <StatCard
-          title="累计受试者"
-          value={String(stats.totalEnrolled)}
-          hint="当前系统内所有项目合计"
-          className="border-blue-200 bg-blue-50 py-4"
-          titleClassName="text-blue-700"
-          valueClassName="text-blue-800 text-xl"
-          hintClassName="text-blue-600 mt-1"
-        />
-      </div>
-
       <SectionCard
         title="项目列表"
+        contentClassName="p-0"
         extra={
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -164,76 +112,84 @@ export function ProjectListPage() {
           </div>
         }
       >
-        <div className="-m-5 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
-              <tr>
-                <th className="px-6 py-4 text-left whitespace-nowrap w-[360px]">项目名称</th>
-                <th className="px-6 py-4 text-left whitespace-nowrap">编号</th>
-                <th className="px-6 py-4 text-left whitespace-nowrap">PI</th>
-                {/* <th className="px-4 py-3 text-left font-medium">申办方</th> */}
-                <th className="px-6 py-4 text-left whitespace-nowrap">参与中心</th>
-                <th className="px-6 py-4 text-left whitespace-nowrap">状态</th>
-                <th className="px-6 py-4 text-left whitespace-nowrap">入组人数</th>
-                <th className="px-6 py-4 text-right whitespace-nowrap">操作</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
-              {filteredProjects.length > 0 ? (
-                paginatedProjects.map((project) => (
-                  <tr key={project.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-6 py-4 font-medium text-slate-800">
-                      <div className="flex items-start gap-2">
-                        {iwrsProjects.some(iwrs => iwrs.code === project.code) && (
-                          <span className="mt-0.5 inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs font-semibold leading-none text-indigo-700 shrink-0">
-                            <Check className="w-3 h-3 text-indigo-600" />
-                            已同步
-                          </span>
-                        )}
-                        <span className="leading-relaxed font-semibold text-slate-900">{project.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-600 font-mono">{project.code}</td>
-                    <td className="px-6 py-4 text-slate-600">{project.pi}</td>
-                    {/* <td className="px-4 py-4 text-slate-600">{project.sponsor}</td> */}
-                    <td className="px-6 py-4 text-slate-600">{project.centers.join('、')}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={classNames(
-                          'inline-flex rounded-full px-2.5 py-1 text-xs font-medium',
-                          statusClassMap[project.status]
-                        )}
-                      >
-                        {project.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-600">{project.enrolled}</td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="inline-flex items-center gap-2 text-sm">
-                        <Link to={`/index/edc/projects/${project.id}`} className="cursor-pointer rounded-md px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-800">
-                          查看详情
-                        </Link>
-                        <span className="text-slate-300">|</span>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(project.id)}
-                          className="cursor-pointer text-rose-600 hover:text-rose-700"
+        <div className="overflow-hidden rounded-b-2xl">
+          <div className="overflow-x-auto">
+            <table className="min-w-[1240px] w-full table-fixed text-sm">
+              <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
+                <tr>
+                  <th className="w-[30%] px-6 py-4 text-left whitespace-nowrap">项目名称</th>
+                  <th className="w-28 px-6 py-4 text-left whitespace-nowrap">编号</th>
+                  <th className="w-28 px-6 py-4 text-left whitespace-nowrap">PI</th>
+                  {/* <th className="px-4 py-3 text-left font-medium">申办方</th> */}
+                  <th className="w-[19%] px-6 py-4 text-left whitespace-nowrap">参与中心</th>
+                  <th className="w-28 px-6 py-4 text-left whitespace-nowrap">状态</th>
+                  <th className="w-32 px-6 py-4 text-left whitespace-nowrap">参与人数</th>
+                  <th className="w-40 px-6 py-4 text-right whitespace-nowrap">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {filteredProjects.length > 0 ? (
+                  paginatedProjects.map((project) => {
+                    const isSynced = iwrsProjects.some(iwrs => iwrs.code === project.code)
+
+                    return (
+                    <tr key={project.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-6 py-4 font-medium text-slate-800">
+                        <p className="leading-relaxed font-semibold text-slate-900">
+                          {isSynced && (
+                            <span className="mr-2 inline-flex translate-y-[-1px] items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs font-semibold leading-none text-indigo-700 align-middle">
+                              <Check className="w-3 h-3 text-indigo-600" />
+                              已同步
+                            </span>
+                          )}
+                          <span className="align-middle">{project.name}</span>
+                        </p>
+                      </td>
+                      <td className="px-6 py-4 text-slate-600 font-mono">{project.code}</td>
+                      <td className="px-6 py-4 text-slate-600">{project.pi}</td>
+                      {/* <td className="px-4 py-4 text-slate-600">{project.sponsor}</td> */}
+                      <td className="px-6 py-4 text-slate-600 leading-relaxed">{project.centers.join('、')}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={classNames(
+                            'inline-flex rounded-full px-2.5 py-1 text-xs font-medium',
+                            statusClassMap[project.status]
+                          )}
                         >
-                          删除
-                        </button>
-                      </div>
+                          {project.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-slate-700 font-medium whitespace-nowrap">
+                        {project.enrolled}/{project.targetEnrollment}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="inline-flex items-center gap-2 text-sm">
+                          <Link to={`/index/edc/projects/${project.id}`} className="cursor-pointer rounded-md px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-800">
+                            查看详情
+                          </Link>
+                          <span className="text-slate-300">|</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(project.id)}
+                            className="cursor-pointer text-rose-600 hover:text-rose-700"
+                          >
+                            删除
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    )
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
+                      暂无匹配的项目
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
-                    暂无匹配的项目
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
           {filteredProjects.length > 0 && (
             <div className="flex items-center justify-between border-t border-slate-100 bg-white px-6 py-4">
               <div className="text-sm text-slate-500">

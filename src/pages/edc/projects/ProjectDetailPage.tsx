@@ -1,10 +1,10 @@
-import { ArrowLeft, Filter, MoreHorizontal, UserPlus } from 'lucide-react'
+import { ArrowLeft, Download, MoreHorizontal, RotateCcw, Search, UserPlus } from 'lucide-react'
 import { useMemo, useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useEdcProjectStore } from '../../../store/useEdcProjectStore'
 import { useHeaderStore } from '../../../store/useHeaderStore'
 import SectionCard from '../../../components/common/SectionCard'
-import TabButton from '../../../components/common/TabButton'
+import Select from '../../../components/form/Select'
 import StatCard from '../../../modules/edc/dashboard/StatCard'
 import SubjectTable from '../../../modules/edc/projects/components/SubjectTable'
 import SubjectDrawer from '../../../modules/edc/projects/drawers/SubjectDrawer'
@@ -12,29 +12,52 @@ import { projectSubjects } from '../../../data/edc/subjects'
 import { classNames } from '../../../lib/classNames'
 import { statusClassMap } from '../../../lib/statusMap'
 
-type ProjectTabKey = 'subjects' | 'visits' | 'forms' | 'settings'
-
-const projectVisitOverview = [
-  { name: 'V0 基线期', assignedForms: ['基线期采集表'], subjects: 26, status: '执行中' },
-  { name: 'V1 3M', assignedForms: ['3M 随访表', '异常事件记录表'], subjects: 18, status: '执行中' },
-  { name: 'V2 6M', assignedForms: ['3M 随访表', '异常事件记录表'], subjects: 9, status: '待开始' },
-]
-
-const projectBoundForms = [
-  { visit: 'V0 基线期', form: '基线期采集表', version: 'v1.0.0', status: '启用中' },
-  { visit: 'V1 3M', form: '3M 随访表', version: 'v1.0.0', status: '启用中' },
-  { visit: 'V1 3M', form: '异常事件记录表', version: 'v0.9.2', status: '草稿' },
-]
-
 export default function ProjectDetailPage() {
   const { projectId } = useParams()
   const setTitle = useHeaderStore(state => state.setTitle)
   const projects = useEdcProjectStore(state => state.projects)
-  const [tab, setTab] = useState<ProjectTabKey>('subjects')
   const [showSubjectDrawer, setShowSubjectDrawer] = useState(false)
+  const [subjectFilters, setSubjectFilters] = useState({
+    keyword: '',
+    visit: '全部访视',
+    status: '全部状态',
+  })
+  const [appliedSubjectFilters, setAppliedSubjectFilters] = useState({
+    keyword: '',
+    visit: '全部访视',
+    status: '全部状态',
+  })
 
   const project = useMemo(() => projects.find((p) => p.id === projectId) || null, [projects, projectId])
   const subjects = projectId ? projectSubjects[projectId] || [] : []
+  const filteredSubjects = useMemo(() => {
+    const keyword = appliedSubjectFilters.keyword.trim().toLowerCase()
+
+    return subjects.filter((subject) => {
+      const matchKeyword =
+        !keyword ||
+        subject.screeningNo.toLowerCase().includes(keyword) ||
+        subject.initials.toLowerCase().includes(keyword)
+      const matchVisit =
+        appliedSubjectFilters.visit === '全部访视' ||
+        subject.currentVisit === appliedSubjectFilters.visit
+      const matchStatus =
+        appliedSubjectFilters.status === '全部状态' ||
+        subject.status === appliedSubjectFilters.status
+
+      return matchKeyword && matchVisit && matchStatus
+    })
+  }, [subjects, appliedSubjectFilters])
+  const subjectStats = useMemo(() => ({
+    screening: subjects.filter(subject => subject.status === '筛选中').length,
+    enrolled: subjects.filter(subject => subject.status === '已入组').length,
+    inFollowUp: subjects.filter(subject => subject.status === '随访中').length,
+    exited: subjects.filter(subject => subject.status === '提前退出').length,
+  }), [subjects])
+  const visitOptions = ['全部访视', '基线', '3M', '6M', '9M', '12M']
+  const subjectStatusOptions = ['全部状态', '筛选中', '已入组', '随访中', '提前退出']
+  const visitSelectOptions = visitOptions.map((option) => ({ value: option, label: option }))
+  const subjectStatusSelectOptions = subjectStatusOptions.map((option) => ({ value: option, label: option }))
 
   useEffect(() => {
     if (project) {
@@ -104,144 +127,78 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <TabButton active={tab === 'subjects'} onClick={() => setTab('subjects')}>
-            受试者管理
-          </TabButton>
-          <TabButton active={tab === 'visits'} onClick={() => setTab('visits')}>
-            访视管理
-          </TabButton>
-          <TabButton active={tab === 'forms'} onClick={() => setTab('forms')}>
-            项目表单
-          </TabButton>
-          <TabButton active={tab === 'settings'} onClick={() => setTab('settings')}>
-            项目设置
-          </TabButton>
-        </div>
+        <div className="space-y-6">
+          <div className="grid grid-cols-4 gap-4">
+            <StatCard title="筛选中" value={String(subjectStats.screening)} hint="待确认是否入组" />
+            <StatCard title="已入组" value={String(subjectStats.enrolled)} hint="基线完成，进入研究" />
+            <StatCard title="随访中" value={String(subjectStats.inFollowUp)} hint="已有后续访视安排" />
+            <StatCard title="提前退出" value={String(subjectStats.exited)} hint="已终止后续流程" />
+          </div>
 
-        {tab === 'subjects' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-4 gap-4">
-              <StatCard title="筛选中" value="1" hint="待确认是否入组" />
-              <StatCard title="已入组" value="1" hint="基线完成，进入研究" />
-              <StatCard title="随访中" value="1" hint="已有后续访视安排" />
-              <StatCard title="提前退出" value="1" hint="已终止后续流程" />
-            </div>
-
-            <SectionCard
-              title="受试者管理"
-              extra={
+          <SectionCard
+            title="受试者管理"
+            contentClassName="p-0"
+            extra={
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <button className="h-9 px-3 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-2">
-                    <Filter className="w-4 h-4" />
-                    筛选
-                  </button>
-                  <button className="h-9 px-3 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50">
-                    导出数据
-                  </button>
-                </div>
-              }
-            >
-              <SubjectTable subjects={subjects} />
-            </SectionCard>
-          </div>
-        )}
-
-        {tab === 'visits' && (
-          <SectionCard title="访视执行概览">
-            <div className="space-y-4">
-              {projectVisitOverview.map((item) => (
-                <div key={item.name} className="rounded-2xl border border-slate-200 p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-base font-semibold text-slate-900">{item.name}</div>
-                      <div className="mt-2 text-sm text-slate-500">
-                        已绑定表单：{item.assignedForms.join('、')}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-slate-400">涉及受试者</div>
-                      <div className="text-xl font-bold text-blue-700 mt-1">{item.subjects}</div>
-                    </div>
+                  <div className="relative">
+                    <input
+                      value={subjectFilters.keyword}
+                      onChange={(event) => setSubjectFilters((prev) => ({ ...prev, keyword: event.target.value }))}
+                      placeholder="请输入筛选号或姓名"
+                      className="h-9 w-56 rounded-xl border border-slate-200 bg-white pl-3 pr-3 text-sm text-slate-700 outline-none focus:border-blue-500"
+                    />
                   </div>
-                  <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-sm text-slate-500">当前状态：{item.status}</span>
-                    <button className="text-sm text-blue-600 hover:text-blue-800">查看访视详情</button>
-                  </div>
+                  <Select
+                    value={subjectFilters.visit}
+                    onChange={(value) => setSubjectFilters((prev) => ({ ...prev, visit: value }))}
+                    options={visitSelectOptions}
+                    className="min-w-32"
+                    triggerClassName="h-9"
+                  />
+                  <Select
+                    value={subjectFilters.status}
+                    onChange={(value) => setSubjectFilters((prev) => ({ ...prev, status: value }))}
+                    options={subjectStatusSelectOptions}
+                    className="min-w-32"
+                    triggerClassName="h-9"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const resetFilters = {
+                        keyword: '',
+                        visit: '全部访视',
+                        status: '全部状态',
+                      }
+                      setSubjectFilters(resetFilters)
+                      setAppliedSubjectFilters(resetFilters)
+                    }}
+                    className="h-9 px-3 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    重置
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAppliedSubjectFilters(subjectFilters)}
+                    className="h-9 px-3 rounded-xl bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 flex items-center gap-2"
+                  >
+                    <Search className="w-4 h-4" />
+                    搜索
+                  </button>
                 </div>
-              ))}
-            </div>
-          </SectionCard>
-        )}
-
-        {tab === 'forms' && (
-          <SectionCard title="项目已绑定表单">
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 text-slate-500">
-                  <tr>
-                    <th className="text-left px-4 py-3 font-medium">访视节点</th>
-                    <th className="text-left px-4 py-3 font-medium">表单名称</th>
-                    <th className="text-left px-4 py-3 font-medium">版本</th>
-                    <th className="text-left px-4 py-3 font-medium">状态</th>
-                    <th className="text-right px-4 py-3 font-medium">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {projectBoundForms.map((row, idx) => (
-                    <tr key={idx}>
-                      <td className="px-4 py-4 text-slate-700">{row.visit}</td>
-                      <td className="px-4 py-4 font-medium text-slate-800">{row.form}</td>
-                      <td className="px-4 py-4 text-slate-600">{row.version}</td>
-                      <td className="px-4 py-4">
-                        <span className={classNames('px-2.5 py-1 rounded-full text-xs font-medium', statusClassMap[row.status])}>
-                          {row.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <button className="text-blue-600 hover:text-blue-800 text-sm">调整绑定</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </SectionCard>
-        )}
-
-        {tab === 'settings' && (
-          <div className="grid grid-cols-2 gap-6">
-            <SectionCard title="基础设置">
-              <div className="space-y-4 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">项目状态</span>
-                  <span className="font-medium text-slate-800">{project.status}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">默认中心</span>
-                  <span className="font-medium text-slate-800">{project.centers[0]}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">编号规则</span>
-                  <span className="font-medium text-slate-800">S-项目编号-流水号</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">随机号规则</span>
-                  <span className="font-medium text-slate-800">R-流水号</span>
-                </div>
+                <div className="h-6 w-px bg-slate-200" />
+                <button className="h-9 px-3 rounded-xl border border-blue-600 bg-white text-sm font-medium text-blue-600 hover:bg-blue-50 flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  导出数据
+                </button>
               </div>
-            </SectionCard>
-
-            <SectionCard title="流程设置建议">
-              <ul className="space-y-3 text-sm text-slate-600 leading-6">
-                <li>• 建议按访视绑定模板，不在项目页面直接堆叠所有表单。</li>
-                <li>• 受试者状态、访视状态、表单状态需分开维护，避免混用。</li>
-                <li>• 对提前退出和失访受试者，应限制后续访视自动创建。</li>
-                <li>• 预约复查模块与访视状态联动，减少重复登记。</li>
-              </ul>
-            </SectionCard>
-          </div>
-        )}
+            }
+          >
+            <SubjectTable subjects={filteredSubjects} />
+          </SectionCard>
+        </div>
       </div>
 
       <SubjectDrawer

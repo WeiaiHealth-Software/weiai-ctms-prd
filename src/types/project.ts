@@ -9,5 +9,6 @@ export type Project = {
   centers: string[]
   status: ProjectStatus
   enrolled: number
+  targetEnrollment: number
   desc: string
 }

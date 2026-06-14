@@ -1,17 +1,18 @@
-import { ArrowLeft, Edit, Save, AlertCircle } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router'
-import SectionCard from '../../components/common/SectionCard'
-import { projectSubjects } from '../../data/subjects'
-import { subjectVisits } from '../../data/visits'
-import { defaultTemplateFields } from '../../data/mockTemplateSchema'
-import VisitTimeline from '../../modules/projects/components/VisitTimelines'
-import DynamicFormRenderer from '../../modules/form-engine/DynamicFormRenderer'
-import { buildInitialFormData } from '../../modules/form-engine/utils/buildInitialFormData'
-import EmptyState from '../../components/common/EmptyState'
+import { ArrowLeft, AlertCircle, Edit, Save } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import SectionCard from '../../../components/common/SectionCard'
+import { projectSubjects } from '../../../data/edc/subjects'
+import { subjectVisits } from '../../../data/edc/visits'
+import { defaultTemplateFields } from '../../../data/edc/mockTemplateSchema'
+import VisitTimeline from '../../../modules/edc/projects/components/VisitTimelines'
+import DynamicFormRenderer from '../../../modules/edc/form-engine/DynamicFormRenderer'
+import { buildInitialFormData } from '../../../modules/edc/form-engine/utils/buildInitialFormData'
+import { useHeaderStore } from '../../../store/useHeaderStore'
 
 export default function SubjectDetailPage() {
   const { projectId, subjectId } = useParams()
+  const setTitle = useHeaderStore(state => state.setTitle)
   const [selectedVisitId, setSelectedVisitId] = useState('v2')
   const [readOnly, setReadOnly] = useState(true)
 
@@ -26,8 +27,17 @@ export default function SubjectDetailPage() {
     return defaultTemplateFields.filter(f => f.type === 'section')
   }, [])
 
+  useEffect(() => {
+    if (subject) {
+      setTitle('受试者详情', `${subject.initials} · ${subject.screeningNo}`, [
+        { text: '开发者账户', color: 'indigo' },
+        { text: '超级管理员', color: 'purple' }
+      ])
+    }
+  }, [setTitle, subject])
+
   if (!subject) {
-    return <EmptyState title="未找到受试者" description="请检查路由参数或受试者数据是否存在" />
+    return <div className="p-6 text-sm text-slate-500">未找到受试者，请检查路由参数或受试者数据是否存在</div>
   }
 
   const handleScrollTo = (id: string) => {
@@ -38,24 +48,23 @@ export default function SubjectDetailPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-5 pb-8 pt-2">
       <Link
-        to={`/projects/${projectId}`}
+        to={`/index/edc/projects/${projectId}`}
         className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-700"
       >
         <ArrowLeft className="w-4 h-4" />
         返回受试者列表
       </Link>
 
-      <div className="flex items-start gap-6 relative">
-        {/* 左侧：固定 320px */}
-        <div className="w-[320px] shrink-0 sticky top-0 h-[calc(100vh-8rem)] overflow-y-auto space-y-4 pr-1 pb-4">
-          <div className="bg-blue-600 text-white rounded-2xl p-5 shadow-sm">
+      <div className="flex items-start gap-5">
+        <div className="w-[292px] shrink-0 self-stretch space-y-3">
+          <div className="rounded-2xl bg-blue-600 p-4 text-white shadow-sm">
             <div className="text-xs text-blue-100">当前受试者</div>
-            <div className="mt-2 text-2xl font-bold">{subject.initials}</div>
-            <div className="mt-1 text-sm text-blue-100">{subject.screeningNo}</div>
+            <div className="mt-1.5 text-[2rem] font-bold leading-none">{subject.initials}</div>
+            <div className="mt-2 text-sm text-blue-100">{subject.screeningNo}</div>
             
-            <div className="mt-5 pt-5 border-t border-blue-500/50 space-y-3 text-sm">
+            <div className="mt-4 space-y-3 border-t border-blue-500/50 pt-4 text-sm">
               <div className="flex justify-between gap-3">
                 <span className="text-blue-200">随机号</span>
                 <span className="font-medium">{subject.randomNo}</span>
@@ -79,18 +88,19 @@ export default function SubjectDetailPage() {
             </div>
           </div>
 
-          <SectionCard title="访视阶段">
-            <VisitTimeline
-              visits={subjectVisits}
-              selectedVisitId={selectedVisitId}
-              onSelect={setSelectedVisitId}
-            />
-          </SectionCard>
+          <div className="sticky top-4">
+            <SectionCard title="访视阶段" contentClassName="px-4 py-3">
+              <VisitTimeline
+                visits={subjectVisits}
+                selectedVisitId={selectedVisitId}
+                onSelect={setSelectedVisitId}
+              />
+            </SectionCard>
+          </div>
         </div>
 
-        {/* 中间：自适应剩余空间 */}
-        <div className="flex-1 min-w-0 space-y-6 pb-12">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex items-center justify-between sticky top-0 z-20">
+        <div className="min-w-0 flex-1 space-y-4 pb-12">
+          <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm">
             <div>
               <h2 className="text-xl font-bold text-slate-900">
                 {currentVisit?.name || '访视'} 数据采集表
@@ -100,16 +110,16 @@ export default function SubjectDetailPage() {
             <div className="flex items-center gap-2">
               {readOnly ? (
                 <>
-                  <div className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-sm font-medium mr-2">
+                  <div className="mr-2 inline-flex h-10 items-center rounded-xl bg-slate-100 px-4 text-sm font-medium text-slate-600">
                     只读模式
                   </div>
-                  <button className="h-9 px-4 rounded-xl border border-slate-200 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                  <button className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50">
                     <AlertCircle className="w-4 h-4 text-orange-500" />
                     提出质疑
                   </button>
                   <button
                     onClick={() => setReadOnly(false)}
-                    className="h-9 px-4 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
+                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700"
                   >
                     <Edit className="w-4 h-4" />
                     编辑表单
@@ -117,22 +127,22 @@ export default function SubjectDetailPage() {
                 </>
               ) : (
                 <>
-                  <div className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium mr-2">
+                  <div className="mr-2 inline-flex h-10 items-center rounded-xl bg-blue-50 px-4 text-sm font-medium text-blue-600">
                     编辑模式
                   </div>
                   <button
                     onClick={() => setReadOnly(true)}
-                    className="h-9 px-4 rounded-xl border border-slate-200 text-sm text-slate-700 hover:bg-slate-50"
+                    className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
                   >
                     取消编辑
                   </button>
-                  <button className="h-9 px-4 rounded-xl border border-slate-200 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                  <button className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50">
                     <Save className="w-4 h-4" />
                     暂存
                   </button>
                   <button
                     onClick={() => setReadOnly(true)}
-                    className="h-9 px-4 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
+                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700"
                   >
                     <Save className="w-4 h-4" />
                     保存表单
@@ -142,7 +152,7 @@ export default function SubjectDetailPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <DynamicFormRenderer
               fields={defaultTemplateFields}
               formData={formData}
@@ -152,9 +162,8 @@ export default function SubjectDetailPage() {
           </div>
         </div>
 
-        {/* 右侧：固定 320px，目录 */}
-        <div className="w-[320px] shrink-0 sticky top-0 h-[calc(100vh-8rem)] overflow-y-auto pb-4">
-          <SectionCard title="目录">
+        <div className="sticky top-4 w-[224px] shrink-0 self-start">
+          <SectionCard title="目录" contentClassName="px-4 py-4">
             <div className="space-y-1 mt-2">
               {sections.map((sec) => (
                 <button

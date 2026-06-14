@@ -19,6 +19,7 @@ import { UserCreate } from '@/pages/users/create'
 // EDC 模块页面
 import { ProjectListPage as EdcProjects } from '@/pages/edc/projects/ProjectListPage'
 import ProjectDetailPage from '@/pages/edc/projects/ProjectDetailPage'
+import SubjectDetailPage from '@/pages/edc/projects/SubjectDetailPage'
 import { AppointmentPage as EdcAppointments } from '@/pages/edc/appointments/AppointmentPage'
 import { TemplateCenterPage as EdcTemplates } from '@/pages/edc/templates/TemplateCenterPage'
 import { TemplateBuilderPage as EdcTemplateBuilder } from '@/pages/edc/templates/TemplateBuilderPage'
@@ -45,6 +46,7 @@ export function AppRoutes() {
         {/* EDC 子系统路由 */}
         <Route path="edc/projects" element={<EdcProjects />} />
         <Route path="edc/projects/:projectId" element={<ProjectDetailPage />} />
+        <Route path="edc/projects/:projectId/subjects/:subjectId" element={<SubjectDetailPage />} />
         <Route path="edc/appointments" element={<EdcAppointments />} />
         <Route path="edc/templates" element={<EdcTemplates />} />
         <Route path="edc/templates/builder" element={<EdcTemplateBuilder />} />

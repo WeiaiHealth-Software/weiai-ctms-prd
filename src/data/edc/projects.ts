@@ -10,6 +10,7 @@ export const projects: Project[] = [
     centers: ['上海市眼病防治中心'],
     status: '进行中',
     enrolled: 26,
+    targetEnrollment: 100,
     desc: '评估新型近视管理镜片在儿童青少年近视防控中的有效性、安全性与佩戴舒适性。',
   },
   {
@@ -21,6 +22,7 @@ export const projects: Project[] = [
     centers: ['上海市眼病防治中心', '广东中山医院'],
     status: '已结束',
     enrolled: 54,
+    targetEnrollment: 200,
     desc: '评估夜戴型角膜塑形镜对低中度近视患者的视力矫正效果及角膜安全性。',
   },
   {
@@ -32,6 +34,7 @@ export const projects: Project[] = [
     centers: ['上海市眼病防治中心'],
     status: '筹备中',
     enrolled: 0,
+    targetEnrollment: 120,
     desc: '观察低浓度阿托品联合离焦眼镜在真实世界中的长期控制效果。',
   },
   {
@@ -43,6 +46,7 @@ export const projects: Project[] = [
     centers: ['上海市眼病防治中心', '苏州大学附属儿童医院'],
     status: '进行中',
     enrolled: 18,
+    targetEnrollment: 120,
     desc: '评估离焦软镜在 8-15 岁近视儿童中的眼轴控制效果与长期佩戴安全性。',
   },
   {
@@ -54,6 +58,7 @@ export const projects: Project[] = [
     centers: ['南京市第一医院', '上海市眼病防治中心'],
     status: '进行中',
     enrolled: 42,
+    targetEnrollment: 150,
     desc: '观察双焦点框架镜在日常使用场景下对近视进展的延缓作用。',
   },
   {
@@ -65,6 +70,7 @@ export const projects: Project[] = [
     centers: ['上海市眼病防治中心'],
     status: '筹备中',
     enrolled: 0,
+    targetEnrollment: 80,
     desc: '验证数字化依从性管理工具在低浓度阿托品研究中的实施可行性。',
   },
   {
@@ -76,6 +82,7 @@ export const projects: Project[] = [
     centers: ['复旦大学附属眼耳鼻喉科医院', '上海市眼病防治中心'],
     status: '进行中',
     enrolled: 67,
+    targetEnrollment: 200,
     desc: '基于门诊场景持续采集屈光与眼轴指标，建立真实世界近视防控队列。',
   },
   {
@@ -87,6 +94,7 @@ export const projects: Project[] = [
     centers: ['温州医科大学附属眼视光医院'],
     status: '已结束',
     enrolled: 36,
+    targetEnrollment: 80,
     desc: '评价新型护理液在角膜塑形镜清洁维护中的性能与受试者舒适度。',
   },
   {
@@ -98,6 +106,7 @@ export const projects: Project[] = [
     centers: ['北京同仁医院', '上海市眼病防治中心', '广东中山医院'],
     status: '筹备中',
     enrolled: 0,
+    targetEnrollment: 180,
     desc: '验证 AI 风险模型对儿童近视快速进展人群的识别能力与稳定性。',
   },
   {
@@ -109,6 +118,7 @@ export const projects: Project[] = [
     centers: ['浙江大学医学院附属第二医院', '上海市眼病防治中心'],
     status: '进行中',
     enrolled: 21,
+    targetEnrollment: 120,
     desc: '探索视功能训练联合个体化光学矫正对视觉质量改善的潜在收益。',
   },
   {
@@ -120,6 +130,7 @@ export const projects: Project[] = [
     centers: ['苏州市立医院'],
     status: '已结束',
     enrolled: 95,
+    targetEnrollment: 100,
     desc: '优化学龄前儿童屈光筛查流程，评估分层转诊方案的执行效率。',
   },
   {
@@ -131,6 +142,7 @@ export const projects: Project[] = [
     centers: ['广东中山医院', '深圳市眼科医院'],
     status: '进行中',
     enrolled: 31,
+    targetEnrollment: 150,
     desc: '评估数字化宣教工具对家长认知、依从性与复诊率的影响。',
   },
 ]

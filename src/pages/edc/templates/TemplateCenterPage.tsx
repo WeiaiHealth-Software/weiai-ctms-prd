@@ -97,8 +97,9 @@ export function TemplateCenterPage() {
         />
       </div>
 
-        <SectionCard
+      <SectionCard
         title="模板列表"
+        contentClassName="p-0"
         extra={
           <button
             onClick={() => navigate('/index/edc/templates/builder')}
@@ -109,81 +110,83 @@ export function TemplateCenterPage() {
           </button>
         }
       >
-        <div className="overflow-hidden rounded-2xl border border-slate-200">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-500">
-              <tr>
-                <th className="px-4 py-3 text-left font-medium">模板名称</th>
-                <th className="px-4 py-3 text-left font-medium">模板描述</th>
-                <th className="px-4 py-3 text-left font-medium">模板状态</th>
-                <th className="px-4 py-3 text-left font-medium">创建者</th>
-                <th className="px-4 py-3 text-left font-medium">创建时间</th>
-                <th className="px-4 py-3 text-left font-medium">更新时间</th>
-                <th className="px-4 py-3 text-left font-medium">版本号</th>
-                <th className="px-4 py-3 text-right font-medium">操作</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
-              {templates.length > 0 ? (
-                paginatedTemplates.map((template) => (
-                  <tr key={template.id} className="hover:bg-slate-50/80">
-                    <td className="px-4 py-4 font-medium text-slate-800">{template.name}</td>
-                    <td className="px-4 py-4 text-slate-600">{template.description}</td>
-                    <td className="px-4 py-4">
-                      <span
-                        className={classNames(
-                          'inline-flex rounded-full px-2.5 py-1 text-xs font-medium',
-                          statusClassMap[template.status]
-                        )}
-                      >
-                        {template.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-slate-600">{template.createdBy}</td>
-                    <td className="px-4 py-4 text-slate-600">{template.createdAt}</td>
-                    <td className="px-4 py-4 text-slate-600">{template.updatedAt}</td>
-                    <td className="px-4 py-4 text-slate-600 font-mono">{template.version}</td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="inline-flex items-center gap-2 text-sm">
-                        <button
-                          type="button"
-                          onClick={() => setPreviewTemplateId(template.id)}
-                          className="text-blue-600 hover:text-blue-800"
+        <div className="overflow-hidden rounded-b-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-slate-500 border-b border-slate-100">
+                <tr>
+                  <th className="px-6 py-4 text-left font-medium">模板名称</th>
+                  <th className="px-6 py-4 text-left font-medium">模板描述</th>
+                  <th className="px-6 py-4 text-left font-medium">模板状态</th>
+                  <th className="px-6 py-4 text-left font-medium">创建者</th>
+                  <th className="px-6 py-4 text-left font-medium">创建时间</th>
+                  <th className="px-6 py-4 text-left font-medium">更新时间</th>
+                  <th className="px-6 py-4 text-left font-medium">版本号</th>
+                  <th className="px-6 py-4 text-right font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {templates.length > 0 ? (
+                  paginatedTemplates.map((template) => (
+                    <tr key={template.id} className="hover:bg-slate-50/80">
+                      <td className="px-6 py-4 font-medium text-slate-800">{template.name}</td>
+                      <td className="px-6 py-4 text-slate-600">{template.description}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={classNames(
+                            'inline-flex rounded-full px-2.5 py-1 text-xs font-medium',
+                            statusClassMap[template.status]
+                          )}
                         >
-                          预览
-                        </button>
-                        <span className="text-slate-300">|</span>
-                        <button
-                          type="button"
-                          onClick={() => navigate(`/index/edc/templates/builder?templateId=${template.id}`)}
-                          className="text-slate-600 hover:text-slate-900"
-                        >
-                          编辑
-                        </button>
-                        <span className="text-slate-300">|</span>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(template.id)}
-                          className="text-rose-600 hover:text-rose-700"
-                        >
-                          删除
-                        </button>
-                      </div>
+                          {template.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-slate-600">{template.createdBy}</td>
+                      <td className="px-6 py-4 text-slate-600">{template.createdAt}</td>
+                      <td className="px-6 py-4 text-slate-600">{template.updatedAt}</td>
+                      <td className="px-6 py-4 text-slate-600 font-mono">{template.version}</td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="inline-flex items-center gap-2 text-sm">
+                          <button
+                            type="button"
+                            onClick={() => setPreviewTemplateId(template.id)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            预览
+                          </button>
+                          <span className="text-slate-300">|</span>
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/index/edc/templates/builder?templateId=${template.id}`)}
+                            className="text-slate-600 hover:text-slate-900"
+                          >
+                            编辑
+                          </button>
+                          <span className="text-slate-300">|</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(template.id)}
+                            className="text-rose-600 hover:text-rose-700"
+                          >
+                            删除
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-10 text-center text-slate-500">
+                      暂无模板
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-slate-500">
-                    暂无模板
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
 
           {templates.length > 0 && (
-            <div className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-3">
+            <div className="flex items-center justify-between border-t border-slate-100 bg-white px-6 py-4">
               <div className="text-sm text-slate-500">
                 显示第 {(safeCurrentPage - 1) * PAGE_SIZE + 1}-{Math.min(safeCurrentPage * PAGE_SIZE, templates.length)} 条，共{' '}
                 {templates.length} 条
