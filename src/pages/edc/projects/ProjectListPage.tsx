@@ -67,6 +67,11 @@ export function ProjectListPage() {
     )
   }, [projects, search])
 
+  const syncedIwrsCount = useMemo(
+    () => iwrsProjects.filter((iwrs) => projects.some((project) => project.code === iwrs.code)).length,
+    [projects]
+  )
+
   const totalPages = Math.max(1, Math.ceil(filteredProjects.length / PAGE_SIZE))
   const safeCurrentPage = Math.min(currentPage, totalPages)
   const paginatedProjects = useMemo(() => {
@@ -244,41 +249,67 @@ export function ProjectListPage() {
         title="同步 IWRS 项目"
         subtitle="将中央随机化系统中的项目同步至 EDC 电子数据采集系统"
         width="720px"
+        headerClassName="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-6 pb-3.5 pt-3"
+        bodyClassName="bg-slate-50 px-6 pb-6 pt-4"
       >
         <div className="space-y-4">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">同步概览</p>
+                <p className="mt-1 text-sm text-slate-600">同步后会在 EDC 项目列表中生成对应项目，供后续受试者和表单配置使用。</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                  共 {iwrsProjects.length} 个
+                </span>
+                <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                  已同步 {syncedIwrsCount}
+                </span>
+                <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                  待同步 {iwrsProjects.length - syncedIwrsCount}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
+              <thead className="border-b border-slate-100 bg-slate-50/80 text-slate-500">
                 <tr>
-                  <th className="px-6 py-4 text-left whitespace-nowrap">项目名称</th>
-                  <th className="px-6 py-4 text-left whitespace-nowrap w-40">项目码</th>
-                  <th className="px-6 py-4 text-left whitespace-nowrap w-24">负责人</th>
-                  <th className="px-6 py-4 text-right whitespace-nowrap w-24">操作</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold whitespace-nowrap">项目名称</th>
+                  <th className="w-40 px-6 py-3.5 text-left text-xs font-semibold whitespace-nowrap">项目码</th>
+                  <th className="w-24 px-6 py-3.5 text-left text-xs font-semibold whitespace-nowrap">负责人</th>
+                  <th className="w-24 px-6 py-3.5 text-right text-xs font-semibold whitespace-nowrap">操作</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 bg-white">
                 {iwrsProjects.map(iwrs => {
                   const isSynced = projects.some(p => p.code === iwrs.code)
                   return (
                     <tr key={iwrs.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-6 py-4 font-medium text-slate-800 line-clamp-2" title={iwrs.title}>{iwrs.title}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1.5 items-start">
-                          <span className="text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded text-xs">{iwrs.code}</span>
+                      <td className="px-6 py-4 align-top">
+                        <div className="space-y-1">
+                          <p className="line-clamp-2 text-sm font-medium leading-6 text-slate-800" title={iwrs.title}>{iwrs.title}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 align-top">
+                        <div className="flex flex-col items-start gap-1.5">
+                          <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600">{iwrs.code}</span>
                           {iwrs.isFission && (
-                            <span className="text-xs text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full font-medium shrink-0">
+                            <span className="shrink-0 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
                               裂变项目
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-600">{iwrs.leader}</td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-4 align-top text-sm text-slate-600">{iwrs.leader}</td>
+                      <td className="px-6 py-4 text-right align-top">
                         <button
                           onClick={() => handleSyncProject(iwrs)}
                           disabled={isSynced}
                           className={classNames(
-                            "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                            "min-w-[60px] rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                             isSynced 
                               ? "bg-slate-100 text-slate-400 cursor-not-allowed"
                               : "bg-blue-50 text-blue-600 hover:bg-blue-100"
