@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronDown, Cpu, Download, History, Layers, MoreHorizontal, RotateCcw, Search, Sparkles, UserPlus, X, ChevronRightIcon } from 'lucide-react'
+import { ArrowLeft, BarChart3, ChevronDown, Cpu, Download, History, Layers, MoreHorizontal, RotateCcw, Search, Sparkles, UserPlus, X, type LucideIcon } from 'lucide-react'
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useEdcProjectStore } from '../../../store/useEdcProjectStore'
@@ -31,6 +31,8 @@ type AiQuickAction = {
   title: string
   description: string
   prompt: string
+  icon: LucideIcon
+  iconClassName: string
   mode?: AiMode
   prefillOnly?: boolean
 }
@@ -134,25 +136,33 @@ export default function ProjectDetailPage() {
       id: 'summary',
       title: '项目速览',
       description: '快速总结项目定位、进度与当前重点',
-      prompt: `请用简洁方式总结一下项目“${project?.name ?? '当前项目'}”的核心信息，并给我三个当前最值得关注的点。`
+      prompt: `请用简洁方式总结一下项目“${project?.name ?? '当前项目'}”的核心信息，并给我三个当前最值得关注的点。`,
+      icon: Layers,
+      iconClassName: 'bg-violet-50 text-violet-600'
     },
     {
       id: 'quality',
       title: '数据质量',
       description: '关注筛选、随访与提前退出风险点',
-      prompt: '请基于当前受试者状态分布，给出数据质量/执行风险提示，并提供建议动作。'
+      prompt: '请基于当前受试者状态分布，给出数据质量/执行风险提示，并提供建议动作。',
+      icon: Search,
+      iconClassName: 'bg-amber-50 text-amber-600'
     },
     {
       id: 'followup',
       title: '随访提醒',
       description: '聚焦即将到期与需要跟进的访视',
-      prompt: '请给出本项目随访管理建议：优先要跟进哪些人群，如何组织 CRC 的执行清单。'
+      prompt: '请给出本项目随访管理建议：优先要跟进哪些人群，如何组织 CRC 的执行清单。',
+      icon: History,
+      iconClassName: 'bg-sky-50 text-sky-600'
     },
     {
       id: 'analysis',
       title: '数据分析',
       description: '自动填入通用分析提示词模板',
       prompt: ANALYSIS_PROMPT_TEMPLATE,
+      icon: BarChart3,
+      iconClassName: 'bg-emerald-50 text-emerald-600',
       mode: 'analysis',
       prefillOnly: true
     }
@@ -404,12 +414,14 @@ export default function ProjectDetailPage() {
               <div className="border-b border-slate-100 bg-white px-5 py-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[11px] font-bold text-violet-700">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      基于 WEyeAI 大模型
+                    <h3 className="mb-2 text-2xl font-bold text-slate-900">欢迎使用 WEyeAI 科研助手</h3>
+                    <div className='flex items-center gap-2'>
+                      <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[11px] font-bold text-brand-700">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        基于 WEyeAI 大模型
+                      </div>
+                      <p className="mt-1 text-sm leading-6 text-slate-500">支持项目问答与数据分析</p>
                     </div>
-                    <h3 className="mt-3 text-2xl font-bold text-slate-900">欢迎使用 WEyeAI 科研助手</h3>
-                    <p className="mt-1 text-sm leading-6 text-slate-500">支持项目问答与数据分析（原型 Demo）</p>
                   </div>
                   <button
                     type="button"
@@ -446,19 +458,24 @@ export default function ProjectDetailPage() {
                   </div>
                 </div>
                 {!aiQuickActionsCollapsed && (
-                  <div className="mt-3 grid gap-3">
+                  <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {quickActions.map((action) => (
                       <button
                         key={action.id}
                         type="button"
                         onClick={() => handleQuickAction(action)}
-                        className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/50"
+                        className="h-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/50"
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <div className="text-sm font-bold text-slate-900">{action.title}</div>
-                          <span className="text-xs font-bold text-violet-600">{action.prefillOnly ? '填充模板' : '立即提问'}</span>
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div className={classNames('flex h-7 w-7 shrink-0 items-center justify-center rounded-xl', action.iconClassName)}>
+                              <action.icon className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0 text-sm font-bold text-slate-900">{action.title}</div>
+                          </div>
+                          <span className="shrink-0 text-xs font-bold text-brand-600">{action.prefillOnly ? '填充模板' : '立即提问'}</span>
                         </div>
-                        <div className="mt-1 text-xs leading-5 text-slate-500">{action.description}</div>
+                        <div className="mt-2 text-xs leading-5 text-slate-500">{action.description}</div>
                       </button>
                     ))}
                   </div>
@@ -508,7 +525,7 @@ export default function ProjectDetailPage() {
                         submitAiPrompt()
                       }
                     }}
-                    rows={aiMode === 'analysis' ? 7 : 4}
+                    rows={aiMode === 'analysis' ? 4 : 3}
                     placeholder={aiMode === 'analysis' ? '补充你的分析规则后直接发送' : '请输入项目问题…'}
                     className="w-full resize-none bg-transparent px-1 py-1 text-sm leading-6 text-slate-700 placeholder:text-slate-400 focus:outline-none"
                   />
@@ -586,7 +603,6 @@ export default function ProjectDetailPage() {
                       发送
                     </button>
                   </div>
-                  <div className="mt-2 text-[11px] leading-5 text-slate-400">Demo 返回内容基于当前页面示例数据生成</div>
                 </div>
               </div>
               {aiHistoryOpen && (
