@@ -1,0 +1,102 @@
+<h2>日志管理改版方向</h2>
+<p class="subtitle">目标：默认展示最近 7 天日志，并让每条日志都具备清晰、可审计、可追溯的详细信息</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. 表格 + 右侧详情抽屉</div>
+        <div class="mockup-body">
+          <div class="mock-nav">日志类型 | 模块 | 操作人 | 风险等级 | 最近 7 天</div>
+          <div style="display:flex; gap:12px;">
+            <div style="flex:1.3; border:1px solid #dbe3f0; border-radius:12px; overflow:hidden; background:#fff;">
+              <div style="display:grid; grid-template-columns:1.2fr .9fr 1fr .9fr .8fr; gap:0; font-size:12px; color:#64748b; background:#f8fafc; padding:10px 12px; border-bottom:1px solid #e2e8f0;">
+                <div>时间</div><div>类型</div><div>操作人</div><div>结果</div><div>详情</div>
+              </div>
+              <div style="padding:12px; border-bottom:1px solid #eef2f7; background:#fff7ed;">2026-07-28 09:12 | 登录审计 | 张敏 | 成功 | 查看详情</div>
+              <div style="padding:12px; border-bottom:1px solid #eef2f7;">2026-07-28 10:26 | 数据操作日志 | 陈昊 | 删除 | 查看详情</div>
+              <div style="padding:12px; border-bottom:1px solid #eef2f7; background:#fef2f2;">2026-07-27 15:08 | 系统日志 | system | 失败 | 查看详情</div>
+              <div style="padding:12px;">2026-07-27 17:41 | 数据操作日志 | 王伟 | 导出 | 查看详情</div>
+            </div>
+            <div style="flex:1; border:1px solid #dbe3f0; border-radius:12px; background:#fff; padding:12px;">
+              <div class="label">详情抽屉示意</div>
+              <h3 style="margin-top:8px;">患者档案 P000238 · 审计详情</h3>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                <div class="placeholder">日志类型：数据操作日志</div>
+                <div class="placeholder">风险等级：中风险</div>
+                <div class="placeholder">操作模块：档案管理</div>
+                <div class="placeholder">操作结果：成功</div>
+                <div class="placeholder">操作人：zhangmin_admin</div>
+                <div class="placeholder">所属角色：中心管理员</div>
+                <div class="placeholder">对象：患者档案 / P000238</div>
+                <div class="placeholder">终端：Chrome 136 / macOS</div>
+              </div>
+              <div class="placeholder" style="margin-top:10px;">事件说明：更新患者联系方式与随访状态，便于后续重点跟踪</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>推荐方案</h3>
+      <p>最接近你给的截图。列表密度高，查看详情不离开上下文，适合管理后台和合规审计。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. 表格 + 行内展开详情</div>
+        <div class="mockup-body">
+          <div class="mock-nav">最近 7 天日志 | 风险等级 | 模块 | 关键字</div>
+          <div style="border:1px solid #dbe3f0; border-radius:12px; overflow:hidden; background:#fff;">
+            <div style="padding:12px; border-bottom:1px solid #eef2f7; background:#eff6ff;">2026-07-28 09:12 | 登录审计 | 张敏 | 点击展开</div>
+            <div style="padding:14px; border-bottom:1px solid #eef2f7; background:#f8fafc;">
+              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+                <div class="placeholder">登录账号</div>
+                <div class="placeholder">IP 地址</div>
+                <div class="placeholder">终端信息</div>
+                <div class="placeholder">认证结果</div>
+                <div class="placeholder">失败原因</div>
+                <div class="placeholder">关联对象</div>
+              </div>
+            </div>
+            <div style="padding:12px; border-bottom:1px solid #eef2f7;">2026-07-28 10:26 | 数据操作日志 | 陈昊 | 点击展开</div>
+            <div style="padding:12px;">2026-07-27 15:08 | 系统日志 | system | 点击展开</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>备选方案</h3>
+      <p>开发量稍小，但展开后会拉长页面，长日志列表里不太利于快速横向比对。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>我建议同时落实的内容</h3>
+  <div class="options" data-multiselect>
+    <div class="option" data-choice="week-data" onclick="toggleSelect(this)">
+      <div class="letter">1</div>
+      <div class="content">
+        <h3>模拟数据改成最近 7 天</h3>
+        <p>时间分布覆盖最近一周，默认筛选也同步为最近 7 天。</p>
+      </div>
+    </div>
+    <div class="option" data-choice="risk" onclick="toggleSelect(this)">
+      <div class="letter">2</div>
+      <div class="content">
+        <h3>增加风险等级与动作字段</h3>
+        <p>让高风险删除、失败登录、导出等行为更醒目，符合审计视角。</p>
+      </div>
+    </div>
+    <div class="option" data-choice="typed-detail" onclick="toggleSelect(this)">
+      <div class="letter">3</div>
+      <div class="content">
+        <h3>按日志类型展示详情字段</h3>
+        <p>登录审计看认证信息，数据操作看对象和动作，系统日志看任务和异常原因。</p>
+      </div>
+    </div>
+  </div>
+</div>
