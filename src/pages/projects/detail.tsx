@@ -11,6 +11,7 @@ import { ArrowLeft, Search, Filter, Plus, Eye, AlarmClock, Rocket, AlertTriangle
 import Drawer from '../../components/overlay/Drawer';
 import SectionCard from '../../components/common/SectionCard';
 import Select from '../../components/form/Select';
+import SubjectEnrollmentDrawer from '../../components/projects/SubjectEnrollmentDrawer';
 
 type TableFilter =
   | 'all'
@@ -80,6 +81,7 @@ export const ProjectDetail: React.FC = () => {
   const setTitle = useHeaderStore((s) => s.setTitle);
 
   const projects = useProjectsStore((s) => s.projects);
+  const updateProject = useProjectsStore((s) => s.updateProject);
   const updateProjectStatus = useProjectsStore((s) => s.updateProjectStatus);
   const isAdmin = useAuthStore((s) => s.role === 'admin');
   const project = useMemo(() => projects.find((p) => p.id === projectId), [projectId, projects]);
@@ -92,7 +94,9 @@ export const ProjectDetail: React.FC = () => {
   const [startModalOpen, setStartModalOpen] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [subjectDrawerOpen, setSubjectDrawerOpen] = useState(false);
+  const [enrollmentDrawerOpen, setEnrollmentDrawerOpen] = useState(false);
   const [activeSubject, setActiveSubject] = useState<EnrollmentRow | null>(null);
+  const [localRows, setLocalRows] = useState<EnrollmentRow[]>([]);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [aiInput, setAiInput] = useState('');
   const [aiMode, setAiMode] = useState<AiMode>('default');
@@ -129,8 +133,17 @@ export const ProjectDetail: React.FC = () => {
     };
   }, [aiEngineMenuOpen]);
 
+  useEffect(() => {
+    setLocalRows([]);
+    setEnrollmentDrawerOpen(false);
+    setActiveSubject(null);
+    setSubjectDrawerOpen(false);
+  }, [projectId]);
+
+  const mergedRows = useMemo(() => [...localRows, ...data], [data, localRows]);
+
   const rows = useMemo(() => {
-    let rows = [...data];
+    let rows = [...mergedRows];
     const q = search.trim().toLowerCase();
 
     if (filter === 'participated') rows = rows.filter((r) => r.status === 'enrolled');
@@ -148,19 +161,19 @@ export const ProjectDetail: React.FC = () => {
     });
 
     return rows;
-  }, [data, filter, search]);
+  }, [filter, mergedRows, search]);
 
   const status = project?.status ?? '初始化';
   const ended = status === '已结束';
   const readyToStart = status === '未开始';
   const configSnapshot = project?.configSnapshot;
   const analytics = useMemo(() => {
-    const enrolled = data.filter((row) => row.status === 'enrolled').length;
-    const failed = data.filter((row) => row.status === 'failed').length;
-    const pending = data.filter((row) => row.status === 'pending').length;
+    const enrolled = mergedRows.filter((row) => row.status === 'enrolled').length;
+    const failed = mergedRows.filter((row) => row.status === 'failed').length;
+    const pending = mergedRows.filter((row) => row.status === 'pending').length;
     const progress = project?.totalCount ? Math.round((project.currentCount / project.totalCount) * 100) : 0;
 
-    const genderCounts = data.reduce(
+    const genderCounts = mergedRows.reduce(
       (acc, row) => {
         if (row.tags.includes('男')) acc.male += 1;
         if (row.tags.includes('女')) acc.female += 1;
@@ -169,10 +182,10 @@ export const ProjectDetail: React.FC = () => {
       { male: 0, female: 0 }
     );
 
-    const ageValues = data.map((row) => parseAgeValue(row.age)).filter((value): value is number => value !== null);
+    const ageValues = mergedRows.map((row) => parseAgeValue(row.age)).filter((value): value is number => value !== null);
     const avgAge = ageValues.length ? (ageValues.reduce((sum, value) => sum + value, 0) / ageValues.length).toFixed(1) : '--';
 
-    const indicatorValues = data
+    const indicatorValues = mergedRows
       .map((row) => parseIndicatorValue(row.indicator))
       .filter((value): value is number => value !== null);
     const avgIndicator = indicatorValues.length
@@ -180,7 +193,7 @@ export const ProjectDetail: React.FC = () => {
       : '--';
 
     const doctorStats = Object.entries(
-      data.reduce<Record<string, number>>((acc, row) => {
+      mergedRows.reduce<Record<string, number>>((acc, row) => {
         const key = row.doctor || '未标注';
         acc[key] = (acc[key] || 0) + 1;
         return acc;
@@ -188,7 +201,7 @@ export const ProjectDetail: React.FC = () => {
     ).sort((a, b) => b[1] - a[1]);
 
     const topTags = Object.entries(
-      data.reduce<Record<string, number>>((acc, row) => {
+      mergedRows.reduce<Record<string, number>>((acc, row) => {
         row.tags.forEach((tag) => {
           acc[tag] = (acc[tag] || 0) + 1;
         });
@@ -210,9 +223,9 @@ export const ProjectDetail: React.FC = () => {
       topDoctor: doctorStats[0]?.[0] || '暂无',
       topDoctorCount: doctorStats[0]?.[1] || 0,
       topTags,
-      sampleSize: data.length
+      sampleSize: mergedRows.length
     };
-  }, [data, project?.currentCount, project?.totalCount]);
+  }, [mergedRows, project?.currentCount, project?.totalCount]);
   const safeProjectTitle = project?.title ?? '当前项目';
   const safeCurrentCount = project?.currentCount ?? 0;
   const safeTotalCount = project?.totalCount ?? 0;
@@ -314,6 +327,19 @@ export const ProjectDetail: React.FC = () => {
   const closeSubject = () => {
     setSubjectDrawerOpen(false);
     setActiveSubject(null);
+  };
+
+  const handleEnrollmentComplete = (outcome: { status: 'success' | 'failure'; row: EnrollmentRow }) => {
+    setLocalRows((prev) => [outcome.row, ...prev]);
+    setEnrollmentDrawerOpen(false);
+    setFilter(outcome.status === 'success' ? 'participated' : 'match_failed');
+    setSearch(outcome.row.name);
+
+    if (outcome.status === 'success') {
+      updateProject(project.id, {
+        currentCount: project.currentCount + 1
+      });
+    }
   };
 
   const buildAiReply = (prompt: string, mode: AiMode) => {
@@ -501,7 +527,7 @@ export const ProjectDetail: React.FC = () => {
             </button>
           )}
           <button
-            onClick={() => alert('录入受试者')}
+            onClick={() => setEnrollmentDrawerOpen(true)}
             disabled={ended}
             className={`flex px-4 py-2 text-xs justify-center font-bold rounded-lg shadow-lg flex items-center transition-all transform hover:-translate-y-0.5 active:translate-y-0 ${
               ended
@@ -1187,6 +1213,17 @@ export const ProjectDetail: React.FC = () => {
           </div>
         )}
       </Drawer>
+
+      {project && (
+        <SubjectEnrollmentDrawer
+          key={`${project.id}-${enrollmentDrawerOpen ? 'open' : 'closed'}`}
+          open={enrollmentDrawerOpen}
+          project={project}
+          existingRows={mergedRows}
+          onClose={() => setEnrollmentDrawerOpen(false)}
+          onComplete={handleEnrollmentComplete}
+        />
+      )}
 
       {startModalOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">

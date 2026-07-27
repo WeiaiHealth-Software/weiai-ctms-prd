@@ -1,6 +1,21 @@
-import type { Project } from '../types/project'
+import type { Project, VisitInterval } from '../types/project'
 
-export const projects: Project[] = [
+const visitBlueprints: Array<{ visitStages: number; visitInterval: VisitInterval }> = [
+  { visitStages: 6, visitInterval: '3M' },
+  { visitStages: 8, visitInterval: '6M' },
+  { visitStages: 5, visitInterval: '3M' },
+  { visitStages: 6, visitInterval: '1M' },
+  { visitStages: 7, visitInterval: '3M' },
+  { visitStages: 4, visitInterval: '6M' },
+  { visitStages: 6, visitInterval: '3M' },
+  { visitStages: 3, visitInterval: '1M' },
+  { visitStages: 5, visitInterval: '12M' },
+  { visitStages: 6, visitInterval: '3M' },
+  { visitStages: 4, visitInterval: '6M' },
+  { visitStages: 5, visitInterval: '3M' }
+]
+
+const baseProjects: Array<Omit<Project, 'visitStages' | 'visitInterval'>> = [
   {
     id: 'P001',
     code: 'XW09',
@@ -146,3 +161,9 @@ export const projects: Project[] = [
     desc: '评估数字化宣教工具对家长认知、依从性与复诊率的影响。',
   },
 ]
+
+export const projects: Project[] = baseProjects.map((project, index) => ({
+  ...project,
+  visitStages: visitBlueprints[index]?.visitStages ?? 6,
+  visitInterval: visitBlueprints[index]?.visitInterval ?? '3M'
+}))

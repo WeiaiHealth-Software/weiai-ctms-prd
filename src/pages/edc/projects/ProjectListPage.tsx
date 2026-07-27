@@ -1,23 +1,28 @@
-import { Plus, Search, RefreshCw, Info, Check } from 'lucide-react'
+import { Plus, Search, RefreshCw, Info, Check, Hospital } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useMemo, useState, useEffect } from 'react'
 import { useHeaderStore } from '../../../store/useHeaderStore'
 import { useEdcProjectStore } from '../../../store/useEdcProjectStore'
+import { useUsersStore } from '../../../store/useUsersStore'
 import SectionCard from '../../../components/common/SectionCard'
 import Drawer from '../../../components/overlay/Drawer'
 import { PROJECTS as iwrsProjects, ProjectSummary } from '../../../mock/projects'
+import { CENTERS } from '../../../mock/centers'
 import { classNames } from '../../../lib/classNames'
 import { statusClassMap } from '../../../lib/statusMap'
 import type { Project } from '../../../types/project'
+import CreateProjectModal, { type CreateProjectFormValue } from '../../../modules/edc/projects/components/CreateProjectModal'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 5
 
 export function ProjectListPage() {
   const setTitle = useHeaderStore(state => state.setTitle)
+  const users = useUsersStore(state => state.users)
   const { projects, addProject, removeProject } = useEdcProjectStore()
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [isSyncDrawerOpen, setIsSyncDrawerOpen] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   useEffect(() => {
     setTitle('EDC 项目管理', '管理电子数据采集系统的所有项目及进度', [
@@ -27,26 +32,48 @@ export function ProjectListPage() {
   }, [setTitle])
 
   const handleSyncProject = (iwrsProject: ProjectSummary) => {
-    // Check if it's already synced
     const exists = projects.find(p => p.code === iwrsProject.code)
     if (exists) {
       return
     }
 
     const newEdcProject: Project = {
-      id: `P${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`, // Generate a mock ID
+      id: `edc_sync_${iwrsProject.code.toLowerCase()}`,
       code: iwrsProject.code,
       name: iwrsProject.title,
       pi: iwrsProject.leader || '--',
-      sponsor: '已同步的申办方', // Placeholder since IWRS mock doesn't have sponsor
+      sponsor: '已同步项目',
       centers: iwrsProject.centers || [],
-      status: iwrsProject.status === '进行中' ? '筹备中' : '已结束', // Default to 筹备中
-      enrolled: 0, // Fresh sync, no baseline yet
+      status: iwrsProject.status === '已结束' ? '已结束' : '未配置',
+      enrolled: 0,
       targetEnrollment: iwrsProject.totalCount,
+      visitStages: 6,
+      visitInterval: '3M',
       desc: iwrsProject.description,
     }
 
     addProject(newEdcProject)
+  }
+
+  const handleCreateProject = (formValue: CreateProjectFormValue) => {
+    const newProject: Project = {
+      id: `edc_${formValue.code.toLowerCase()}`,
+      code: formValue.code,
+      name: formValue.name,
+      pi: formValue.pi,
+      sponsor: '待补充',
+      centers: formValue.centers,
+      status: '未配置',
+      enrolled: 0,
+      targetEnrollment: formValue.targetEnrollment,
+      visitStages: formValue.visitStages,
+      visitInterval: formValue.visitInterval,
+      desc: '项目已创建，待配置 EDC 表单与访视计划。'
+    }
+
+    addProject(newProject)
+    setCurrentPage(1)
+    setIsCreateModalOpen(false)
   }
 
   const handleDelete = (projectId: string) => {
@@ -71,6 +98,30 @@ export function ProjectListPage() {
     () => iwrsProjects.filter((iwrs) => projects.some((project) => project.code === iwrs.code)).length,
     [projects]
   )
+
+  const piOptions = useMemo(() => {
+    const uniqueNames = Array.from(new Set([
+      ...users.map(user => user.name),
+      ...projects.map(project => project.pi)
+    ]))
+
+    return uniqueNames.map((name) => ({
+      value: name,
+      label: name
+    }))
+  }, [projects, users])
+
+  const centerOptions = useMemo(() => {
+    const uniqueCenters = Array.from(new Set([
+      ...CENTERS.map(center => center.name),
+      ...projects.flatMap(project => project.centers)
+    ]))
+
+    return uniqueCenters.map((center) => ({
+      value: center,
+      label: center
+    }))
+  }, [projects])
 
   const totalPages = Math.max(1, Math.ceil(filteredProjects.length / PAGE_SIZE))
   const safeCurrentPage = Math.min(currentPage, totalPages)
@@ -110,7 +161,11 @@ export function ProjectListPage() {
                 </div>
               </button>
             </div>
-            <button className="h-10 px-4 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(true)}
+                className="h-10 px-4 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
+              >
               <Plus className="w-4 h-4" />
               新建项目
             </button>
@@ -119,17 +174,17 @@ export function ProjectListPage() {
       >
         <div className="overflow-hidden rounded-b-2xl">
           <div className="overflow-x-auto">
-            <table className="min-w-[1240px] w-full table-fixed text-sm">
+            <table className="min-w-[1360px] w-full table-fixed text-sm">
               <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
                 <tr>
-                  <th className="w-[30%] px-6 py-4 text-left whitespace-nowrap">项目名称</th>
+                  <th className="w-[24%] px-6 py-4 text-left whitespace-nowrap">项目名称</th>
                   <th className="w-28 px-6 py-4 text-left whitespace-nowrap">编号</th>
                   <th className="w-28 px-6 py-4 text-left whitespace-nowrap">PI</th>
-                  {/* <th className="px-4 py-3 text-left font-medium">申办方</th> */}
-                  <th className="w-[19%] px-6 py-4 text-left whitespace-nowrap">参与中心</th>
+                  <th className="w-[18%] px-6 py-4 text-left whitespace-nowrap">参与中心</th>
+                  <th className="w-40 px-6 py-4 text-left whitespace-nowrap">访视周期</th>
                   <th className="w-28 px-6 py-4 text-left whitespace-nowrap">状态</th>
                   <th className="w-32 px-6 py-4 text-left whitespace-nowrap">参与人数</th>
-                  <th className="w-40 px-6 py-4 text-right whitespace-nowrap">操作</th>
+                  <th className="w-44 px-6 py-4 text-right whitespace-nowrap">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -152,8 +207,25 @@ export function ProjectListPage() {
                       </td>
                       <td className="px-6 py-4 text-slate-600 font-mono">{project.code}</td>
                       <td className="px-6 py-4 text-slate-600">{project.pi}</td>
-                      {/* <td className="px-4 py-4 text-slate-600">{project.sponsor}</td> */}
-                      <td className="px-6 py-4 text-slate-600 leading-relaxed">{project.centers.join('、')}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-2">
+                          {project.centers.map((center) => (
+                            <span
+                              key={`${project.id}-${center}`}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"
+                            >
+                              <Hospital className="h-3.5 w-3.5 text-slate-500" />
+                              <span>{center}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        <div className="space-y-1 leading-5">
+                          <div>访视阶段：{project.visitStages}</div>
+                          <div>访视周期：{project.visitInterval}</div>
+                        </div>
+                      </td>
                       <td className="px-6 py-4">
                         <span
                           className={classNames(
@@ -167,8 +239,8 @@ export function ProjectListPage() {
                       <td className="px-6 py-4 text-slate-700 font-medium whitespace-nowrap">
                         {project.enrolled}/{project.targetEnrollment}
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="inline-flex items-center gap-2 text-sm">
+                      <td className="px-6 py-4 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center gap-2 text-sm whitespace-nowrap">
                           <Link to={`/index/edc/projects/${project.id}`} className="cursor-pointer rounded-md px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-800">
                             查看详情
                           </Link>
@@ -187,7 +259,7 @@ export function ProjectListPage() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
+                    <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
                       暂无匹配的项目
                     </td>
                   </tr>
@@ -326,6 +398,15 @@ export function ProjectListPage() {
           </div>
         </div>
       </Drawer>
+
+      <CreateProjectModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateProject}
+        piOptions={piOptions}
+        centerOptions={centerOptions}
+        existingCodes={projects.map(project => project.code)}
+      />
     </div>
   )
 }
