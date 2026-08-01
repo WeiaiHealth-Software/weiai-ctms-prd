@@ -75,6 +75,176 @@ const parseIndicatorValue = (indicator: string) => {
   return Number.isNaN(value) ? null : value;
 };
 
+type GroupOverviewCard = {
+  key: string;
+  title: string;
+  subtitle: string;
+  currentCount: number;
+  targetCount: number;
+  tone: {
+    accent: string;
+    iconWrap: string;
+    iconText: string;
+    countText: string;
+    summaryBg: string;
+    summaryText: string;
+    detailBg: string;
+    detailBorder: string;
+  };
+  genderStats: Array<{ label: string; count: number }>;
+  ageStats: Array<{ label: string; count: number }>;
+  indicatorStats: Array<{ label: string; count: number }>;
+  factorMatches: Array<{ label: string; count: number; targetCount: number }>;
+};
+
+const GROUP_TONES = {
+  experimental: {
+    accent: '实验组',
+    iconWrap: 'bg-indigo-100',
+    iconText: 'text-indigo-600',
+    countText: 'text-indigo-600',
+    summaryBg: 'bg-indigo-50',
+    summaryText: 'text-indigo-700',
+    detailBg: 'bg-indigo-50/60',
+    detailBorder: 'border-indigo-100'
+  },
+  control: {
+    accent: '对照组',
+    iconWrap: 'bg-emerald-100',
+    iconText: 'text-emerald-600',
+    countText: 'text-emerald-600',
+    summaryBg: 'bg-emerald-50',
+    summaryText: 'text-emerald-700',
+    detailBg: 'bg-emerald-50/60',
+    detailBorder: 'border-emerald-100'
+  },
+  neutral: {
+    accent: '分组',
+    iconWrap: 'bg-slate-100',
+    iconText: 'text-slate-500',
+    countText: 'text-slate-700',
+    summaryBg: 'bg-slate-50',
+    summaryText: 'text-slate-700',
+    detailBg: 'bg-slate-50/80',
+    detailBorder: 'border-slate-200'
+  }
+} as const;
+
+const getGroupTone = (groupName: string) => {
+  if (groupName.includes('实验')) return GROUP_TONES.experimental;
+  if (groupName.includes('对照')) return GROUP_TONES.control;
+  return GROUP_TONES.neutral;
+};
+
+const getGenderLabel = (row: EnrollmentRow) => row.tags.find((tag) => tag === '男' || tag === '女') || '未标注';
+
+const getAgeBucketLabel = (row: EnrollmentRow) => {
+  const ageTag = row.tags.find((tag) => /岁/.test(tag));
+  if (ageTag) return ageTag;
+
+  const age = parseAgeValue(row.age);
+  if (age === null) return '未标注';
+  if (age <= 7) return '4-7岁';
+  if (age <= 10) return '7-10岁';
+  if (age <= 14) return '10-14岁';
+  if (age <= 45) return '18-45岁';
+  if (age <= 60) return '45-60岁';
+  return '>60岁';
+};
+
+const getIndicatorBucketLabel = (indicator: string) => {
+  const value = parseIndicatorValue(indicator);
+  if (value === null) return '未标注';
+
+  if (/D/i.test(indicator)) {
+    if (value <= -2.5) return '屈光度:-∞~-2.50D';
+    if (value <= -1.25) return '屈光度:-2.50~-1.25D';
+    if (value <= -0.5) return '屈光度:-1.25~-0.50D';
+    return '屈光度:>-0.50D';
+  }
+
+  if (/%/.test(indicator)) {
+    if (value < 45) return '指标:<45%';
+    if (value <= 55) return '指标:45-55%';
+    return '指标:>55%';
+  }
+
+  if (value < 500) return '指标:0-500';
+  if (value < 1000) return '指标:500-1000';
+  return '指标:1000+';
+};
+
+const getIndicatorValueLabel = (indicator: string) => getIndicatorBucketLabel(indicator).replace(/^(屈光度|指标):/, '');
+
+const getFactorKey = (row: EnrollmentRow) => [getGenderLabel(row), getAgeBucketLabel(row), getIndicatorValueLabel(row.indicator)].join(' ');
+
+const getFactorDisplayLabel = (factorKey: string) => {
+  if (factorKey === '默认') return '默认';
+
+  const [gender, age, indicator] = factorKey.split(' ');
+  const indicatorPrefix = /D/i.test(indicator || '') ? '屈光度' : '指标';
+  return [`性别:${gender || '未标注'}`, `年龄:${age || '未标注'}`, `${indicatorPrefix}:${indicator || '未标注'}`].join('   ');
+};
+
+const buildStats = (rows: EnrollmentRow[], getLabel: (row: EnrollmentRow) => string) =>
+  Object.entries(
+    rows.reduce<Record<string, number>>((acc, row) => {
+      const label = getLabel(row);
+      acc[label] = (acc[label] || 0) + 1;
+      return acc;
+    }, {})
+  )
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, count]) => ({ label, count }));
+
+const allocateTargets = (weights: Array<{ key: string; count: number }>, totalTarget: number) => {
+  if (totalTarget <= 0 || weights.length === 0) return new Map<string, number>();
+
+  const totalWeight = weights.reduce((sum, item) => sum + item.count, 0);
+  if (totalWeight <= 0) return new Map<string, number>();
+
+  const allocations = weights.map((item) => {
+    const rawTarget = (item.count / totalWeight) * totalTarget;
+    return {
+      key: item.key,
+      base: Math.floor(rawTarget),
+      remainder: rawTarget - Math.floor(rawTarget)
+    };
+  });
+
+  let assigned = allocations.reduce((sum, item) => sum + item.base, 0);
+  const sortedByRemainder = [...allocations].sort((a, b) => b.remainder - a.remainder);
+  for (let idx = 0; assigned < totalTarget && idx < sortedByRemainder.length; idx += 1) {
+    sortedByRemainder[idx].base += 1;
+    assigned += 1;
+  }
+
+  return new Map(allocations.map((item) => [item.key, item.base]));
+};
+
+const buildFactorMatches = (rows: EnrollmentRow[], totalTarget: number, configuredFactors?: Record<string, number>) => {
+  const factorEntries = Object.entries(
+    rows.reduce<Record<string, number>>((acc, row) => {
+      const factorKey = getFactorKey(row);
+      acc[factorKey] = (acc[factorKey] || 0) + 1;
+      return acc;
+    }, {})
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+
+  const fallbackTargets = allocateTargets(
+    factorEntries.map(([key, count]) => ({ key, count })),
+    totalTarget
+  );
+
+  return factorEntries.map(([key, count]) => ({
+    label: getFactorDisplayLabel(key),
+    count,
+    targetCount: configuredFactors?.[key] ?? fallbackTargets.get(key) ?? count
+  }));
+};
+
 export const ProjectDetail: React.FC = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -226,6 +396,48 @@ export const ProjectDetail: React.FC = () => {
       sampleSize: mergedRows.length
     };
   }, [mergedRows, project?.currentCount, project?.totalCount]);
+
+  const groupOverviewCards = useMemo<GroupOverviewCard[]>(() => {
+    if (!project) return [];
+
+    const configuredGroups = project.configSnapshot?.groups || [];
+    const enrolledRows = mergedRows.filter(
+      (row) => row.status === 'enrolled' && row.group && row.group !== '未入组' && row.group !== '待入组'
+    );
+
+    const observedGroupNames = Array.from(new Set(enrolledRows.map((row) => row.group)));
+    const groupNames = configuredGroups.length
+      ? configuredGroups.map((group) => group.name)
+      : observedGroupNames.length
+        ? observedGroupNames
+        : project.isFission
+          ? ['实验组', '对照组']
+          : ['实验组', '对照组'];
+
+    const fallbackTotal = project.totalCount || 0;
+    const evenTargetBase = groupNames.length ? Math.floor(fallbackTotal / groupNames.length) : 0;
+    const evenTargetRemainder = groupNames.length ? fallbackTotal % groupNames.length : 0;
+
+    return groupNames.map((groupName, index) => {
+      const configGroup = configuredGroups.find((group) => group.name === groupName);
+      const groupRows = enrolledRows.filter((row) => row.group === groupName);
+      const tone = getGroupTone(groupName);
+      const targetCount = configGroup?.count ?? evenTargetBase + (index < evenTargetRemainder ? 1 : 0);
+
+      return {
+        key: `${groupName}-${index}`,
+        title: groupName,
+        subtitle: configGroup?.medicine || (project.isFission ? '按当前随机化规则执行分配' : '按当前受试者列表实时聚合'),
+        currentCount: groupRows.length,
+        targetCount,
+        tone,
+        genderStats: buildStats(groupRows, getGenderLabel),
+        ageStats: buildStats(groupRows, getAgeBucketLabel),
+        indicatorStats: buildStats(groupRows, (row) => getIndicatorBucketLabel(row.indicator)),
+        factorMatches: buildFactorMatches(groupRows, targetCount, configGroup?.factors)
+      };
+    });
+  }, [mergedRows, project]);
   const safeProjectTitle = project?.title ?? '当前项目';
   const safeCurrentCount = project?.currentCount ?? 0;
   const safeTotalCount = project?.totalCount ?? 0;
@@ -655,6 +867,136 @@ export const ProjectDetail: React.FC = () => {
           </div>
         )}
       </div>
+
+      {groupOverviewCards.length > 0 && (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                <Layers className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">分组与维度概览</h3>
+                <p className="text-xs text-slate-500">恢复原中央随机化详情中的分组情况展示，按当前列表实时聚合</p>
+              </div>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-500">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              已入组 {groupOverviewCards.reduce((sum, group) => sum + group.currentCount, 0)} 例
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 p-6 xl:grid-cols-2">
+            {groupOverviewCards.map((group) => (
+              <section key={group.key} className="rounded-2xl border border-slate-100 bg-slate-50/40 p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${group.tone.iconWrap} ${group.tone.iconText}`}>
+                      <Layers className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-lg font-bold text-slate-900">{group.title}</div>
+                      <div className="mt-0.5 text-xs text-slate-500">{group.subtitle}</div>
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <div className="flex items-baseline justify-end gap-1.5 whitespace-nowrap">
+                      <span className={`text-[2rem] font-black leading-none tracking-tight ${group.tone.countText}`}>{group.currentCount}</span>
+                      <span className="text-[2rem] font-semibold leading-none text-slate-400">/</span>
+                      <span className="text-[2rem] font-bold leading-none text-slate-500">{group.targetCount || 0}</span>
+                      <span className="text-base font-semibold text-slate-400">人</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-4">
+                  <div>
+                    <div className="mb-2 text-xs font-bold tracking-wide text-slate-400">性别分布</div>
+                    <div className="flex flex-wrap gap-2">
+                      {group.genderStats.length ? (
+                        group.genderStats.map((item) => (
+                          <span
+                            key={`${group.key}-gender-${item.label}`}
+                            className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500"
+                          >
+                            {item.label}: {item.count}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-400">暂无</span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2 text-xs font-bold tracking-wide text-slate-400">年龄段</div>
+                    <div className="flex flex-wrap gap-2">
+                      {group.ageStats.length ? (
+                        group.ageStats.map((item) => (
+                          <span
+                            key={`${group.key}-age-${item.label}`}
+                            className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500"
+                          >
+                            {item.label}: {item.count}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-400">暂无</span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2 text-xs font-bold tracking-wide text-slate-400">近视度数</div>
+                    <div className="flex flex-wrap gap-2">
+                      {group.indicatorStats.length ? (
+                        group.indicatorStats.map((item) => (
+                          <span
+                            key={`${group.key}-indicator-${item.label}`}
+                            className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500"
+                          >
+                            {item.label.replace(/^(屈光度|指标):/, '')}: {item.count}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-400">暂无</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`mt-5 rounded-2xl border ${group.tone.detailBorder} ${group.tone.detailBg} p-4`}>
+                  <div className="mb-3 flex items-center justify-center gap-1 text-xs font-bold tracking-wide text-slate-500">
+                    <span>因子匹配详情</span>
+                    <span className="text-[10px]">⌃</span>
+                  </div>
+                  <div className="space-y-2.5">
+                    {group.factorMatches.length ? (
+                      group.factorMatches.map((item) => (
+                        <div key={`${group.key}-factor-${item.label}`} className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <span className={`inline-flex max-w-full rounded-md border px-2.5 py-1 text-[11px] font-bold leading-5 ${group.tone.summaryBg} ${group.tone.summaryText} border-white/70`}>
+                              <span className="truncate">{item.label}</span>
+                            </span>
+                          </div>
+                          <div className="shrink-0 whitespace-nowrap text-sm font-black">
+                            <span className={group.tone.countText}>{item.count}</span>
+                            <span className="mx-1 text-slate-400">/</span>
+                            <span className={group.tone.countText}>{item.targetCount}</span>
+                            <span className="ml-1 text-red-400">({Math.max(item.targetCount - item.count, 0)})</span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-slate-200 bg-white/70 px-4 py-5 text-center text-sm text-slate-400">
+                        当前组别暂无已入组受试者
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            ))}
+          </div>
+        </div>
+      )}
 
       {project.isFission && (
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
