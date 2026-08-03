@@ -7,11 +7,12 @@ import { ENROLLMENT_DATA, type EnrollmentRow } from '../../mock/projects';
 import { useProjectsStore } from '../../store/useProjectsStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { AVAILABLE_DIMENSIONS } from '../../constants/dimensions';
-import { ArrowLeft, Search, Filter, Plus, Eye, AlarmClock, Rocket, AlertTriangle, Settings, Hospital, Sparkles, ChevronDown, History, Cpu, Layers, X } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Plus, Eye, AlarmClock, Rocket, AlertTriangle, Settings, Hospital, Sparkles, ChevronDown, History, Cpu, Layers, X, CircleStop } from 'lucide-react';
 import Drawer from '../../components/overlay/Drawer';
 import SectionCard from '../../components/common/SectionCard';
 import Select from '../../components/form/Select';
 import SubjectEnrollmentDrawer from '../../components/projects/SubjectEnrollmentDrawer';
+import { getProjectLifecycleAction, getProjectLifecycleDialogContent } from './projectStatusFlow';
 
 type TableFilter =
   | 'all'
@@ -261,7 +262,7 @@ export const ProjectDetail: React.FC = () => {
   const [search, setSearch] = useState('');
   const [blindMode, setBlindMode] = useState(false);
   const [criteriaOpen, setCriteriaOpen] = useState(false);
-  const [startModalOpen, setStartModalOpen] = useState(false);
+  const [projectLifecycleModalOpen, setProjectLifecycleModalOpen] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [subjectDrawerOpen, setSubjectDrawerOpen] = useState(false);
   const [enrollmentDrawerOpen, setEnrollmentDrawerOpen] = useState(false);
@@ -335,7 +336,8 @@ export const ProjectDetail: React.FC = () => {
 
   const status = project?.status ?? '初始化';
   const ended = status === '已结束';
-  const readyToStart = status === '未开始';
+  const projectLifecycleAction = getProjectLifecycleAction(status);
+  const projectLifecycleDialog = getProjectLifecycleDialogContent(status, project?.title ?? '当前项目');
   const configSnapshot = project?.configSnapshot;
   const analytics = useMemo(() => {
     const enrolled = mergedRows.filter((row) => row.status === 'enrolled').length;
@@ -718,6 +720,20 @@ export const ProjectDetail: React.FC = () => {
             <Sparkles className="w-4 h-4" />
             {aiPanelOpen ? '收起 AI 助手' : '项目 AI 助手'}
           </button> */}
+          {projectLifecycleAction && (
+            <button
+              type="button"
+              onClick={() => setProjectLifecycleModalOpen(true)}
+              className={`flex items-center gap-1.5 px-4 py-2 text-xs justify-center font-bold rounded-lg shadow-lg border transition-all transform hover:-translate-y-0.5 active:translate-y-0 ${
+                projectLifecycleAction === 'start'
+                  ? 'border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100'
+                  : 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
+              }`}
+            >
+              {projectLifecycleAction === 'start' ? <Rocket className="w-4 h-4" /> : <CircleStop className="w-4 h-4" />}
+              {projectLifecycleAction === 'start' ? '启动项目' : '结束项目'}
+            </button>
+          )}
           {isAdmin && (
             <button
               type="button"
@@ -726,16 +742,6 @@ export const ProjectDetail: React.FC = () => {
             >
               <Settings className="w-4 h-4" />
               配置详情
-            </button>
-          )}
-          {readyToStart && (
-            <button
-              type="button"
-              onClick={() => setStartModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs justify-center font-bold rounded-lg shadow-lg border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <Rocket className="w-4 h-4" />
-              启动项目
             </button>
           )}
           <button
@@ -1567,22 +1573,35 @@ export const ProjectDetail: React.FC = () => {
         />
       )}
 
-      {startModalOpen && (
+      {projectLifecycleModalOpen && projectLifecycleDialog && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="p-6 sm:p-8">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-brand-50 rounded-full mb-5 border border-brand-100">
-                <AlertTriangle className="w-6 h-6 text-brand-600" />
+              <div
+                className={`flex items-center justify-center w-12 h-12 mx-auto rounded-full mb-5 border ${
+                  projectLifecycleDialog.action === 'start'
+                    ? 'bg-brand-50 border-brand-100'
+                    : 'bg-rose-50 border-rose-100'
+                }`}
+              >
+                <AlertTriangle
+                  className={`w-6 h-6 ${projectLifecycleDialog.action === 'start' ? 'text-brand-600' : 'text-rose-600'}`}
+                />
               </div>
-              <h3 className="text-xl font-bold text-center text-slate-800 mb-2">确认启动项目？</h3>
+              <h3 className="text-xl font-bold text-center text-slate-800 mb-2">{projectLifecycleDialog.title}</h3>
               <p className="text-center text-slate-500 mb-6 text-sm leading-relaxed">
-                确认启动 <span className="font-bold text-slate-700">"{project.title}"</span> 项目。
+                {projectLifecycleDialog.description}
               </p>
+              {projectLifecycleDialog.warning && (
+                <div className="mb-6 rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm leading-relaxed text-rose-700">
+                  {projectLifecycleDialog.warning}
+                </div>
+              )}
 
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setStartModalOpen(false)}
+                  onClick={() => setProjectLifecycleModalOpen(false)}
                   className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-colors"
                 >
                   取消
@@ -1590,12 +1609,16 @@ export const ProjectDetail: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setStartModalOpen(false);
-                    updateProjectStatus(project.id, '进行中');
+                    setProjectLifecycleModalOpen(false);
+                    updateProjectStatus(project.id, projectLifecycleDialog.action === 'start' ? '进行中' : '已结束');
                   }}
-                  className="flex-1 px-4 py-2.5 bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-95"
+                  className={`flex-1 px-4 py-2.5 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 ${
+                    projectLifecycleDialog.action === 'start'
+                      ? 'bg-brand-600 shadow-brand-500/30 hover:bg-brand-700'
+                      : 'bg-rose-600 shadow-rose-500/30 hover:bg-rose-700'
+                  }`}
                 >
-                  确认
+                  {projectLifecycleDialog.confirmLabel}
                 </button>
               </div>
             </div>
