@@ -7,6 +7,8 @@ export type Project = {
   code: string
   name: string
   pi: string
+  collabs?: string[]
+  crcs?: string[]
   sponsor: string
   centers: string[]
   status: ProjectStatus
