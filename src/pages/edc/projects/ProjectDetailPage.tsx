@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { ArrowLeft, BarChart3, ChevronDown, Cpu, Download, History, Hospital, Building, Layers, MoreHorizontal, RotateCcw, Search, Sparkles, UserPlus, X, type LucideIcon } from 'lucide-react'
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'

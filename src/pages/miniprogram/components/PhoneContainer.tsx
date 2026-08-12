@@ -8,6 +8,8 @@ type PhoneContainerProps = {
   onBack?: () => void;
   headerRight?: React.ReactNode;
   showMiniProgramTopBar?: boolean;
+  titleCenter?: boolean;
+  titleBold?: boolean;
   onClose?: () => void;
   onMore?: () => void;
 };
@@ -19,6 +21,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   onBack,
   headerRight,
   showMiniProgramTopBar = true,
+  titleCenter = false,
+  titleBold = true,
   onClose,
   onMore,
 }) => {
@@ -38,7 +42,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <button
                   type="button"
                   aria-label="返回"
-                  className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center hover:bg-slate-50 transition-colors shrink-0"
+                  className="w-10 h-10 ml-1 mt-1 rounded-full flex items-center justify-center hover:bg-slate-50 transition-colors shrink-0"
                   onClick={onBack}
                 >
                   <ArrowLeft className="text-slate-700" width={20} />
@@ -48,8 +52,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
             {titleRowEnabled && title && (
               <div
-                className="absolute text-[17px] font-bold text-slate-900 text-center truncate"
-                style={{ left: onBack ? 44 : 12 }}
+                className={`absolute text-[17px] text-slate-900 text-center truncate ${
+                  titleCenter
+                    ? 'left-1/2 -translate-x-1/2 w-full px-16 pointer-events-none select-none'
+                    : ''
+                } ${titleBold ? 'font-bold' : 'font-medium'}`}
+                style={{ left: titleCenter ? undefined : onBack ? 44 : 12 }}
               >
                 {title}
               </div>

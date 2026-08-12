@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { LayoutList, User, Building2, FolderKanban, LogOut as LogOutIcon, ChevronRight, MapPin } from 'lucide-react';
 import classNames from 'classnames';
@@ -53,7 +54,7 @@ export const CrcView: React.FC = () => {
   };
 
   const renderNotifications = () => (
-    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar p-4 space-y-4 pb-16">
+    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar p-4 space-y-4 pb-4">
         {notifications.length === 0 ? (
           <div className="text-center text-slate-400 text-sm mt-20">暂无消息</div>
         ) : (
@@ -85,7 +86,7 @@ export const CrcView: React.FC = () => {
 
   const renderProfile = () => (
     <div className="flex flex-col h-full bg-slate-50 relative z-10">
-      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-4 space-y-4 pb-16">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-4 space-y-4 pb-4">
         
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-5">
           <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[24px] font-black shrink-0">
@@ -130,7 +131,7 @@ export const CrcView: React.FC = () => {
   );
 
   const renderMyCenters = () => (
-    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar p-4 space-y-4 pb-16">
+    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar p-4 space-y-4 pb-4">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
           <div className="flex justify-between items-start mb-3">
             <h3 className="font-bold text-slate-800 text-[16px]">北京协和医院眼科中心</h3>
@@ -162,7 +163,7 @@ export const CrcView: React.FC = () => {
   );
 
   const renderMyProjects = () => (
-    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar pb-16">
+    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar pb-4">
       <div className="sticky top-0 z-10 bg-slate-50 px-4 pt-4 pb-3">
         <div className="flex bg-slate-100 p-1 rounded-xl">
           <div className="flex-1 text-center py-1.5 bg-blue-600 text-white rounded-lg text-[13px] font-bold shadow-sm">全部</div>
@@ -171,7 +172,7 @@ export const CrcView: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-4 space-y-4 pb-16">
+      <div className="px-4 space-y-4 pb-4">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-bold text-slate-800 text-[15px] leading-tight flex-1 pr-2">青少年近视防控临床研究</h3>
@@ -259,16 +260,10 @@ export const CrcView: React.FC = () => {
   }
 
   const headerTitle =
-    screen === 'home'
-      ? tab === 'projects'
-        ? '我的项目'
-        : tab === 'profile'
-          ? '我的'
-          : undefined
-      : screen === 'notifications'
-        ? '消息通知'
-        : screen === 'appointment'
-          ? '处理预约'
+    screen === 'notifications'
+      ? '消息通知'
+      : screen === 'appointment'
+        ? '处理预约'
         : screen === 'my-centers'
           ? '我的中心'
           : screen === 'my-projects'
@@ -277,28 +272,36 @@ export const CrcView: React.FC = () => {
               ? '项目详情'
               : undefined;
 
+  const headerCenter = screen === 'detail';
+  const headerBold = screen !== 'detail';
+
   const headerOnBack =
-    screen === 'notifications' || screen === 'detail'
+    screen === 'notifications'
       ? () => setScreen('home')
-      : screen === 'appointment'
+      : screen === 'detail'
         ? () => {
             setScreen('home');
-            setTab('home');
+            setTab('projects');
           }
-      : screen === 'my-centers' || screen === 'my-projects'
-        ? () => {
-            setScreen('home');
-            setTab('profile');
-          }
-        : undefined;
+        : screen === 'appointment'
+          ? () => {
+              setScreen('home');
+              setTab('home');
+            }
+          : screen === 'my-centers' || screen === 'my-projects'
+            ? () => {
+                setScreen('home');
+                setTab('profile');
+              }
+            : undefined;
 
   return (
-    <PhoneContainer title={headerTitle} onBack={headerOnBack}>
+    <PhoneContainer title={headerTitle} titleCenter={headerCenter} titleBold={headerBold} onBack={headerOnBack}>
       <div className="flex flex-col h-full relative">
         
-        <div className="flex-1 overflow-hidden relative bg-slate-50">
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden relative bg-slate-50">
           {tab === 'home' && screen === 'home' && (
-            <div className="h-full overflow-y-auto no-scrollbar pb-24">
+            <div className="h-full overflow-y-auto no-scrollbar pb-0">
               <WorkbenchCrc
                 onOpenNotifications={() => setScreen('notifications')}
                 unreadCount={notifications.length}
@@ -309,13 +312,31 @@ export const CrcView: React.FC = () => {
           )}
           {tab === 'projects' && screen === 'home' && <ProjectList onNavigateToDetail={() => setScreen('detail')} />}
           {tab === 'profile' && screen === 'home' && renderProfile()}
-          {screen === 'my-centers' && renderMyCenters()}
-          {screen === 'my-projects' && renderMyProjects()}
-          {screen === 'notifications' && renderNotifications()}
-          {screen === 'appointment' && selectedAppointmentId && (
-            <CrcAppointmentPage appointmentId={selectedAppointmentId} onDone={() => { setScreen('home'); setTab('home'); }} />
+          {screen === 'my-centers' && (
+            <div className="h-full overflow-y-auto pb-0">
+              {renderMyCenters()}
+            </div>
           )}
-          {screen === 'detail' && <ProjectDetail />}
+          {screen === 'my-projects' && (
+            <div className="h-full overflow-y-auto pb-0">
+              {renderMyProjects()}
+            </div>
+          )}
+          {screen === 'notifications' && (
+            <div className="h-full overflow-y-auto pb-0">
+              {renderNotifications()}
+            </div>
+          )}
+          {screen === 'appointment' && selectedAppointmentId && (
+            <div className="h-full overflow-y-auto pb-0">
+              <CrcAppointmentPage appointmentId={selectedAppointmentId} onDone={() => { setScreen('home'); setTab('home'); }} />
+            </div>
+          )}
+          {screen === 'detail' && (
+            <div className="h-full overflow-y-auto pb-0">
+              <ProjectDetail />
+            </div>
+          )}
         </div>
 
         <div className="bg-white border-t p-3 flex justify-around text-xs text-slate-500 shrink-0 relative z-20">

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useHeaderStore } from '../../store/useHeaderStore';
 import { HomePhone } from './components/HomePhone';
 import { DoctorView } from './components/DoctorView';
 import { CrcView } from './components/CrcView';
@@ -7,7 +8,15 @@ import { MfrView } from './components/MfrView';
 type Role = 'doc' | 'crc' | 'mfr';
 
 export const MiniProgram: React.FC = () => {
+  const setTitle = useHeaderStore(state => state.setTitle);
   const [activeRoles, setActiveRoles] = useState<Role[]>([]);
+
+  useEffect(() => {
+    setTitle('临床试验管理系统 - 小程序端', '点击首页大厅中的角色面板，右侧将不断叠加展开对应的操作终端以测试互动', [
+      { text: '开发者账户', color: 'indigo' },
+      { text: '超级管理员', color: 'purple' }
+    ]);
+  }, [setTitle]);
 
   const handleSelectRole = (role: Role) => {
     if (!activeRoles.includes(role)) {
@@ -17,11 +26,6 @@ export const MiniProgram: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col bg-slate-50 p-6 overflow-hidden">
-      <div className="mb-6 text-center shrink-0">
-        <h1 className="text-2xl font-bold text-gray-800">临床试验管理系统 - 小程序端</h1>
-        <p className="text-gray-500 text-sm mt-2">点击首页大厅中的角色面板，右侧将不断叠加展开对应的操作终端以测试互动</p>
-      </div>
-
       <div className="flex-1 flex justify-start items-center overflow-x-auto no-scrollbar pb-4">
         <div className="flex flex-row gap-12 items-center transition-all duration-500 ease-in-out pl-10 pr-10 m-auto">
           <div className="flex flex-col items-center gap-3 relative z-10 shrink-0">

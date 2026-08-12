@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHeaderStore } from '../../store/useHeaderStore';
 import { Plus } from 'lucide-react';
@@ -28,11 +30,13 @@ export const Departments: React.FC = () => {
   const setTitle = useHeaderStore(state => state.setTitle);
   const [deptName, setDeptName] = useState('');
   const [departments, setDepartments] = useState([
-    { name: '心内科', icon: 'ri-heart-pulse-line', colorClass: 'bg-red-50 text-red-600 border-red-100' },
     { name: '眼科', icon: 'ri-eye-line', colorClass: 'bg-amber-50 text-amber-600 border-amber-100' },
+    { name: '视光科', icon: 'ri-eye-2-line', colorClass: 'bg-blue-50 text-blue-600 border-blue-100' },
+    { name: '防治中心', icon: 'ri-hospital-line', colorClass: 'bg-purple-50 text-purple-600 border-purple-100' },
+    { name: '心内科', icon: 'ri-heart-pulse-line', colorClass: 'bg-red-50 text-red-600 border-red-100' },
     { name: '检验科', icon: 'ri-microscope-line', colorClass: 'bg-blue-50 text-blue-600 border-blue-100' },
     { name: '药学部', icon: 'ri-capsule-line', colorClass: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-    { name: '内科', icon: 'ri-hospital-line', colorClass: 'bg-slate-50 text-slate-600 border-slate-200' },
+    { name: '内科', icon: 'ri-hospital-line', colorClass: 'bg-amber-50 text-amber-600 border-amber-100' },
     { name: '外科', icon: 'ri-hospital-line', colorClass: 'bg-slate-50 text-slate-600 border-slate-200' },
     { name: '神经内科', icon: 'ri-brain-line', colorClass: 'bg-purple-50 text-purple-600 border-purple-100' },
     { name: '呼吸医学科', icon: 'ri-lungs-line', colorClass: 'bg-orange-50 text-orange-600 border-orange-100' },

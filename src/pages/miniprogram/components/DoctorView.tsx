@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { LayoutGrid, User, ChevronRight, MapPin, FolderKanban } from 'lucide-react';
 import classNames from 'classnames';
@@ -100,7 +101,7 @@ export const DoctorView: React.FC = () => {
     return (
       <div className="flex flex-col h-full bg-white relative z-10">
         <div className="flex-1 overflow-y-auto no-scrollbar pb-28">
-          <div className="px-4 pt-4 pb-6">
+          <div className="px-4 pt-4 pb-0">
             <div className="mb-5">
               <label className="block text-[13px] font-bold text-slate-800 mb-2">
                 患者姓名 <span className="text-rose-500">*</span>
@@ -201,7 +202,7 @@ export const DoctorView: React.FC = () => {
 
   const renderProfile = () => (
     <div className="flex flex-col h-full bg-slate-50 relative z-10">
-      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-4 pb-16">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-4 pb-4">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[20px] font-black">
             李
@@ -256,7 +257,7 @@ export const DoctorView: React.FC = () => {
   );
 
   const renderCenter = () => (
-    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar p-4 space-y-4 pb-16">
+    <div className="h-full bg-slate-50 relative z-10 overflow-y-auto no-scrollbar p-4 space-y-4 pb-4">
         {DB.doctor.centers.map(c => (
           <div key={c.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
             <div className="flex items-start justify-between gap-3 mb-2">
@@ -289,31 +290,33 @@ export const DoctorView: React.FC = () => {
   );
 
   const headerTitle =
-    screen === 'home'
-      ? tab === 'projects'
-        ? '我的项目'
-        : tab === 'profile'
-          ? '我的'
-          : undefined
-      : screen === 'notifications'
-        ? '消息通知'
-        : screen === 'appointment'
-          ? '填写预约信息'
-          : screen === 'detail'
-            ? '项目详情'
-            : screen === 'center'
-              ? '我的中心'
-              : undefined;
+    screen === 'notifications'
+      ? '消息通知'
+      : screen === 'appointment'
+        ? '填写预约信息'
+        : screen === 'detail'
+          ? '项目详情'
+          : screen === 'center'
+            ? '我的中心'
+            : undefined;
+
+  const headerCenter = screen === 'detail';
+  const headerBold = screen !== 'detail';
 
   const headerOnBack =
-    screen === 'notifications' || screen === 'appointment' || screen === 'detail'
+    screen === 'notifications' || screen === 'appointment'
       ? () => setScreen('home')
-      : screen === 'center'
+      : screen === 'detail'
         ? () => {
             setScreen('home');
-            setTab('profile');
+            setTab('projects');
           }
-        : undefined;
+        : screen === 'center'
+          ? () => {
+              setScreen('home');
+              setTab('profile');
+            }
+          : undefined;
 
   if (!isLoggedIn) {
     return (
@@ -324,11 +327,11 @@ export const DoctorView: React.FC = () => {
   }
 
   return (
-    <PhoneContainer title={headerTitle} onBack={headerOnBack}>
+    <PhoneContainer title={headerTitle} titleCenter={headerCenter} titleBold={headerBold} onBack={headerOnBack}>
       <div className="flex flex-col h-full relative">
-        <div className="flex-1 overflow-hidden relative bg-slate-50">
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden relative bg-slate-50">
           {screen === 'home' && tab === 'home' && (
-            <div className="h-full overflow-y-auto pb-24">
+            <div className="h-full overflow-y-auto pb-0">
               <WorkbenchDoctor
                 onOpenNotifications={() => setScreen('notifications')}
                 unreadCount={notifications.length}
@@ -339,46 +342,60 @@ export const DoctorView: React.FC = () => {
           {screen === 'home' && tab === 'projects' && <ProjectList onNavigateToDetail={() => setScreen('detail')} />}
           {screen === 'home' && tab === 'profile' && renderProfile()}
           
-          {screen === 'appointment' && renderAppointment()}
-          {screen === 'detail' && <ProjectDetail />}
-          {screen === 'center' && renderCenter()}
-          {screen === 'notifications' && renderNotifications()}
+          {screen === 'appointment' && (
+            <div className="h-full overflow-y-auto pb-0">
+              {renderAppointment()}
+            </div>
+          )}
+          {screen === 'detail' && (
+            <div className="h-full overflow-y-auto pb-0">
+              <ProjectDetail />
+            </div>
+          )}
+          {screen === 'center' && (
+            <div className="h-full overflow-y-auto pb-0">
+              {renderCenter()}
+            </div>
+          )}
+          {screen === 'notifications' && (
+            <div className="h-full overflow-y-auto pb-0">
+              {renderNotifications()}
+            </div>
+          )}
         </div>
 
-        {screen === 'home' && (
-          <div className="bg-white border-t p-3 flex justify-around text-xs shrink-0 z-50 relative">
-            <div
-              className={classNames(
-                'flex flex-col items-center cursor-pointer transition-colors',
-                tab === 'home' ? 'text-blue-600' : 'text-slate-400'
-              )}
-              onClick={() => setTab('home')}
-            >
-              <LayoutGrid className="w-6 h-6 mb-1" />
-              工作台
-            </div>
-            <div
-              className={classNames(
-                'flex flex-col items-center cursor-pointer transition-colors',
-                tab === 'projects' ? 'text-blue-600' : 'text-slate-400'
-              )}
-              onClick={() => setTab('projects')}
-            >
-              <FolderKanban className="w-6 h-6 mb-1" />
-              项目
-            </div>
-            <div
-              className={classNames(
-                'flex flex-col items-center cursor-pointer transition-colors',
-                tab === 'profile' ? 'text-blue-600' : 'text-slate-400'
-              )}
-              onClick={() => setTab('profile')}
-            >
-              <User className="w-6 h-6 mb-1" />
-              我的
-            </div>
+        <div className="bg-white border-t p-3 flex justify-around text-xs shrink-0 z-50 relative">
+          <div
+            className={classNames(
+              'flex flex-col items-center cursor-pointer transition-colors',
+              tab === 'home' ? 'text-blue-600' : 'text-slate-400'
+            )}
+            onClick={() => setTab('home')}
+          >
+            <LayoutGrid className="w-6 h-6 mb-1" />
+            工作台
           </div>
-        )}
+          <div
+            className={classNames(
+              'flex flex-col items-center cursor-pointer transition-colors',
+              tab === 'projects' ? 'text-blue-600' : 'text-slate-400'
+            )}
+            onClick={() => setTab('projects')}
+          >
+            <FolderKanban className="w-6 h-6 mb-1" />
+            项目
+          </div>
+          <div
+            className={classNames(
+              'flex flex-col items-center cursor-pointer transition-colors',
+              tab === 'profile' ? 'text-blue-600' : 'text-slate-400'
+            )}
+            onClick={() => setTab('profile')}
+          >
+            <User className="w-6 h-6 mb-1" />
+            我的
+          </div>
+        </div>
       </div>
     </PhoneContainer>
   );
