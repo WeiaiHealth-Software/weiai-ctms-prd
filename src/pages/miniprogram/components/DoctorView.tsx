@@ -9,11 +9,14 @@ import WorkbenchDoctor from './WorkbenchDoctor';
 import { ProjectList } from './ProjectList';
 import ProjectDetail from './ProjectDetail';
 
+type ProjectKind = 'both' | 'iwrs' | 'edc';
+
 export const DoctorView: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [tab, setTab] = useState<'home' | 'projects' | 'profile'>('home');
   const [screen, setScreen] = useState<'home' | 'appointment' | 'detail' | 'center' | 'notifications'>('home');
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [detailProjectKind, setDetailProjectKind] = useState<ProjectKind>('both');
 
   useEffect(() => {
     const handleCrcAction = (e: Event) => {
@@ -300,8 +303,8 @@ export const DoctorView: React.FC = () => {
             ? '我的中心'
             : undefined;
 
-  const headerCenter = screen === 'detail';
-  const headerBold = screen !== 'detail';
+  const headerCenter = screen === 'detail' || screen === 'appointment';
+  const headerBold = screen !== 'detail' && screen !== 'appointment';
 
   const headerOnBack =
     screen === 'notifications' || screen === 'appointment'
@@ -339,7 +342,14 @@ export const DoctorView: React.FC = () => {
               />
             </div>
           )}
-          {screen === 'home' && tab === 'projects' && <ProjectList onNavigateToDetail={() => setScreen('detail')} />}
+          {screen === 'home' && tab === 'projects' && (
+            <ProjectList
+              onNavigateToDetail={(kind) => {
+                setDetailProjectKind(kind);
+                setScreen('detail');
+              }}
+            />
+          )}
           {screen === 'home' && tab === 'profile' && renderProfile()}
           
           {screen === 'appointment' && (
@@ -349,7 +359,7 @@ export const DoctorView: React.FC = () => {
           )}
           {screen === 'detail' && (
             <div className="h-full overflow-y-auto pb-0">
-              <ProjectDetail />
+              <ProjectDetail projectKind={detailProjectKind} />
             </div>
           )}
           {screen === 'center' && (

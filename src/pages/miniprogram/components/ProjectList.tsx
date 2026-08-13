@@ -17,7 +17,7 @@ interface ProjectBase {
 interface IwrsMetrics {
   label: string;
   value: string;
-  accent?: boolean;
+  accent?: 'blue' | 'rose' | 'default';
   suffix?: string;
 }
 
@@ -53,9 +53,8 @@ const PROJECTS: Project[] = [
     status: 'ongoing',
     kind: 'both',
     iwrsMetrics: [
-      { label: '筛查中', value: '18', accent: true },
-      { label: '已随机', value: '12', accent: true, suffix: '/50' },
-      { label: '物资余量', value: '充足', accent: true }
+      { label: '预约待处理', value: '18', accent: 'rose' },
+      { label: '分配入组概览', value: '12', accent: 'blue', suffix: '/50' }
     ],
     edcMetrics: [
       { label: '访视中', value: '10', accent: 'emerald' },
@@ -71,9 +70,8 @@ const PROJECTS: Project[] = [
     kind: 'iwrs',
     badge: [{ label: '仅 IWRS', tone: 'blue' }],
     iwrsMetrics: [
-      { label: '筛查中', value: '6', accent: true },
-      { label: '已随机', value: '3', accent: true, suffix: '/24' },
-      { label: '物资余量', value: '充足', accent: true }
+      { label: '预约待处理', value: '6', accent: 'rose' },
+      { label: '分配入组概览', value: '3', accent: 'blue', suffix: '/24' }
     ]
   },
   {
@@ -91,8 +89,10 @@ const PROJECTS: Project[] = [
   }
 ];
 
+type ProjectKind = 'both' | 'iwrs' | 'edc';
+
 interface ProjectListProps {
-  onNavigateToDetail?: () => void;
+  onNavigateToDetail?: (kind: ProjectKind) => void;
 }
 
 const statusBadgeClass: Record<ProjectStatus, string> = {
@@ -126,32 +126,38 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onNavigateToDetail }) 
 
   const getSubTab = (pid: string): SubTab => tabState[pid] ?? 'iwrs';
 
-  const renderIwrsBlock = (metrics: IwrsMetrics[], finished: boolean) => {
+  const renderIwrsBlock = (metrics: IwrsMetrics[], finished: boolean, kind: ProjectKind) => {
     const btnClass = finished
       ? 'w-full py-2 bg-gray-50 text-gray-500 border border-gray-200 rounded-lg text-xs font-bold hover:bg-gray-100 transition flex justify-center items-center gap-1'
       : 'w-full py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg text-xs font-bold hover:bg-blue-100 transition flex justify-center items-center gap-1';
-    const textClass = finished ? 'text-gray-500' : 'text-blue-600';
+
+    const valueClass = (a?: IwrsMetrics['accent']) => {
+      if (finished) return 'text-gray-500';
+      if (a === 'rose') return 'text-rose-500';
+      if (a === 'blue') return 'text-blue-600';
+      return 'text-gray-700';
+    };
 
     return (
       <div className="p-4 pt-5 bg-white">
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-2 gap-2 mb-4">
           {metrics.map((m, idx) => (
             <div key={m.label + idx} className={`text-center ${idx > 0 ? 'border-l border-gray-100' : ''}`}>
               <div className="text-[10px] text-gray-400 mb-1">{m.label}</div>
-              <div className={`text-sm font-bold ${m.accent ? textClass : 'text-gray-700'}`}>
+              <div className={`text-sm font-bold ${valueClass(m.accent)}`}>
                 {m.value}{m.suffix && <span className="text-[10px] text-gray-400 font-normal">{m.suffix}</span>}
               </div>
             </div>
           ))}
         </div>
-        <button className={btnClass} onClick={onNavigateToDetail}>
+        <button className={btnClass} onClick={() => onNavigateToDetail?.(kind)}>
           进入项目详情 <ChevronRight className="w-3 h-3" />
         </button>
       </div>
     );
   };
 
-  const renderEdcBlock = (metrics: EdcMetrics[], finished: boolean) => {
+  const renderEdcBlock = (metrics: EdcMetrics[], finished: boolean, kind: ProjectKind) => {
     const btnClass = finished
       ? 'w-full py-2 bg-gray-50 text-gray-500 border border-gray-200 rounded-lg text-xs font-bold hover:bg-gray-100 transition flex justify-center items-center gap-1'
       : 'w-full py-2 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-xs font-bold hover:bg-emerald-100 transition flex justify-center items-center gap-1';
@@ -173,7 +179,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onNavigateToDetail }) 
             </div>
           ))}
         </div>
-        <button className={btnClass} onClick={onNavigateToDetail}>
+        <button className={btnClass} onClick={() => onNavigateToDetail?.(kind)}>
           进入项目详情 <ChevronRight className="w-3 h-3" />
         </button>
       </div>
@@ -221,8 +227,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onNavigateToDetail }) 
         </div>
 
         <div className="border-t border-gray-200 -mt-[1px] relative z-20">
-          {active === 'iwrs' && renderIwrsBlock(p.iwrsMetrics, finished)}
-          {active === 'edc' && renderEdcBlock(p.edcMetrics, finished)}
+          {active === 'iwrs' && renderIwrsBlock(p.iwrsMetrics, finished, p.kind)}
+          {active === 'edc' && renderEdcBlock(p.edcMetrics, finished, p.kind)}
         </div>
       </div>
     );
@@ -261,8 +267,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onNavigateToDetail }) 
         </div>
 
         <div className="pl-5">
-          {p.kind === 'iwrs' && renderIwrsBlock(p.iwrsMetrics, finished)}
-          {p.kind === 'edc' && renderEdcBlock(p.edcMetrics, finished)}
+          {p.kind === 'iwrs' && renderIwrsBlock(p.iwrsMetrics, finished, p.kind)}
+          {p.kind === 'edc' && renderEdcBlock(p.edcMetrics, finished, p.kind)}
         </div>
       </div>
     );

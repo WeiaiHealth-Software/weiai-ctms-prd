@@ -10,6 +10,8 @@ import { ProjectList } from './ProjectList';
 import ProjectDetail from './ProjectDetail';
 import { CrcAppointmentPage } from './CrcAppointmentPage';
 
+type ProjectKind = 'both' | 'iwrs' | 'edc';
+
 export const CrcView: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [tab, setTab] = useState<'home' | 'projects' | 'profile'>('home');
@@ -17,6 +19,7 @@ export const CrcView: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [, setDbVersion] = useState(0);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+  const [detailProjectKind, setDetailProjectKind] = useState<ProjectKind>('both');
 
   useEffect(() => {
     const handleDocAction = (e: Event) => {
@@ -310,7 +313,14 @@ export const CrcView: React.FC = () => {
               />
             </div>
           )}
-          {tab === 'projects' && screen === 'home' && <ProjectList onNavigateToDetail={() => setScreen('detail')} />}
+          {tab === 'projects' && screen === 'home' && (
+            <ProjectList
+              onNavigateToDetail={(kind) => {
+                setDetailProjectKind(kind);
+                setScreen('detail');
+              }}
+            />
+          )}
           {tab === 'profile' && screen === 'home' && renderProfile()}
           {screen === 'my-centers' && (
             <div className="h-full overflow-y-auto pb-0">
@@ -334,7 +344,7 @@ export const CrcView: React.FC = () => {
           )}
           {screen === 'detail' && (
             <div className="h-full overflow-y-auto pb-0">
-              <ProjectDetail />
+              <ProjectDetail projectKind={detailProjectKind} />
             </div>
           )}
         </div>

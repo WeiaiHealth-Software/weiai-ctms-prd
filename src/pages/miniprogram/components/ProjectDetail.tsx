@@ -294,14 +294,26 @@ const SubjectDrawer: React.FC<{
   );
 };
 
-const ProjectDetail: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'iwrs' | 'edc'>('iwrs');
+type ProjectKind = 'both' | 'iwrs' | 'edc';
+
+interface ProjectDetailProps {
+  projectKind?: ProjectKind;
+}
+
+const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectKind = 'both' }) => {
+  const defaultTab: 'iwrs' | 'edc' = projectKind === 'edc' ? 'edc' : 'iwrs';
+  const [activeTab, setActiveTab] = useState<'iwrs' | 'edc'>(defaultTab);
   const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null);
 
   const activeSubject = useMemo(
     () => SUBJECTS.find(s => s.id === activeSubjectId) ?? null,
     [activeSubjectId]
   );
+
+  const showTabs = projectKind === 'both';
+  const contentClass = showTabs
+    ? 'bg-white border border-gray-200 rounded-lg rounded-tl-none p-4 relative z-[5] shadow-sm min-h-[400px]'
+    : 'bg-white border border-gray-200 rounded-lg p-4 relative z-[5] shadow-sm min-h-[400px]';
 
   return (
     <div className="flex flex-col h-full relative z-10 bg-gray-50">
@@ -335,30 +347,32 @@ const ProjectDetail: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex space-x-1">
-          <div
-            onClick={() => setActiveTab('iwrs')}
-            className={`rounded-t-lg px-4 py-2 text-sm font-medium cursor-pointer transition-all border border-b-0 -mb-px relative z-[1] ${
-              activeTab === 'iwrs'
-                ? 'bg-white text-blue-600 border-gray-200 z-[10]'
-                : 'bg-gray-100 text-gray-500 border-transparent'
-            }`}
-          >
-            IWRS 随机化
+        {showTabs && (
+          <div className="flex space-x-1">
+            <div
+              onClick={() => setActiveTab('iwrs')}
+              className={`rounded-t-lg px-4 py-2 text-sm font-medium cursor-pointer transition-all border border-b-0 -mb-px relative z-[1] ${
+                activeTab === 'iwrs'
+                  ? 'bg-white text-blue-600 border-gray-200 z-[10]'
+                  : 'bg-gray-100 text-gray-500 border-transparent'
+              }`}
+            >
+              IWRS 随机化
+            </div>
+            <div
+              onClick={() => setActiveTab('edc')}
+              className={`rounded-t-lg px-4 py-2 text-sm font-medium cursor-pointer transition-all border border-b-0 -mb-px relative z-[1] ${
+                activeTab === 'edc'
+                  ? 'bg-white text-emerald-500 border-gray-200 z-[10]'
+                  : 'bg-gray-100 text-gray-500 border-transparent'
+              }`}
+            >
+              EDC 数据采集
+            </div>
           </div>
-          <div
-            onClick={() => setActiveTab('edc')}
-            className={`rounded-t-lg px-4 py-2 text-sm font-medium cursor-pointer transition-all border border-b-0 -mb-px relative z-[1] ${
-              activeTab === 'edc'
-                ? 'bg-white text-emerald-500 border-gray-200 z-[10]'
-                : 'bg-gray-100 text-gray-500 border-transparent'
-            }`}
-          >
-            EDC 数据采集
-          </div>
-        </div>
+        )}
 
-        <div className="bg-white border border-gray-200 rounded-lg rounded-tl-none p-4 relative z-[5] shadow-sm min-h-[400px]">
+        <div className={contentClass}>
           {activeTab === 'iwrs' && (
             <div className="block">
               <div className="mb-5">
