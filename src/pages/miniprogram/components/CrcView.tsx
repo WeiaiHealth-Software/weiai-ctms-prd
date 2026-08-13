@@ -275,8 +275,8 @@ export const CrcView: React.FC = () => {
               ? '项目详情'
               : undefined;
 
-  const headerCenter = screen === 'detail';
-  const headerBold = screen !== 'detail';
+  const headerCenter = ['detail', 'appointment', 'notifications'].includes(screen);
+  const headerBold = !['detail', 'appointment', 'notifications'].includes(screen);
 
   const headerOnBack =
     screen === 'notifications'
