@@ -100,6 +100,8 @@ export default function ConfigureProjectPage() {
   const [baselineFields, setBaselineFields] = useState<BuilderField[]>([])
   const [visitFields, setVisitFields] = useState<BuilderField[]>([])
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null)
+  const [baselineSaved, setBaselineSaved] = useState(false)
+  const [visitSaved, setVisitSaved] = useState(false)
 
   const project = useMemo(() => projects.find((p) => p.id === projectId) || null, [projects, projectId])
   const selectedField = useMemo(() => {
@@ -113,8 +115,12 @@ export default function ConfigureProjectPage() {
         { text: '开发者账户', color: 'indigo' },
         { text: '超级管理员', color: 'purple' }
       ])
-      setBaselineFields(project.baselineForm?.fields?.length ? project.baselineForm.fields : defaultBaselineFields)
-      setVisitFields(project.visitForm?.fields?.length ? project.visitForm.fields : defaultVisitFields)
+      const hasBaseline = !!project.baselineForm?.fields?.length
+      const hasVisit = !!project.visitForm?.fields?.length
+      setBaselineFields(hasBaseline ? project.baselineForm.fields : defaultBaselineFields)
+      setVisitFields(hasVisit ? project.visitForm.fields : defaultVisitFields)
+      setBaselineSaved(hasBaseline)
+      setVisitSaved(hasVisit)
     }
   }, [project, setTitle])
 
@@ -171,6 +177,7 @@ export default function ConfigureProjectPage() {
         const cfg: FormConfig = { fields: baselineFields }
         updateProjectBaselineForm(project.id, cfg)
       }
+      setBaselineSaved(true)
       setStep('visit')
       setSelectedFieldId(null)
     } else {
@@ -179,6 +186,7 @@ export default function ConfigureProjectPage() {
         const visitCfg: FormConfig = { fields: visitFields }
         markProjectConfigured(projectId, baselineCfg, visitCfg)
       }
+      setVisitSaved(true)
       navigate(`/index/edc/projects/${projectId}`)
     }
   }
@@ -259,27 +267,37 @@ export default function ConfigureProjectPage() {
               onClick={() => setStep('baseline')}
               className={classNames(
                 'text-left rounded-2xl border p-4 transition-all group',
-                step === 'baseline'
-                  ? 'border-indigo-500 bg-indigo-50/60 shadow-[0_0_0_3px_rgba(99,102,241,0.12)]'
+                baselineSaved && step !== 'baseline'
+                  ? 'border-emerald-500 bg-emerald-50/50'
+                  : step === 'baseline'
+                  ? 'border-blue-500 bg-blue-50/60 shadow-[0_0_0_3px_rgba(59,130,246,0.12)]'
                   : 'border-slate-200 bg-white hover:border-slate-300'
               )}
             >
               <div className="flex items-center gap-3">
                 <div className={classNames(
                   'w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold',
-                  step === 'baseline' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'
+                  baselineSaved
+                    ? 'bg-emerald-600 text-white'
+                    : step === 'baseline'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-100 text-slate-500'
                 )}>
-                  {baselineFields.length > 0 ? <Check className="w-4 h-4" /> : '1'}
+                  {baselineSaved ? <Check className="w-4 h-4" /> : '1'}
                 </div>
                 <div>
                   <div className={classNames(
                     'text-sm font-bold',
-                    step === 'baseline' ? 'text-indigo-800' : 'text-slate-700'
+                    baselineSaved
+                      ? 'text-emerald-800'
+                      : step === 'baseline'
+                      ? 'text-blue-800'
+                      : 'text-slate-700'
                   )}>
                     第一步 · 基线表单
                   </div>
                   <div className="text-xs text-slate-500 mt-0.5">
-                    入组基线采集（{baselineFields.length} 项）
+                    {baselineSaved ? '已保存配置' : `入组基线采集（${baselineFields.length} 项）`}
                   </div>
                 </div>
               </div>
@@ -290,27 +308,37 @@ export default function ConfigureProjectPage() {
               onClick={() => setStep('visit')}
               className={classNames(
                 'text-left rounded-2xl border p-4 transition-all group',
-                step === 'visit'
-                  ? 'border-emerald-500 bg-emerald-50/60 shadow-[0_0_0_3px_rgba(16,185,129,0.12)]'
+                visitSaved && step !== 'visit'
+                  ? 'border-emerald-500 bg-emerald-50/50'
+                  : step === 'visit'
+                  ? 'border-blue-500 bg-blue-50/60 shadow-[0_0_0_3px_rgba(59,130,246,0.12)]'
                   : 'border-slate-200 bg-white hover:border-slate-300'
               )}
             >
               <div className="flex items-center gap-3">
                 <div className={classNames(
                   'w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold',
-                  step === 'visit' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                  visitSaved
+                    ? 'bg-emerald-600 text-white'
+                    : step === 'visit'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-100 text-slate-500'
                 )}>
-                  {visitFields.length > 0 ? <Check className="w-4 h-4" /> : '2'}
+                  {visitSaved ? <Check className="w-4 h-4" /> : '2'}
                 </div>
                 <div>
                   <div className={classNames(
                     'text-sm font-bold',
-                    step === 'visit' ? 'text-emerald-800' : 'text-slate-700'
+                    visitSaved
+                      ? 'text-emerald-800'
+                      : step === 'visit'
+                      ? 'text-blue-800'
+                      : 'text-slate-700'
                   )}>
                     第二步 · 访视表单
                   </div>
                   <div className="text-xs text-slate-500 mt-0.5">
-                    {visitLabels.join(' / ')} 共用（{visitFields.length} 项）
+                    {visitSaved ? '已保存配置' : `${visitLabels.join(' / ')} 共用（${visitFields.length} 项）`}
                   </div>
                 </div>
               </div>
