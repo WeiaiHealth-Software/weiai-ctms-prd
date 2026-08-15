@@ -37,6 +37,7 @@ export function ProjectListPage() {
       return
     }
 
+    const isFinished = iwrsProject.status === '已结束'
     const newEdcProject: Project = {
       id: `edc_sync_${iwrsProject.code.toLowerCase()}`,
       code: iwrsProject.code,
@@ -44,12 +45,13 @@ export function ProjectListPage() {
       pi: iwrsProject.leader || '--',
       sponsor: '已同步项目',
       centers: iwrsProject.centers || [],
-      status: iwrsProject.status === '已结束' ? '已结束' : '未配置',
+      status: isFinished ? '已结束' : '未配置',
       enrolled: 0,
       targetEnrollment: iwrsProject.totalCount,
       visitStages: 6,
       visitInterval: '3M',
       desc: iwrsProject.description,
+      isConfigForm: isFinished
     }
 
     addProject(newEdcProject)
@@ -68,7 +70,8 @@ export function ProjectListPage() {
       targetEnrollment: formValue.targetEnrollment,
       visitStages: formValue.visitStages,
       visitInterval: formValue.visitInterval,
-      desc: '项目已创建，待配置 EDC 表单与访视计划。'
+      desc: '项目已创建，待配置 EDC 表单与访视计划。',
+      isConfigForm: false
     }
 
     addProject(newProject)
@@ -241,9 +244,15 @@ export function ProjectListPage() {
                       </td>
                       <td className="px-6 py-4 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-2 text-sm whitespace-nowrap">
-                          <Link to={`/index/edc/projects/${project.id}`} className="cursor-pointer rounded-md px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-800">
-                            查看详情
-                          </Link>
+                          {project.status === '未配置' ? (
+                            <Link to={`/index/edc/projects/${project.id}/configure`} className="cursor-pointer rounded-md px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 hover:text-indigo-800">
+                              配置项目
+                            </Link>
+                          ) : (
+                            <Link to={`/index/edc/projects/${project.id}`} className="cursor-pointer rounded-md px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-800">
+                              查看详情
+                            </Link>
+                          )}
                           <span className="text-slate-300">|</span>
                           <button
                             type="button"

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { ArrowLeft, BarChart3, ChevronDown, Cpu, Download, History, Hospital, Building, Layers, MoreHorizontal, RotateCcw, Search, Sparkles, UserPlus, X, type LucideIcon } from 'lucide-react'
+import { ArrowLeft, BarChart3, ChevronDown, Cpu, Download, History, Hospital, Building, Layers, MoreHorizontal, Play, RotateCcw, Search, Settings2, Sparkles, Square, UserPlus, X, type LucideIcon } from 'lucide-react'
 import { useMemo, useState, useEffect, useRef } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEdcProjectStore } from '../../../store/useEdcProjectStore'
 import { useHeaderStore } from '../../../store/useHeaderStore'
 import SectionCard from '../../../components/common/SectionCard'
@@ -54,8 +54,11 @@ const createAiMessage = (role: AiMessageRole, content: string, tag?: string): Ai
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams()
+  const navigate = useNavigate()
   const setTitle = useHeaderStore(state => state.setTitle)
   const projects = useEdcProjectStore(state => state.projects)
+  const startProject = useEdcProjectStore(state => state.startProject)
+  const finishProject = useEdcProjectStore(state => state.finishProject)
   const [showSubjectDrawer, setShowSubjectDrawer] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [aiMode, setAiMode] = useState<AiMode>('default')
@@ -332,7 +335,7 @@ export default function ProjectDetailPage() {
               </div>
 
               <div className="shrink-0 w-[300px] space-y-4">
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-2 flex-wrap">
                   <button
                     type="button"
                     onClick={() => setAiPanelOpen((value) => !value)}
@@ -345,13 +348,56 @@ export default function ProjectDetailPage() {
                     <Sparkles className="w-4 h-4" />
                     {aiPanelOpen ? '收起 AI 助手' : 'AI 助手'}
                   </button>
-                  <button
-                    onClick={() => setShowSubjectDrawer(true)}
-                    className="h-10 px-4 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    新增受试者
-                  </button>
+
+                  {project.status === '未配置' ? (
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/index/edc/projects/${project.id}/configure`)}
+                      className="h-10 px-4 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                    >
+                      <Settings2 className="w-4 h-4" />
+                      配置表单
+                    </button>
+                  ) : null}
+
+                  {project.status === '筹备中' ? (
+                    <button
+                      type="button"
+                      onClick={() => projectId && startProject(projectId)}
+                      className="h-10 px-4 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+                    >
+                      <Play className="w-4 h-4" />
+                      开始项目
+                    </button>
+                  ) : null}
+
+                  {project.status === '进行中' ? (
+                    <>
+                      <button
+                        onClick={() => setShowSubjectDrawer(true)}
+                        className="h-10 px-4 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        新增受试者
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => projectId && finishProject(projectId)}
+                        className="h-10 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-sm font-medium border border-rose-200 flex items-center gap-2"
+                      >
+                        <Square className="w-3.5 h-3.5 fill-current" />
+                        结束项目
+                      </button>
+                    </>
+                  ) : null}
+
+                  {project.status === '已结束' ? (
+                    <div className="h-10 px-4 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium flex items-center gap-2 border border-slate-200">
+                      <Square className="w-3.5 h-3.5 fill-current" />
+                      项目已结束
+                    </div>
+                  ) : null}
+
                   <button className="h-10 px-3 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50">
                     <MoreHorizontal className="w-4 h-4" />
                   </button>

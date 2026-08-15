@@ -19,3 +19,29 @@ Weiai Healthcare Clinical Trial Management System
 ├─ index.html            # Vite entry HTML (must be in project root)
 └─ vite.config.ts
 ```
+
+## EDC 电子数据采集系统
+
+```txt
+新建项目
+  │
+  ▼
+【未配置】 isConfigForm=false
+  │  列表按钮：配置项目
+  │  详情按钮：配置表单（跳转配置页）
+  │
+  ▼  配置完 Step2 点「保存完成配置」
+【筹备中】 isConfigForm=true
+  │  列表按钮：查看详情
+  │  详情按钮：▶ 开始项目
+  │
+  ▼  点「开始项目」
+【进行中】 isConfigForm=true
+  │  列表按钮：查看详情
+  │  详情按钮：+新增受试者  /  ■ 结束项目
+  │
+  ▼  点「结束项目」
+【已结束】 isConfigForm=true
+     列表按钮：查看详情
+     详情按钮：项目已结束（不可操作）
+```

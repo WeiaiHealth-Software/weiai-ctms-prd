@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { X } from 'lucide-react'
+import { Sparkles, X } from 'lucide-react'
 import Select, { type SelectOption } from '../../../../components/form/Select'
 import MultiSelect from '../../../../components/form/MultiSelect'
 import type { VisitInterval } from '../../../../types/project'
@@ -47,6 +47,36 @@ const initialFormState: FormState = {
 
 const visitIntervalOptions: VisitInterval[] = ['1M', '3M', '6M', '12M']
 
+const mockPresets = [
+  {
+    name: '近视防控 OK 镜多中心随机对照研究',
+    code: 'OKM',
+    pi: '李教授',
+    centers: ['上海市眼病防治中心', '复旦大学附属眼耳鼻喉科医院', '温州医科大学附属眼视光医院'],
+    targetEnrollment: 180,
+    visitStages: 6,
+    visitInterval: '3M' as VisitInterval
+  },
+  {
+    name: '低浓度阿托品滴眼液真实世界队列研究',
+    code: 'ATP',
+    pi: '王主任',
+    centers: ['上海市眼病防治中心', '苏州大学附属儿童医院'],
+    targetEnrollment: 120,
+    visitStages: 8,
+    visitInterval: '3M' as VisitInterval
+  },
+  {
+    name: '儿童青少年离焦软镜前瞻性观察研究',
+    code: 'DFS',
+    pi: '陈主任',
+    centers: ['上海市眼病防治中心'],
+    targetEnrollment: 96,
+    visitStages: 4,
+    visitInterval: '6M' as VisitInterval
+  },
+]
+
 export default function CreateProjectModal({
   open,
   onClose,
@@ -82,6 +112,31 @@ export default function CreateProjectModal({
 
   const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((current) => ({ ...current, [key]: value }))
+    setError('')
+  }
+
+  const applyMockPreset = () => {
+    const normalizedExisting = new Set(normalizedExistingCodes)
+    const preset = mockPresets.find(
+      (p) => !normalizedExisting.has(p.code)
+    ) ?? mockPresets[0]
+
+    let code = preset.code
+    let suffix = 1
+    while (normalizedExisting.has(code)) {
+      suffix += 1
+      code = `${preset.code}${suffix}`
+    }
+
+    setForm({
+      name: preset.name,
+      code,
+      pi: preset.pi,
+      centers: preset.centers.filter((c) => centerOptions.some((opt) => opt.value === c)),
+      targetEnrollment: String(preset.targetEnrollment),
+      visitStages: String(preset.visitStages),
+      visitInterval: preset.visitInterval
+    })
     setError('')
   }
 
@@ -144,16 +199,29 @@ export default function CreateProjectModal({
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={resetAndClose} />
       <div className="relative z-10 w-full max-w-4xl overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
-          <div>
-            <div className="text-lg font-bold text-slate-900">新建 EDC 项目</div>
-            <div className="mt-1 text-sm text-slate-500">
-              创建完成后项目状态自动标记为未配置，后续完成表单配置后再进入筹备或启动流程。
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="text-lg font-bold text-slate-900">新建 EDC 项目</div>
+                <button
+                  type="button"
+                  onClick={applyMockPreset}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 px-3 py-1 text-xs font-semibold transition-colors"
+                  title="自动填入一份近视研究示范数据"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  一键 Mock
+                </button>
+              </div>
+              <div className="mt-1 text-sm text-slate-500">
+                创建完成后项目状态自动标记为未配置，后续完成表单配置后再进入筹备或启动流程。
+              </div>
             </div>
           </div>
           <button
             type="button"
             onClick={resetAndClose}
-            className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100"
+            className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 shrink-0"
           >
             <X className="h-5 w-5" />
           </button>

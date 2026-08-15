@@ -189,5 +189,6 @@ const baseProjects: Array<Omit<Project, 'visitStages' | 'visitInterval'>> = [
 export const projects: Project[] = baseProjects.map((project, index) => ({
   ...project,
   visitStages: visitBlueprints[index]?.visitStages ?? 6,
-  visitInterval: visitBlueprints[index]?.visitInterval ?? '3M'
+  visitInterval: visitBlueprints[index]?.visitInterval ?? '3M',
+  isConfigForm: true
 }))
