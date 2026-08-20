@@ -10,6 +10,7 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
+import type { BuilderField } from '../../../types/form-field'
 import { arrayMove } from '@dnd-kit/sortable'
 
 import EmptyState from '../../../components/common/EmptyState'
@@ -47,6 +48,7 @@ export function TemplateBuilderPage() {
     selectedFieldId,
     setSelectedFieldId,
     addField,
+    addFields,
     updateField,
     deleteField,
     duplicateField,
@@ -130,7 +132,7 @@ export function TemplateBuilderPage() {
           {/* 左侧区域：只放组件库 */}
           <div className="w-[320px] shrink-0 flex flex-col gap-4 min-h-0">
             <div className="flex-1 min-h-0">
-              <BuilderPalette onAdd={addField} />
+              <BuilderPalette onAdd={addField} onAddBlock={addFields} />
             </div>
           </div>
 

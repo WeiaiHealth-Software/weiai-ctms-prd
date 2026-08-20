@@ -13,6 +13,12 @@ export function useBuilderFields(initialFields: BuilderField[]) {
     return newField
   }
 
+  const addFields = (newFields: BuilderField[]) => {
+    if (!newFields.length) return
+    setFields((prev) => [...prev, ...newFields])
+    setSelectedFieldId(newFields[0].id)
+  }
+
   const updateField = (fieldId: string, patch: Partial<BuilderField>) => {
     setFields((prev) =>
       prev.map((field) => (field.id === fieldId ? { ...field, ...patch } : field))
@@ -74,6 +80,7 @@ export function useBuilderFields(initialFields: BuilderField[]) {
     selectedField,
     setSelectedFieldId,
     addField,
+    addFields,
     updateField,
     deleteField,
     duplicateField,
