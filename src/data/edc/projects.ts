@@ -24,7 +24,7 @@ const baseProjects: Array<Omit<Project, 'visitStages' | 'visitInterval'>> = [
     collabs: ['王医生（上海市眼病防治中心）', '李医生（复旦大学附属眼耳鼻喉科医院）', '陈医生（苏州大学附属儿童医院）'],
     crcs: ['张同学', '刘同学', '王同学'],
     sponsor: '南通诺瞳奕目医疗科技有限公司',
-    centers: ['上海市眼病防治中心', '复旦大学附属眼耳鼻喉科医院', '苏州大学附属儿童医院', '温州医科大学附属眼视光医院'],
+    centers: ['上海市眼病防治中心', '复旦大学附属眼耳鼻喉科医院', '温州医科大学附属眼视光医院'],
     status: '进行中',
     enrolled: 86,
     targetEnrollment: 100,

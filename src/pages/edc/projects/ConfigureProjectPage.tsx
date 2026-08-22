@@ -7,6 +7,15 @@ import type { BuilderField, BuilderFieldType } from '../../../types/form-field'
 import type { FormConfig } from '../../../types/project'
 import { classNames } from '../../../lib/classNames'
 import Drawer from '../../../components/overlay/Drawer'
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  useDraggable,
+} from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
 
 type ConfigureStep = 'baseline' | 'visit'
 
@@ -31,6 +40,7 @@ type CustomBlock = {
   color: string
   bgColor: string
   borderColor: string
+  tagColor: string
   fields: Omit<BuilderField, 'id'>[]
 }
 
@@ -38,13 +48,14 @@ const customBlocks: CustomBlock[] = [
   {
     id: 'subject-demographic',
     name: '受试者基本信息',
-    description: '人口学信息：姓名缩写、性别、出生日期、年龄等',
+    description: '受试者基本信息：姓名缩写、性别、出生日期、年龄等',
     icon: <User className="w-5 h-5" />,
     color: 'text-blue-600',
     bgColor: 'bg-blue-50',
     borderColor: 'hover:border-blue-400',
+    tagColor: 'bg-blue-100 text-blue-700',
     fields: [
-      { type: 'section', key: 'sec_demographic', label: '', sectionTitle: '一、人口学信息' },
+      { type: 'section', key: 'sec_demographic', label: '', sectionTitle: '一、受试者基本信息' },
       { type: 'text', key: 'name_abbr', label: '姓名缩写', required: true, placeholder: '如：ZSM', sectionId: 'sec_demographic' },
       { type: 'radio', key: 'gender', label: '性别', required: true, options: ['男', '女'], sectionId: 'sec_demographic' },
       { type: 'date', key: 'birth_date', label: '出生日期', required: true, sectionId: 'sec_demographic' },
@@ -59,6 +70,7 @@ const customBlocks: CustomBlock[] = [
     color: 'text-violet-600',
     bgColor: 'bg-violet-50',
     borderColor: 'hover:border-violet-400',
+    tagColor: 'bg-violet-100 text-violet-700',
     fields: [
       { type: 'section', key: 'sec_eye_basic', label: '', sectionTitle: '二、眼科基础检查' },
       { type: 'eyeGrid', key: 'eye_exam_basic', label: '屈光/视功能检查', required: true, options: ['SE', 'BCVA（LogMAR）', '眼轴 AL(mm)', '角膜K1', '角膜K2', '瞳孔直径'], sectionId: 'sec_eye_basic' },
@@ -73,6 +85,7 @@ const customBlocks: CustomBlock[] = [
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-50',
     borderColor: 'hover:border-emerald-400',
+    tagColor: 'bg-emerald-100 text-emerald-700',
     fields: [
       { type: 'section', key: 'sec_visit_basic', label: '', sectionTitle: '一、访视基础' },
       { type: 'date', key: 'visit_date', label: '本次访视日期', required: true, sectionId: 'sec_visit_basic' },
@@ -88,6 +101,7 @@ const customBlocks: CustomBlock[] = [
     color: 'text-amber-600',
     bgColor: 'bg-amber-50',
     borderColor: 'hover:border-amber-400',
+    tagColor: 'bg-amber-100 text-amber-700',
     fields: [
       { type: 'section', key: 'sec_visit_eye', label: '', sectionTitle: '二、眼科复查' },
       { type: 'eyeGrid', key: 'visit_eye_exam', label: '视力/屈光/眼轴复查', required: true, options: ['UCVA', 'BCVA（LogMAR）', 'SE（等效球镜）', '眼轴 AL(mm)'], sectionId: 'sec_visit_eye' },
@@ -104,6 +118,7 @@ const customBlocks: CustomBlock[] = [
     color: 'text-rose-600',
     bgColor: 'bg-rose-50',
     borderColor: 'hover:border-rose-400',
+    tagColor: 'bg-rose-100 text-rose-700',
     fields: [
       { type: 'section', key: 'sec_medical_history', label: '', sectionTitle: '三、既往病史' },
       { type: 'radio', key: 'past_medical_history', label: '既往病史', options: ['无', '有（请描述）'], sectionId: 'sec_medical_history' },
@@ -122,6 +137,7 @@ const customBlocks: CustomBlock[] = [
     color: 'text-slate-600',
     bgColor: 'bg-slate-50',
     borderColor: 'hover:border-slate-400',
+    tagColor: 'bg-slate-100 text-slate-700',
     fields: [
       { type: 'section', key: 'sec_conclusion', label: '', sectionTitle: '结论与备注' },
       { type: 'textarea', key: 'visit_conclusion', label: '访视结论', placeholder: '本次访视的主要结论和评估…', sectionId: 'sec_conclusion' },
@@ -141,7 +157,7 @@ const defaultOptionsByType: Partial<Record<BuilderFieldType, string[]>> = {
 }
 
 const defaultBaselineFields: BuilderField[] = [
-  { id: 'sec-demographic', type: 'section', key: 'sec_demographic', label: '', sectionTitle: '一、人口学信息' },
+  { id: 'sec-demographic', type: 'section', key: 'sec_demographic', label: '', sectionTitle: '一、受试者基本信息' },
   { id: 'f-name', type: 'text', key: 'name', label: '受试者姓名缩写', required: true, placeholder: '请输入姓名缩写，如 Z-San', sectionId: 'sec-demographic' },
   { id: 'f-gender', type: 'radio', key: 'gender', label: '性别', required: true, options: ['男', '女'], sectionId: 'sec-demographic' },
   { id: 'f-birth', type: 'date', key: 'birthDate', label: '出生日期', required: true, sectionId: 'sec-demographic' },
@@ -229,11 +245,85 @@ export default function ConfigureProjectPage() {
       const hasBaseline = !!project.baselineForm?.fields?.length
       const hasVisit = !!project.visitForm?.fields?.length
       setBaselineFields(hasBaseline ? project.baselineForm.fields : defaultBaselineFields)
-      setVisitFields(hasVisit ? project.visitForm.fields : defaultVisitFields)
+      setVisitFields(hasVisit ? project.visitForm.fields : [])
       setBaselineSaved(hasBaseline)
       setVisitSaved(hasVisit)
     }
   }, [project, setTitle])
+
+  const syncBaselineToVisit = () => {
+    const now = Date.now()
+    const cloned: BuilderField[] = baselineFields.map((f, idx) => ({
+      ...f,
+      id: `sync_${now}_${idx}_${Math.random().toString(36).slice(2, 6)}`,
+    }))
+    // 重新串联 sectionId 映射
+    const oldToNew = new Map<string, string>()
+    baselineFields.forEach((orig, i) => {
+      if (orig.type === 'section') oldToNew.set(orig.id, cloned[i].id)
+    })
+    cloned.forEach((f, i) => {
+      const orig = baselineFields[i]
+      if (f.type !== 'section' && orig.sectionId && oldToNew.has(orig.sectionId)) {
+        f.sectionId = oldToNew.get(orig.sectionId)!
+      }
+    })
+    setVisitFields(cloned)
+    setSelectedFieldId(cloned[0]?.id ?? null)
+  }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  )
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over) return
+
+    const activeType = active.data.current?.type
+
+    if (activeType === 'palette') {
+      const fieldType = active.data.current?.fieldType as BuilderFieldType | undefined
+      if (!fieldType) return
+      const lastSectionId = currentFields.filter((f) => f.type === 'section').at(-1)?.id ?? null
+      const newField = createField(fieldType, currentFields.length, lastSectionId)
+      // 如果不是拖入的 section，且当前已有 section，则默认挂到最后一个 section 内部
+      if (newField.type !== 'section') {
+        const secId = currentFields.filter((f) => f.type === 'section').at(-1)?.id
+        if (secId) newField.sectionId = secId
+      }
+      setCurrentFields((prev) => [...prev, newField])
+      setSelectedFieldId(newField.id)
+    } else if (activeType === 'palette-block') {
+      const block = active.data.current?.block as CustomBlock | undefined
+      if (!block) return
+      const now = Date.now()
+      const blockFields: BuilderField[] = block.fields.map((f, idx) => ({
+        ...f,
+        id: `cfg_blk_dnd_${now}_${idx}_${Math.random().toString(36).slice(2, 6)}`,
+      }))
+      // 重新串联 sectionId：把老 key 形式的 sectionId 映射为新 id
+      const oldKeyToNewId: Record<string, string> = {}
+      block.fields.forEach((orig, i) => {
+        if (orig.type === 'section' && orig.key) oldKeyToNewId[orig.key] = blockFields[i].id
+      })
+      const firstSectionId = blockFields.find(f => f.type === 'section')?.id
+      blockFields.forEach((f, i) => {
+        const orig = block.fields[i]
+        if (f.type !== 'section' && orig.sectionId && oldKeyToNewId[orig.sectionId]) {
+          f.sectionId = oldKeyToNewId[orig.sectionId]
+        } else if (f.type !== 'section' && !f.sectionId && firstSectionId) {
+          f.sectionId = firstSectionId
+        }
+      })
+      setCurrentFields((prev) => [...prev, ...blockFields])
+      setSelectedFieldId(blockFields[0].id)
+    }
+  }
 
   const currentFields = step === 'baseline' ? baselineFields : visitFields
   const setCurrentFields = step === 'baseline' ? setBaselineFields : setVisitFields
@@ -574,46 +664,74 @@ export default function ConfigureProjectPage() {
       </div>
 
       {/* 主配置区 */}
-      <div className="grid grid-cols-12 gap-6">
-        {/* 左侧：组件库 */}
-        <div className="col-span-3">
-          <PaletteSection
-            step={step}
-            onAdd={addField}
-            onAddBlock={handleAddBlock}
-          />
-        </div>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-12 gap-6">
+          {/* 左侧：组件库 */}
+          <div className="col-span-3">
+            <PaletteSection
+              step={step}
+              onAdd={addField}
+              onAddBlock={handleAddBlock}
+            />
+          </div>
 
-        {/* 中间：表单画布 */}
-        <div className="col-span-6">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[640px]">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-              <div>
-                <div className="text-sm font-semibold text-slate-800">
-                  {step === 'baseline' ? '基线表单预览' : '访视表单预览'}
+          {/* 中间：表单画布 */}
+          <div className="col-span-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[640px]">
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+                <div>
+                  <div className="text-sm font-semibold text-slate-800">
+                    {step === 'baseline' ? '基线表单预览' : '访视表单预览'}
+                  </div>
+                  <div className="text-xs text-slate-500 mt-0.5">
+                    {step === 'baseline'
+                      ? `受试者入组时采集 · 共 ${currentFields.length} 项`
+                      : `${visitLabels.join(' / ')} 等所有访视共用 · 共 ${currentFields.length} 项`}
+                  </div>
                 </div>
-                <div className="text-xs text-slate-500 mt-0.5">
-                  {step === 'baseline'
-                    ? `受试者入组时采集 · 共 ${currentFields.length} 项`
-                    : `${visitLabels.join(' / ')} 等所有访视共用 · 共 ${currentFields.length} 项`}
-                </div>
+                <span className={classNames(
+                  'inline-flex rounded-full px-2.5 py-1 text-xs font-semibold',
+                  step === 'baseline' ? 'bg-indigo-50 text-indigo-700' : 'bg-emerald-50 text-emerald-700'
+                )}>
+                  {step === 'baseline' ? 'Step 1 / 2' : 'Step 2 / 2'}
+                </span>
               </div>
-              <span className={classNames(
-                'inline-flex rounded-full px-2.5 py-1 text-xs font-semibold',
-                step === 'baseline' ? 'bg-indigo-50 text-indigo-700' : 'bg-emerald-50 text-emerald-700'
-              )}>
-                {step === 'baseline' ? 'Step 1 / 2' : 'Step 2 / 2'}
-              </span>
-            </div>
-            <div className="p-6 overflow-y-auto flex-1">
+              <DroppableCanvasArea>
+                <div className="p-6 overflow-y-auto flex-1 h-full">
               {currentFields.length === 0 ? (
                 <div className="h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                      <Plus className="w-7 h-7" />
+                  <div className="text-center max-w-sm">
+                    <div className={classNames(
+                      'w-20 h-20 rounded-2xl flex items-center justify-center mx-auto',
+                      step === 'baseline'
+                        ? 'bg-indigo-50 text-indigo-400'
+                        : 'bg-emerald-50 text-emerald-400'
+                    )}>
+                      {step === 'baseline'
+                        ? <User className="w-9 h-9" />
+                        : <Stethoscope className="w-9 h-9" />}
                     </div>
-                    <p className="mt-3 text-sm font-medium text-slate-600">暂无字段</p>
-                    <p className="mt-1 text-xs text-slate-400">请从左侧组件库点击添加字段</p>
+                    <p className="mt-4 text-base font-semibold text-slate-700">
+                      {step === 'baseline' ? '暂未配置基线表单项' : '暂未配置访视表单项'}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                      {step === 'baseline'
+                        ? '可从左侧组件库点击或拖拽添加基础组件/自定义区块'
+                        : '基线表单与访视表单相似度极高，可先一键同步基线表单后再删改，操作更高效'}
+                    </p>
+                    {step === 'visit' && baselineFields.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={syncBaselineToVisit}
+                        className="mt-5 inline-flex h-10 items-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-medium text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition"
+                      >
+                        <Copy className="w-4 h-4" />
+                        一键同步基线表单
+                      </button>
+                    )}
+                    <div className="mt-4 text-[11px] text-slate-400">
+                      或从左侧组件库点击 / 拖拽添加
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -808,7 +926,8 @@ export default function ConfigureProjectPage() {
                   )}
                 </div>
               )}
-            </div>
+                </div>
+              </DroppableCanvasArea>
           </div>
         </div>
 
@@ -835,6 +954,7 @@ export default function ConfigureProjectPage() {
           </div>
         </div>
       </div>
+      </DndContext>
 
       {/* 底部操作栏 */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex items-center justify-between gap-4 flex-wrap">
@@ -1080,7 +1200,7 @@ function PropertyPanel({ field, onChange }: { field: BuilderField; onChange: (pa
             value={field.sectionTitle || ''}
             onChange={(e) => onChange({ sectionTitle: e.target.value })}
             className="h-9 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-blue-500"
-            placeholder="例如：一、人口学信息"
+            placeholder="例如：一、受试者基本信息"
           />
         </label>
       ) : (
@@ -1374,6 +1494,147 @@ function PalettePreviewContent({ block }: { block: CustomBlock }) {
   )
 }
 
+function DroppableCanvasArea({ children }: { children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: 'canvas',
+  })
+  return (
+    <div
+      ref={setNodeRef}
+      className={classNames(
+        'flex-1 min-h-0 transition-all duration-150 rounded-b-2xl',
+        isOver && 'bg-indigo-50/40 ring-2 ring-inset ring-indigo-200'
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
+function DraggablePaletteItem({
+  item,
+  onAdd,
+}: {
+  item: typeof basicFieldPalette[0]
+  onAdd: () => void
+}) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `cfg-palette-${item.type}`,
+    data: {
+      type: 'palette',
+      fieldType: item.type,
+    },
+  })
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      onClick={onAdd}
+      className={classNames(
+        'rounded-xl border border-slate-200 p-2.5 text-left hover:border-blue-300 hover:bg-blue-50 transition bg-white group cursor-grab',
+        isDragging && 'opacity-50 border-blue-500 bg-blue-50'
+      )}
+    >
+      <div className="flex flex-col items-center gap-1.5 pointer-events-none">
+        <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center">
+          {item.icon}
+        </div>
+        <div className="text-xs font-medium text-slate-700 text-center leading-tight">
+          {item.label}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DraggablePaletteBlock({
+  block,
+  onPreview,
+}: {
+  block: CustomBlock
+  onPreview: () => void
+}) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `cfg-block-${block.id}`,
+    data: {
+      type: 'palette-block',
+      block,
+    },
+  })
+  const fieldCount = block.fields.length
+  const sectionField = block.fields.find(f => f.type === 'section')
+  const sectionTitle = sectionField?.sectionTitle || ''
+  const requiredCount = block.fields.filter(f => f.required).length
+
+  const handlePreviewClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onPreview()
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={classNames(
+        'w-full relative rounded-xl border border-slate-200 bg-white p-3 text-left transition-all group cursor-grab',
+        !isDragging && 'hover:shadow-md hover:border-slate-300',
+        isDragging && 'opacity-50 border-blue-500 bg-blue-50'
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className={classNames('w-16 h-20 rounded-lg flex items-center justify-center shrink-0 border border-slate-200/60 overflow-hidden relative', block.bgColor, block.color)}>
+          <div className="absolute inset-0 p-1.5 opacity-70">
+            <div className="h-1.5 w-8 bg-white/80 rounded mb-1.5"></div>
+            <div className="space-y-1">
+              <div className="h-1 w-full bg-white/50 rounded"></div>
+              <div className="h-1 w-3/4 bg-white/40 rounded"></div>
+              <div className="h-1 w-full bg-white/50 rounded mt-1.5"></div>
+              <div className="h-1 w-5/6 bg-white/40 rounded"></div>
+            </div>
+          </div>
+          <div className="relative z-10 opacity-95 group-hover:scale-110 transition-transform duration-200">
+            {block.icon}
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <div className="text-sm font-semibold text-slate-800 truncate">
+              {block.name}
+            </div>
+            <span className={classNames('text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0', block.tagColor)}>
+              {fieldCount}项
+            </span>
+            {requiredCount > 0 && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 bg-rose-50 text-rose-600 border border-rose-100">
+                必填{requiredCount}
+              </span>
+            )}
+          </div>
+          <div className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+            {block.description}
+          </div>
+          {sectionTitle && (
+            <div className="mt-2 flex items-center gap-1.5 text-[10px] text-slate-400">
+              <span className="inline-block w-1 h-2.5 rounded-sm bg-indigo-400"></span>
+              <span className="truncate">{sectionTitle}</span>
+            </div>
+          )}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={handlePreviewClick}
+        className="absolute bottom-1.5 right-3 text-xs font-medium text-blue-600 hover:text-blue-700 underline-offset-2 hover:underline opacity-0 group-hover:opacity-100 transition-opacity select-none bg-transparent border-0 p-0 outline-none appearance-none"
+      >
+        预览
+      </button>
+    </div>
+  )
+}
+
 /* ================= PaletteSection ================= */
 function PaletteSection({
   step,
@@ -1457,21 +1718,11 @@ function PaletteSection({
             <div className="p-4">
               <div className="grid grid-cols-2 gap-2.5">
                 {basicFieldPalette.map((item) => (
-                  <button
+                  <DraggablePaletteItem
                     key={item.type}
-                    type="button"
-                    onClick={() => onAdd(item.type)}
-                    className="rounded-xl border border-slate-200 p-2.5 text-left hover:border-blue-300 hover:bg-blue-50 transition bg-white group"
-                  >
-                    <div className="flex flex-col items-center gap-1.5">
-                      <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600 flex items-center justify-center">
-                        {item.icon}
-                      </div>
-                      <div className="text-xs font-medium text-slate-700 text-center leading-tight">
-                        {item.label}
-                      </div>
-                    </div>
-                  </button>
+                    item={item}
+                    onAdd={() => onAdd(item.type)}
+                  />
                 ))}
               </div>
             </div>
@@ -1479,74 +1730,15 @@ function PaletteSection({
             <div className="p-4 space-y-3">
               <div className="text-[10px] text-slate-400 font-medium px-1 flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-amber-500" />
-                为当前阶段推荐 {recommendedBlocks.length} 个常用区块
+                为当前阶段推荐 {recommendedBlocks.length} 个常用区块 · 可直接拖拽到画布
               </div>
-              {recommendedBlocks.map((block) => {
-                const fieldCount = block.fields.length
-                const sectionField = block.fields.find(f => f.type === 'section')
-                const sectionTitle = sectionField?.sectionTitle || ''
-                const requiredCount = block.fields.filter(f => f.required).length
-                const handlePreviewClick = (e: React.MouseEvent) => {
-                  e.stopPropagation()
-                  setPreviewBlock(block)
-                }
-
-                return (
-                  <div
-                    key={block.id}
-                    className="w-full relative rounded-xl border border-slate-200 bg-white p-3 text-left hover:shadow-md hover:border-slate-300 transition-all group"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={classNames('w-16 h-20 rounded-lg flex items-center justify-center shrink-0 border border-slate-200/60 overflow-hidden relative', block.bgColor, block.color)}>
-                        <div className="absolute inset-0 p-1.5 opacity-70">
-                          <div className="h-1.5 w-8 bg-white/80 rounded mb-1.5"></div>
-                          <div className="space-y-1">
-                            <div className="h-1 w-full bg-white/50 rounded"></div>
-                            <div className="h-1 w-3/4 bg-white/40 rounded"></div>
-                            <div className="h-1 w-full bg-white/50 rounded mt-1.5"></div>
-                            <div className="h-1 w-5/6 bg-white/40 rounded"></div>
-                          </div>
-                        </div>
-                        <div className="relative z-10 opacity-95 group-hover:scale-110 transition-transform duration-200">
-                          {block.icon}
-                        </div>
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <div className="text-sm font-semibold text-slate-800 truncate">
-                            {block.name}
-                          </div>
-                          <span className={classNames('text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0', block.tagColor)}>
-                            {fieldCount}项
-                          </span>
-                          {requiredCount > 0 && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 bg-rose-50 text-rose-600 border border-rose-100">
-                              必填{requiredCount}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                          {block.description}
-                        </div>
-                        {sectionTitle && (
-                          <div className="mt-2 flex items-center gap-1.5 text-[10px] text-slate-400">
-                            <span className="inline-block w-1 h-2.5 rounded-sm bg-indigo-400"></span>
-                            <span className="truncate">{sectionTitle}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handlePreviewClick}
-                      className="absolute bottom-1.5 right-3 text-xs font-medium text-blue-600 hover:text-blue-700 underline-offset-2 hover:underline opacity-0 group-hover:opacity-100 transition-opacity select-none bg-transparent border-0 p-0 outline-none appearance-none"
-                    >
-                      预览
-                    </button>
-                  </div>
-                )
-              })}
+              {recommendedBlocks.map((block) => (
+                <DraggablePaletteBlock
+                  key={block.id}
+                  block={block}
+                  onPreview={() => setPreviewBlock(block)}
+                />
+              ))}
               <button
                 type="button"
                 className="w-full h-11 rounded-xl border border-dashed border-slate-300 text-xs text-slate-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/50 transition flex items-center justify-center gap-1.5"

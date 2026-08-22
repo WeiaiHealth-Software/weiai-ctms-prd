@@ -49,13 +49,13 @@ const customBlocks: CustomBlock[] = [
   {
     id: 'subject-demographic',
     name: '受试者基本信息',
-    description: '人口学信息：姓名缩写、性别、出生日期、年龄等',
+    description: '受试者基本信息：姓名缩写、性别、出生日期、年龄等',
     icon: <User className="w-5 h-5" />,
     color: 'text-blue-600',
     bgColor: 'bg-blue-50',
     tagColor: 'bg-blue-100 text-blue-700',
     fields: [
-      { type: 'section', key: 'sec_demographic', label: '', sectionTitle: '一、人口学信息' },
+      { type: 'section', key: 'sec_demographic', label: '', sectionTitle: '一、受试者基本信息' },
       { type: 'text', key: 'name_abbr', label: '姓名缩写', required: true, placeholder: '如：ZSM', sectionId: 'sec_demographic' },
       { type: 'radio', key: 'gender', label: '性别', required: true, options: ['男', '女'], sectionId: 'sec_demographic' },
       { type: 'date', key: 'birth_date', label: '出生日期', required: true, sectionId: 'sec_demographic' },
