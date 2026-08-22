@@ -7,6 +7,7 @@ import DynamicFieldRenderer from '../../form-engine/DynamicFieldRenderer'
 type BuilderCanvasFieldProps = {
   field: BuilderField
   active?: boolean
+  compact?: boolean
   onSelect: () => void
   onDuplicate: () => void
   onDelete: () => void
@@ -15,6 +16,7 @@ type BuilderCanvasFieldProps = {
 export default function BuilderCanvasField({
   field,
   active,
+  compact,
   onSelect,
   onDuplicate,
   onDelete,
@@ -47,7 +49,7 @@ export default function BuilderCanvasField({
       style={style}
       className={`relative group rounded-xl border-2 transition-colors bg-white ${
         active ? 'border-blue-500 shadow-sm' : 'border-transparent hover:border-blue-200'
-      }`}
+      } ${compact ? '' : 'shadow-sm border-slate-100 hover:shadow'}`}
       onClick={(e) => {
         e.stopPropagation()
         onSelect()
@@ -87,7 +89,7 @@ export default function BuilderCanvasField({
       </div>
 
       {/* Content */}
-      <div className="p-5 pl-8 pointer-events-none">
+      <div className={`pointer-events-none ${compact ? 'p-4 pl-8' : 'p-5 pl-8'}`}>
         <DynamicFieldRenderer
           field={field}
           value={undefined}
@@ -95,7 +97,7 @@ export default function BuilderCanvasField({
           onChange={() => {}}
         />
       </div>
-      
+
       {/* Overlay to catch clicks instead of inputs */}
       <div className="absolute inset-0 z-0" />
     </div>

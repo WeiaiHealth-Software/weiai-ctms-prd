@@ -15,6 +15,7 @@ export const defaultTemplateFields: BuilderField[] = [
     key: 'exam_date',
     required: true,
     placeholder: '请选择检查日期',
+    sectionId: 'f1',
   },
   {
     id: 'f3',
@@ -23,6 +24,7 @@ export const defaultTemplateFields: BuilderField[] = [
     key: 'investigator',
     required: true,
     placeholder: '请输入研究者姓名',
+    sectionId: 'f1',
   },
   {
     id: 'f4',
@@ -38,6 +40,7 @@ export const defaultTemplateFields: BuilderField[] = [
     key: 'initials',
     required: true,
     placeholder: '如：ZSM',
+    sectionId: 'f4',
   },
   {
     id: 'f6',
@@ -46,6 +49,7 @@ export const defaultTemplateFields: BuilderField[] = [
     key: 'gender',
     required: true,
     options: ['男', '女'],
+    sectionId: 'f4',
   },
   {
     id: 'f7',
@@ -53,6 +57,7 @@ export const defaultTemplateFields: BuilderField[] = [
     label: '身高 (cm)',
     key: 'height',
     placeholder: '请输入身高',
+    sectionId: 'f4',
   },
   {
     id: 'f8',
@@ -67,6 +72,7 @@ export const defaultTemplateFields: BuilderField[] = [
     label: '视力检查结果',
     key: 'vision_grid',
     rows: ['裸眼视力', '最佳矫正视力'],
+    sectionId: 'f8',
   },
   {
     id: 'f10',
@@ -81,6 +87,7 @@ export const defaultTemplateFields: BuilderField[] = [
     label: '既往/正在使用的药物',
     key: 'medication_list',
     columns: ['用药名称', '开始时间', '是否持续'],
+    sectionId: 'f10',
   },
   {
     id: 'f12',
@@ -96,6 +103,7 @@ export const defaultTemplateFields: BuilderField[] = [
     key: 'contrast_matrix',
     rows: ['OU', 'OD', 'OS'],
     cols: ['AULCSF', '1.0c/d', '3.0c/d'],
+    sectionId: 'f12',
   },
   {
     id: 'f14',

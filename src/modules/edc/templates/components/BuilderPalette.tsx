@@ -22,7 +22,7 @@ import Drawer from '../../../../components/overlay/Drawer'
 import { classNames } from '../../../../lib/classNames'
 
 const basicFieldItems: { type: BuilderFieldType; label: string; icon: React.ReactNode }[] = [
-  { type: 'section', label: '区块标题', icon: <PanelTop className="w-4 h-4" /> },
+  { type: 'section', label: '模块容器', icon: <PanelTop className="w-4 h-4" /> },
   { type: 'text', label: '单行文本', icon: <Type className="w-4 h-4" /> },
   { type: 'number', label: '数字输入', icon: <Hash className="w-4 h-4" /> },
   { type: 'date', label: '日期', icon: <Calendar className="w-4 h-4" /> },
@@ -56,10 +56,10 @@ const customBlocks: CustomBlock[] = [
     tagColor: 'bg-blue-100 text-blue-700',
     fields: [
       { type: 'section', key: 'sec_demographic', label: '', sectionTitle: '一、人口学信息' },
-      { type: 'text', key: 'name_abbr', label: '姓名缩写', required: true, placeholder: '如：ZSM' },
-      { type: 'radio', key: 'gender', label: '性别', required: true, options: ['男', '女'] },
-      { type: 'date', key: 'birth_date', label: '出生日期', required: true },
-      { type: 'number', key: 'age', label: '入组年龄（岁）', required: true, placeholder: '如：10' },
+      { type: 'text', key: 'name_abbr', label: '姓名缩写', required: true, placeholder: '如：ZSM', sectionId: 'sec_demographic' },
+      { type: 'radio', key: 'gender', label: '性别', required: true, options: ['男', '女'], sectionId: 'sec_demographic' },
+      { type: 'date', key: 'birth_date', label: '出生日期', required: true, sectionId: 'sec_demographic' },
+      { type: 'number', key: 'age', label: '入组年龄（岁）', required: true, placeholder: '如：10', sectionId: 'sec_demographic' },
     ],
   },
   {
@@ -72,8 +72,8 @@ const customBlocks: CustomBlock[] = [
     tagColor: 'bg-violet-100 text-violet-700',
     fields: [
       { type: 'section', key: 'sec_eye_basic', label: '', sectionTitle: '二、眼科基础检查' },
-      { type: 'eyeGrid', key: 'eye_exam_basic', label: '屈光/视功能检查', required: true, options: ['SE', 'BCVA（LogMAR）', '眼轴 AL(mm)', '角膜K1', '角膜K2', '瞳孔直径'] },
-      { type: 'select', key: 'myopia_type', label: '近视类型', options: ['单纯性近视', '高度近视', '病理性近视', '其他'] },
+      { type: 'eyeGrid', key: 'eye_exam_basic', label: '屈光/视功能检查', required: true, options: ['SE', 'BCVA（LogMAR）', '眼轴 AL(mm)', '角膜K1', '角膜K2', '瞳孔直径'], sectionId: 'sec_eye_basic' },
+      { type: 'select', key: 'myopia_type', label: '近视类型', options: ['单纯性近视', '高度近视', '病理性近视', '其他'], sectionId: 'sec_eye_basic' },
     ],
   },
   {
@@ -86,9 +86,9 @@ const customBlocks: CustomBlock[] = [
     tagColor: 'bg-emerald-100 text-emerald-700',
     fields: [
       { type: 'section', key: 'sec_visit_basic', label: '', sectionTitle: '一、访视基础' },
-      { type: 'date', key: 'visit_date', label: '本次访视日期', required: true },
-      { type: 'radio', key: 'visit_type', label: '访视性质', required: true, options: ['按计划随访', '提前返院', '逾期随访', '临时就诊'] },
-      { type: 'radio', key: 'compliance', label: '依从性', required: true, options: ['优（≥90%）', '良（70%-90%）', '一般（50%-70%）', '差（<50%）'] },
+      { type: 'date', key: 'visit_date', label: '本次访视日期', required: true, sectionId: 'sec_visit_basic' },
+      { type: 'radio', key: 'visit_type', label: '访视性质', required: true, options: ['按计划随访', '提前返院', '逾期随访', '临时就诊'], sectionId: 'sec_visit_basic' },
+      { type: 'radio', key: 'compliance', label: '依从性', required: true, options: ['优（≥90%）', '良（70%-90%）', '一般（50%-70%）', '差（<50%）'], sectionId: 'sec_visit_basic' },
     ],
   },
   {
@@ -101,10 +101,10 @@ const customBlocks: CustomBlock[] = [
     tagColor: 'bg-amber-100 text-amber-700',
     fields: [
       { type: 'section', key: 'sec_visit_eye', label: '', sectionTitle: '二、眼科复查' },
-      { type: 'eyeGrid', key: 'visit_eye_exam', label: '视力/屈光/眼轴复查', required: true, options: ['UCVA', 'BCVA（LogMAR）', 'SE（等效球镜）', '眼轴 AL(mm)'] },
-      { type: 'radio', key: 'adverse_event', label: '不良事件', required: true, options: ['无', '有（需在下方记录）'] },
-      { type: 'textarea', key: 'adverse_detail', label: '不良事件描述', placeholder: '若有不良事件，请详细描述：症状、发生时间、处理措施、转归…' },
-      { type: 'date', key: 'next_visit_date', label: '下次访视日期' },
+      { type: 'eyeGrid', key: 'visit_eye_exam', label: '视力/屈光/眼轴复查', required: true, options: ['UCVA', 'BCVA（LogMAR）', 'SE（等效球镜）', '眼轴 AL(mm)'], sectionId: 'sec_visit_eye' },
+      { type: 'radio', key: 'adverse_event', label: '不良事件', required: true, options: ['无', '有（需在下方记录）'], sectionId: 'sec_visit_eye' },
+      { type: 'textarea', key: 'adverse_detail', label: '不良事件描述', placeholder: '若有不良事件，请详细描述：症状、发生时间、处理措施、转归…', sectionId: 'sec_visit_eye' },
+      { type: 'date', key: 'next_visit_date', label: '下次访视日期', sectionId: 'sec_visit_eye' },
     ],
   },
   {
@@ -117,12 +117,12 @@ const customBlocks: CustomBlock[] = [
     tagColor: 'bg-rose-100 text-rose-700',
     fields: [
       { type: 'section', key: 'sec_medical_history', label: '', sectionTitle: '三、既往病史' },
-      { type: 'radio', key: 'past_medical_history', label: '既往病史', options: ['无', '有（请描述）'] },
-      { type: 'textarea', key: 'past_medical_detail', label: '既往病史描述', placeholder: '请详细描述既往病史…' },
-      { type: 'radio', key: 'medication_history', label: '用药史', options: ['无', '有（请描述）'] },
-      { type: 'textarea', key: 'medication_detail', label: '用药史描述', placeholder: '请详细描述用药情况…' },
-      { type: 'radio', key: 'family_history', label: '家族史', options: ['无', '有（请描述）'] },
-      { type: 'radio', key: 'allergy_history', label: '过敏史', options: ['无', '有（请描述）'] },
+      { type: 'radio', key: 'past_medical_history', label: '既往病史', options: ['无', '有（请描述）'], sectionId: 'sec_medical_history' },
+      { type: 'textarea', key: 'past_medical_detail', label: '既往病史描述', placeholder: '请详细描述既往病史…', sectionId: 'sec_medical_history' },
+      { type: 'radio', key: 'medication_history', label: '用药史', options: ['无', '有（请描述）'], sectionId: 'sec_medical_history' },
+      { type: 'textarea', key: 'medication_detail', label: '用药史描述', placeholder: '请详细描述用药情况…', sectionId: 'sec_medical_history' },
+      { type: 'radio', key: 'family_history', label: '家族史', options: ['无', '有（请描述）'], sectionId: 'sec_medical_history' },
+      { type: 'radio', key: 'allergy_history', label: '过敏史', options: ['无', '有（请描述）'], sectionId: 'sec_medical_history' },
     ],
   },
   {
@@ -135,10 +135,10 @@ const customBlocks: CustomBlock[] = [
     tagColor: 'bg-slate-100 text-slate-700',
     fields: [
       { type: 'section', key: 'sec_conclusion', label: '', sectionTitle: '结论与备注' },
-      { type: 'textarea', key: 'visit_conclusion', label: '访视结论', placeholder: '本次访视的主要结论和评估…' },
-      { type: 'text', key: 'researcher_name', label: '研究者签名' },
-      { type: 'date', key: 'researcher_sign_date', label: '签名日期' },
-      { type: 'textarea', key: 'visit_note', label: '备注', placeholder: '其他需要记录的信息…' },
+      { type: 'textarea', key: 'visit_conclusion', label: '访视结论', placeholder: '本次访视的主要结论和评估…', sectionId: 'sec_conclusion' },
+      { type: 'text', key: 'researcher_name', label: '研究者签名', sectionId: 'sec_conclusion' },
+      { type: 'date', key: 'researcher_sign_date', label: '签名日期', sectionId: 'sec_conclusion' },
+      { type: 'textarea', key: 'visit_note', label: '备注', placeholder: '其他需要记录的信息…', sectionId: 'sec_conclusion' },
     ],
   },
 ]

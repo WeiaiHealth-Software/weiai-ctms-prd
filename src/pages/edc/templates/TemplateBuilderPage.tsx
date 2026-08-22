@@ -51,7 +51,12 @@ export function TemplateBuilderPage() {
     addFields,
     updateField,
     deleteField,
+    deleteSection,
     duplicateField,
+    duplicateSection,
+    toggleSectionCollapse,
+    addFieldToSection,
+    moveSection,
   } = useBuilderFields(defaultTemplateFields)
 
   const { syncWithFields } = useDynamicForm(fields)
@@ -77,6 +82,14 @@ export function TemplateBuilderPage() {
     if (activeType === 'palette') {
       const fieldType = active.data.current?.fieldType
       const newField = createFieldByType(fieldType)
+      // 如果画布上已经有至少一个 section（且不是拖入 section 本身），
+      // 默认 append 到最后一个 section 内部，方便用户从基础组件快速建字段
+      if (newField.type !== 'section') {
+        const lastSectionId = fields.filter((f) => f.type === 'section').at(-1)?.id
+        if (lastSectionId) {
+          newField.sectionId = lastSectionId
+        }
+      }
 
       if (over.id === 'canvas') {
         setFields((prev) => [...prev, newField])
@@ -93,6 +106,36 @@ export function TemplateBuilderPage() {
         }
       }
       setSelectedFieldId(newField.id)
+    } else if (activeType === 'palette-block') {
+      const block = active.data.current?.block as { id: string; fields: BuilderField[] } | undefined
+      if (!block || !block.fields?.length) return
+      const now = Date.now()
+      const blockFields: BuilderField[] = block.fields.map((f, idx) => ({
+        ...f,
+        id: `block_${now}_${idx}_${Math.random().toString(36).slice(2, 6)}`,
+      }))
+      // sectionId 重新串联：第一个 section 类型字段作为容器，其余 section 字段以其 id 作为容器 sectionId
+      const sectionField = blockFields.find((f) => f.type === 'section')
+      if (sectionField) {
+        blockFields.forEach((f, i) => {
+          if (f.type !== 'section' && block.fields[i].sectionId !== undefined) {
+            // 用新生成的 id 替换老的 sectionId
+            const origSection = block.fields.find(
+              (bf, bi) => bf.type === 'section' && block.fields[i].sectionId === bf.id
+            )
+            const correspondingNewSection = blockFields[block.fields.indexOf(origSection)]
+            if (correspondingNewSection) {
+              f.sectionId = correspondingNewSection.id
+            } else {
+              f.sectionId = sectionField.id
+            }
+          } else if (f.type !== 'section' && !f.sectionId) {
+            f.sectionId = sectionField.id
+          }
+        })
+      }
+      setFields((prev) => [...prev, ...blockFields])
+      setSelectedFieldId(blockFields[0].id)
     } else if (activeType === 'canvas-item') {
       if (active.id !== over.id) {
         setFields((prev) => {
@@ -100,6 +143,15 @@ export function TemplateBuilderPage() {
           const newIndex = prev.findIndex((f) => f.id === over.id)
           return arrayMove(prev, oldIndex, newIndex)
         })
+      }
+    } else if (activeType === 'canvas-section') {
+      if (active.id !== over.id) {
+        const direction = (() => {
+          const oldIdx = fields.findIndex((f) => f.id === active.id)
+          const newIdx = fields.findIndex((f) => f.id === over.id)
+          return newIdx < oldIdx ? 'up' : 'down'
+        })()
+        moveSection(active.id as string, direction)
       }
     }
   }
@@ -235,6 +287,10 @@ export function TemplateBuilderPage() {
                         onSelect={setSelectedFieldId}
                         onDuplicateField={duplicateField}
                         onDeleteField={deleteField}
+                        onDuplicateSection={duplicateSection}
+                        onDeleteSection={deleteSection}
+                        onToggleSectionCollapse={toggleSectionCollapse}
+                        onAddFieldToSection={(id) => addFieldToSection('text', id)}
                       />
                     </div>
                   </div>
@@ -246,6 +302,10 @@ export function TemplateBuilderPage() {
                       onSelect={setSelectedFieldId}
                       onDuplicateField={duplicateField}
                       onDeleteField={deleteField}
+                      onDuplicateSection={duplicateSection}
+                      onDeleteSection={deleteSection}
+                      onToggleSectionCollapse={toggleSectionCollapse}
+                      onAddFieldToSection={(id) => addFieldToSection('text', id)}
                     />
                   </div>
                 )}

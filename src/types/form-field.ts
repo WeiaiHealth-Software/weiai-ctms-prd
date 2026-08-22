@@ -22,6 +22,8 @@ export type BuilderField = {
   rows?: string[]
   cols?: string[]
   columns?: string[]
+  sectionId?: string | null
+  collapsed?: boolean
 }
 
 export type DynamicFormValue = Record<string, any>

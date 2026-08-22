@@ -4,7 +4,7 @@ export function createFieldByType(type: BuilderFieldType): BuilderField {
   const baseId = `field_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
 
   const baseLabelMap: Record<BuilderFieldType, string> = {
-    section: '新区块',
+    section: '新模块容器',
     text: '新文本字段',
     number: '新数字字段',
     date: '新日期字段',
@@ -22,7 +22,7 @@ export function createFieldByType(type: BuilderFieldType): BuilderField {
       type,
       label: baseLabelMap[type],
       key: `${baseId}_key`,
-      sectionTitle: '新区块标题',
+      sectionTitle: '新模块容器',
     }
   }
 

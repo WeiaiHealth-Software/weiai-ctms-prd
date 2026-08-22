@@ -1,4 +1,4 @@
-import { ArrowLeft, Building, Check, ChevronRight, Eye, FileSpreadsheet, FileText, GripVertical, Hash, Hospital, LayoutGrid, ListChecks, PanelTop, Plus, Rows3, Save, Settings2, Sparkles, Stethoscope, Table, Trash2, Type, User, Activity, Calendar } from 'lucide-react'
+import { ArrowLeft, Building, Check, ChevronDown, ChevronRight, Copy, Eye, FileSpreadsheet, FileText, GripVertical, Hash, Hospital, LayoutGrid, ListChecks, PanelTop, Plus, Rows3, Save, Settings2, Sparkles, Stethoscope, Table, Trash2, Type, User, Activity, Calendar } from 'lucide-react'
 import { useMemo, useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEdcProjectStore } from '../../../store/useEdcProjectStore'
@@ -11,7 +11,7 @@ import Drawer from '../../../components/overlay/Drawer'
 type ConfigureStep = 'baseline' | 'visit'
 
 const basicFieldPalette: { type: BuilderFieldType; label: string; icon: React.ReactNode }[] = [
-  { type: 'section', label: '区块标题', icon: <PanelTop className="w-4 h-4" /> },
+  { type: 'section', label: '模块容器', icon: <PanelTop className="w-4 h-4" /> },
   { type: 'text', label: '单行文本', icon: <Type className="w-4 h-4" /> },
   { type: 'number', label: '数字输入', icon: <Hash className="w-4 h-4" /> },
   { type: 'date', label: '日期', icon: <Calendar className="w-4 h-4" /> },
@@ -45,10 +45,10 @@ const customBlocks: CustomBlock[] = [
     borderColor: 'hover:border-blue-400',
     fields: [
       { type: 'section', key: 'sec_demographic', label: '', sectionTitle: '一、人口学信息' },
-      { type: 'text', key: 'name_abbr', label: '姓名缩写', required: true, placeholder: '如：ZSM' },
-      { type: 'radio', key: 'gender', label: '性别', required: true, options: ['男', '女'] },
-      { type: 'date', key: 'birth_date', label: '出生日期', required: true },
-      { type: 'number', key: 'age', label: '入组年龄（岁）', required: true, placeholder: '如：10' },
+      { type: 'text', key: 'name_abbr', label: '姓名缩写', required: true, placeholder: '如：ZSM', sectionId: 'sec_demographic' },
+      { type: 'radio', key: 'gender', label: '性别', required: true, options: ['男', '女'], sectionId: 'sec_demographic' },
+      { type: 'date', key: 'birth_date', label: '出生日期', required: true, sectionId: 'sec_demographic' },
+      { type: 'number', key: 'age', label: '入组年龄（岁）', required: true, placeholder: '如：10', sectionId: 'sec_demographic' },
     ],
   },
   {
@@ -61,8 +61,8 @@ const customBlocks: CustomBlock[] = [
     borderColor: 'hover:border-violet-400',
     fields: [
       { type: 'section', key: 'sec_eye_basic', label: '', sectionTitle: '二、眼科基础检查' },
-      { type: 'eyeGrid', key: 'eye_exam_basic', label: '屈光/视功能检查', required: true, options: ['SE', 'BCVA（LogMAR）', '眼轴 AL(mm)', '角膜K1', '角膜K2', '瞳孔直径'] },
-      { type: 'select', key: 'myopia_type', label: '近视类型', options: ['单纯性近视', '高度近视', '病理性近视', '其他'] },
+      { type: 'eyeGrid', key: 'eye_exam_basic', label: '屈光/视功能检查', required: true, options: ['SE', 'BCVA（LogMAR）', '眼轴 AL(mm)', '角膜K1', '角膜K2', '瞳孔直径'], sectionId: 'sec_eye_basic' },
+      { type: 'select', key: 'myopia_type', label: '近视类型', options: ['单纯性近视', '高度近视', '病理性近视', '其他'], sectionId: 'sec_eye_basic' },
     ],
   },
   {
@@ -75,9 +75,9 @@ const customBlocks: CustomBlock[] = [
     borderColor: 'hover:border-emerald-400',
     fields: [
       { type: 'section', key: 'sec_visit_basic', label: '', sectionTitle: '一、访视基础' },
-      { type: 'date', key: 'visit_date', label: '本次访视日期', required: true },
-      { type: 'radio', key: 'visit_type', label: '访视性质', required: true, options: ['按计划随访', '提前返院', '逾期随访', '临时就诊'] },
-      { type: 'radio', key: 'compliance', label: '依从性', required: true, options: ['优（≥90%）', '良（70%-90%）', '一般（50%-70%）', '差（<50%）'] },
+      { type: 'date', key: 'visit_date', label: '本次访视日期', required: true, sectionId: 'sec_visit_basic' },
+      { type: 'radio', key: 'visit_type', label: '访视性质', required: true, options: ['按计划随访', '提前返院', '逾期随访', '临时就诊'], sectionId: 'sec_visit_basic' },
+      { type: 'radio', key: 'compliance', label: '依从性', required: true, options: ['优（≥90%）', '良（70%-90%）', '一般（50%-70%）', '差（<50%）'], sectionId: 'sec_visit_basic' },
     ],
   },
   {
@@ -90,10 +90,10 @@ const customBlocks: CustomBlock[] = [
     borderColor: 'hover:border-amber-400',
     fields: [
       { type: 'section', key: 'sec_visit_eye', label: '', sectionTitle: '二、眼科复查' },
-      { type: 'eyeGrid', key: 'visit_eye_exam', label: '视力/屈光/眼轴复查', required: true, options: ['UCVA', 'BCVA（LogMAR）', 'SE（等效球镜）', '眼轴 AL(mm)'] },
-      { type: 'radio', key: 'adverse_event', label: '不良事件', required: true, options: ['无', '有（需在下方记录）'] },
-      { type: 'textarea', key: 'adverse_detail', label: '不良事件描述', placeholder: '若有不良事件，请详细描述：症状、发生时间、处理措施、转归…' },
-      { type: 'date', key: 'next_visit_date', label: '下次访视日期' },
+      { type: 'eyeGrid', key: 'visit_eye_exam', label: '视力/屈光/眼轴复查', required: true, options: ['UCVA', 'BCVA（LogMAR）', 'SE（等效球镜）', '眼轴 AL(mm)'], sectionId: 'sec_visit_eye' },
+      { type: 'radio', key: 'adverse_event', label: '不良事件', required: true, options: ['无', '有（需在下方记录）'], sectionId: 'sec_visit_eye' },
+      { type: 'textarea', key: 'adverse_detail', label: '不良事件描述', placeholder: '若有不良事件，请详细描述：症状、发生时间、处理措施、转归…', sectionId: 'sec_visit_eye' },
+      { type: 'date', key: 'next_visit_date', label: '下次访视日期', sectionId: 'sec_visit_eye' },
     ],
   },
   {
@@ -106,12 +106,12 @@ const customBlocks: CustomBlock[] = [
     borderColor: 'hover:border-rose-400',
     fields: [
       { type: 'section', key: 'sec_medical_history', label: '', sectionTitle: '三、既往病史' },
-      { type: 'radio', key: 'past_medical_history', label: '既往病史', options: ['无', '有（请描述）'] },
-      { type: 'textarea', key: 'past_medical_detail', label: '既往病史描述', placeholder: '请详细描述既往病史…' },
-      { type: 'radio', key: 'medication_history', label: '用药史', options: ['无', '有（请描述）'] },
-      { type: 'textarea', key: 'medication_detail', label: '用药史描述', placeholder: '请详细描述用药情况…' },
-      { type: 'radio', key: 'family_history', label: '家族史', options: ['无', '有（请描述）'] },
-      { type: 'radio', key: 'allergy_history', label: '过敏史', options: ['无', '有（请描述）'] },
+      { type: 'radio', key: 'past_medical_history', label: '既往病史', options: ['无', '有（请描述）'], sectionId: 'sec_medical_history' },
+      { type: 'textarea', key: 'past_medical_detail', label: '既往病史描述', placeholder: '请详细描述既往病史…', sectionId: 'sec_medical_history' },
+      { type: 'radio', key: 'medication_history', label: '用药史', options: ['无', '有（请描述）'], sectionId: 'sec_medical_history' },
+      { type: 'textarea', key: 'medication_detail', label: '用药史描述', placeholder: '请详细描述用药情况…', sectionId: 'sec_medical_history' },
+      { type: 'radio', key: 'family_history', label: '家族史', options: ['无', '有（请描述）'], sectionId: 'sec_medical_history' },
+      { type: 'radio', key: 'allergy_history', label: '过敏史', options: ['无', '有（请描述）'], sectionId: 'sec_medical_history' },
     ],
   },
   {
@@ -124,10 +124,10 @@ const customBlocks: CustomBlock[] = [
     borderColor: 'hover:border-slate-400',
     fields: [
       { type: 'section', key: 'sec_conclusion', label: '', sectionTitle: '结论与备注' },
-      { type: 'textarea', key: 'visit_conclusion', label: '访视结论', placeholder: '本次访视的主要结论和评估…' },
-      { type: 'text', key: 'researcher_name', label: '研究者签名' },
-      { type: 'date', key: 'researcher_sign_date', label: '签名日期' },
-      { type: 'textarea', key: 'visit_note', label: '备注', placeholder: '其他需要记录的信息…' },
+      { type: 'textarea', key: 'visit_conclusion', label: '访视结论', placeholder: '本次访视的主要结论和评估…', sectionId: 'sec_conclusion' },
+      { type: 'text', key: 'researcher_name', label: '研究者签名', sectionId: 'sec_conclusion' },
+      { type: 'date', key: 'researcher_sign_date', label: '签名日期', sectionId: 'sec_conclusion' },
+      { type: 'textarea', key: 'visit_note', label: '备注', placeholder: '其他需要记录的信息…', sectionId: 'sec_conclusion' },
     ],
   },
 ]
@@ -142,30 +142,30 @@ const defaultOptionsByType: Partial<Record<BuilderFieldType, string[]>> = {
 
 const defaultBaselineFields: BuilderField[] = [
   { id: 'sec-demographic', type: 'section', key: 'sec_demographic', label: '', sectionTitle: '一、人口学信息' },
-  { id: 'f-name', type: 'text', key: 'name', label: '受试者姓名缩写', required: true, placeholder: '请输入姓名缩写，如 Z-San' },
-  { id: 'f-gender', type: 'radio', key: 'gender', label: '性别', required: true, options: ['男', '女'] },
-  { id: 'f-birth', type: 'date', key: 'birthDate', label: '出生日期', required: true },
-  { id: 'f-age', type: 'number', key: 'age', label: '入组年龄（岁）', required: true, placeholder: '如 10' },
+  { id: 'f-name', type: 'text', key: 'name', label: '受试者姓名缩写', required: true, placeholder: '请输入姓名缩写，如 Z-San', sectionId: 'sec-demographic' },
+  { id: 'f-gender', type: 'radio', key: 'gender', label: '性别', required: true, options: ['男', '女'], sectionId: 'sec-demographic' },
+  { id: 'f-birth', type: 'date', key: 'birthDate', label: '出生日期', required: true, sectionId: 'sec-demographic' },
+  { id: 'f-age', type: 'number', key: 'age', label: '入组年龄（岁）', required: true, placeholder: '如 10', sectionId: 'sec-demographic' },
   { id: 'sec-medical', type: 'section', key: 'sec_medical', label: '', sectionTitle: '二、眼科基础检查' },
-  { id: 'f-eyes', type: 'eyeGrid', key: 'eyeExam', label: '屈光/视功能检查', required: true, options: ['SE', 'BCVA（LogMAR）', '眼轴 AL(mm)', '角膜K1', '角膜K2', '瞳孔直径'] },
-  { id: 'f-diagnosis', type: 'select', key: 'diagnosis', label: '近视类型', options: ['单纯性近视', '高度近视', '病理性近视', '其他'] },
+  { id: 'f-eyes', type: 'eyeGrid', key: 'eyeExam', label: '屈光/视功能检查', required: true, options: ['SE', 'BCVA（LogMAR）', '眼轴 AL(mm)', '角膜K1', '角膜K2', '瞳孔直径'], sectionId: 'sec-medical' },
+  { id: 'f-diagnosis', type: 'select', key: 'diagnosis', label: '近视类型', options: ['单纯性近视', '高度近视', '病理性近视', '其他'], sectionId: 'sec-medical' },
   { id: 'f-note', type: 'textarea', key: 'baselineNote', label: '基线备注', placeholder: '其他需要记录的基线信息…' },
 ]
 
 const defaultVisitFields: BuilderField[] = [
   { id: 'sec-visit-basic', type: 'section', key: 'sec_visit_basic', label: '', sectionTitle: '一、访视基础' },
-  { id: 'f-visit-date', type: 'date', key: 'visitDate', label: '本次访视日期', required: true },
-  { id: 'f-visit-type', type: 'radio', key: 'visitType', label: '访视性质', required: true, options: ['按计划随访', '提前返院', '逾期随访', '临时就诊'] },
-  { id: 'f-compliance', type: 'radio', key: 'compliance', label: '依从性', required: true, options: ['优（≥90%）', '良（70%-90%）', '一般（50%-70%）', '差（<50%）'] },
+  { id: 'f-visit-date', type: 'date', key: 'visitDate', label: '本次访视日期', required: true, sectionId: 'sec-visit-basic' },
+  { id: 'f-visit-type', type: 'radio', key: 'visitType', label: '访视性质', required: true, options: ['按计划随访', '提前返院', '逾期随访', '临时就诊'], sectionId: 'sec-visit-basic' },
+  { id: 'f-compliance', type: 'radio', key: 'compliance', label: '依从性', required: true, options: ['优（≥90%）', '良（70%-90%）', '一般（50%-70%）', '差（<50%）'], sectionId: 'sec-visit-basic' },
   { id: 'sec-visit-eye', type: 'section', key: 'sec_visit_eye', label: '', sectionTitle: '二、眼科复查' },
-  { id: 'f-visit-eyes', type: 'eyeGrid', key: 'visitEyeExam', label: '视力/屈光/眼轴复查', required: true, options: ['UCVA', 'BCVA（LogMAR）', 'SE（等效球镜）', '眼轴 AL(mm)'] },
-  { id: 'f-adverse', type: 'radio', key: 'adverseEvent', label: '不良事件', required: true, options: ['无', '有（需在下方记录）'] },
-  { id: 'f-adverse-detail', type: 'textarea', key: 'adverseDetail', label: '不良事件描述', placeholder: '若有不良事件，请详细描述：症状、发生时间、处理措施、转归…' },
-  { id: 'f-next-date', type: 'date', key: 'nextVisitDate', label: '下次访视日期' },
+  { id: 'f-visit-eyes', type: 'eyeGrid', key: 'visitEyeExam', label: '视力/屈光/眼轴复查', required: true, options: ['UCVA', 'BCVA（LogMAR）', 'SE（等效球镜）', '眼轴 AL(mm)'], sectionId: 'sec-visit-eye' },
+  { id: 'f-adverse', type: 'radio', key: 'adverseEvent', label: '不良事件', required: true, options: ['无', '有（需在下方记录）'], sectionId: 'sec-visit-eye' },
+  { id: 'f-adverse-detail', type: 'textarea', key: 'adverseDetail', label: '不良事件描述', placeholder: '若有不良事件，请详细描述：症状、发生时间、处理措施、转归…', sectionId: 'sec-visit-eye' },
+  { id: 'f-next-date', type: 'date', key: 'nextVisitDate', label: '下次访视日期', sectionId: 'sec-visit-eye' },
   { id: 'f-visit-note', type: 'textarea', key: 'visitNote', label: '本次访视备注', placeholder: '其他需要记录的信息…' },
 ]
 
-function createField(type: BuilderFieldType, index: number): BuilderField {
+function createField(type: BuilderFieldType, index: number, lastSectionId?: string | null): BuilderField {
   const id = `f_${Date.now()}_${index}`
   const base: BuilderField = {
     id,
@@ -173,10 +173,11 @@ function createField(type: BuilderFieldType, index: number): BuilderField {
     key: `${type}_${Date.now().toString(36)}`,
     label: '',
     required: false,
+    sectionId: type !== 'section' ? (lastSectionId ?? null) : undefined,
   }
   switch (type) {
     case 'section':
-      return { ...base, label: '', sectionTitle: '新的分区' }
+      return { ...base, label: '', sectionTitle: '新模块容器' }
     case 'text':
       return { ...base, label: '单行文本字段', placeholder: '请输入…' }
     case 'number':
@@ -238,50 +239,93 @@ export default function ConfigureProjectPage() {
   const setCurrentFields = step === 'baseline' ? setBaselineFields : setVisitFields
 
   const addField = (type: BuilderFieldType) => {
-    const field = createField(type, currentFields.length)
+    const lastSectionId = currentFields.filter((f) => f.type === 'section').at(-1)?.id ?? null
+    const field = createField(type, currentFields.length, lastSectionId)
     setCurrentFields((prev) => [...prev, field])
     setSelectedFieldId(field.id)
   }
 
   const addFields = (newFields: BuilderField[]) => {
     if (!newFields.length) return
-    const now = Date.now()
-    const fieldsWithIds = newFields.map((f, idx) => ({
-      ...f,
-      id: `block_${now}_${idx}_${Math.random().toString(36).slice(2, 6)}`,
-    }))
-    setCurrentFields((prev) => [...prev, ...fieldsWithIds])
-    setSelectedFieldId(fieldsWithIds[0].id)
+    setCurrentFields((prev) => [...prev, ...newFields])
+    setSelectedFieldId(newFields[0].id)
   }
 
   const handleAddBlock = (block: CustomBlock) => {
     const now = Date.now()
-    const fields: BuilderField[] = block.fields.map((f, idx) => ({
+    const blockFields: BuilderField[] = block.fields.map((f, idx) => ({
       ...f,
       id: `cfg_blk_${now}_${idx}_${Math.random().toString(36).slice(2, 6)}`,
     }))
-    addFields(fields)
+    // 重新串联 sectionId：把老 key 形式的 sectionId 映射为新 id
+    const oldKeyToNewId: Record<string, string> = {}
+    block.fields.forEach((orig, i) => {
+      if (orig.type === 'section') oldKeyToNewId[orig.key] = blockFields[i].id
+    })
+    blockFields.forEach((f, i) => {
+      const orig = block.fields[i]
+      if (f.type !== 'section' && orig.sectionId && oldKeyToNewId[orig.sectionId]) {
+        f.sectionId = oldKeyToNewId[orig.sectionId]
+      } else if (f.type !== 'section' && !f.sectionId && blockFields[0].type === 'section') {
+        f.sectionId = blockFields[0].id
+      }
+    })
+    addFields(blockFields)
   }
 
   const duplicateField = (fieldId: string) => {
     const idx = currentFields.findIndex((f) => f.id === fieldId)
     if (idx === -1) return
     const origin = currentFields[idx]
-    const copy: BuilderField = {
-      ...origin,
-      id: `dup_${Date.now()}`,
-      key: `${origin.key}_copy_${Date.now().toString(36)}`,
+    const ts = Date.now()
+    if (origin.type === 'section') {
+      const children = currentFields.filter((f) => f.sectionId === origin.id)
+      const sectionCopy: BuilderField = {
+        ...origin,
+        id: `dup_sec_${ts}`,
+        key: `${origin.key}_copy`,
+        sectionTitle: origin.sectionTitle ? `${origin.sectionTitle}（副本）` : undefined,
+      }
+      const childCopies = children.map((c, i) => ({
+        ...c,
+        id: `dup_f_${ts}_${i}`,
+        key: `${c.key}_copy_${i}`,
+        sectionId: sectionCopy.id,
+      }))
+      setCurrentFields((prev) => {
+        // 找到该 section 的所有子字段结尾，作为插入点
+        const block = [origin, ...children]
+        const lastOfBlock = block[block.length - 1]
+        const lastIdx = prev.findIndex((f) => f.id === lastOfBlock.id)
+        const next = [...prev]
+        next.splice(lastIdx + 1, 0, sectionCopy, ...childCopies)
+        return next
+      })
+      setSelectedFieldId(sectionCopy.id)
+    } else {
+      const copy: BuilderField = {
+        ...origin,
+        id: `dup_${ts}`,
+        key: `${origin.key}_copy_${ts.toString(36)}`,
+      }
+      setCurrentFields((prev) => {
+        const next = [...prev]
+        next.splice(idx + 1, 0, copy)
+        return next
+      })
+      setSelectedFieldId(copy.id)
     }
-    setCurrentFields((prev) => {
-      const next = [...prev]
-      next.splice(idx + 1, 0, copy)
-      return next
-    })
-    setSelectedFieldId(copy.id)
   }
 
   const deleteField = (fieldId: string) => {
-    setCurrentFields((prev) => prev.filter((f) => f.id !== fieldId))
+    setCurrentFields((prev) => {
+      const target = prev.find((f) => f.id === fieldId)
+      if (!target) return prev
+      if (target.type === 'section') {
+        return prev.filter((f) => f.id !== fieldId && f.sectionId !== fieldId)
+      }
+      return prev.filter((f) => f.id !== fieldId)
+    })
     if (selectedFieldId === fieldId) setSelectedFieldId(null)
   }
 
@@ -294,6 +338,46 @@ export default function ConfigureProjectPage() {
       next.splice(toIdx, 0, item)
       return next
     })
+  }
+
+  const moveSection = (sectionId: string, direction: 'up' | 'down') => {
+    setCurrentFields((prev) => {
+      const index = prev.findIndex((f) => f.id === sectionId)
+      if (index < 0 || prev[index].type !== 'section') return prev
+      const children = prev.filter((f) => f.sectionId === sectionId)
+      const blockLen = 1 + children.length
+      let nextIndex: number
+      if (direction === 'up') {
+        nextIndex = index - 1
+        if (nextIndex < 0) return prev
+        const cursor = prev[nextIndex]
+        if (cursor.type === 'section') {
+          const cursorChildren = prev.filter((f) => f.sectionId === cursor.id)
+          nextIndex = nextIndex - cursorChildren.length
+        }
+      } else {
+        nextIndex = index + blockLen
+        if (nextIndex >= prev.length) return prev
+      }
+      const block: BuilderField[] = [prev[index], ...children]
+      const others = prev.filter((f) => f.id !== sectionId && f.sectionId !== sectionId)
+      const next = [...others]
+      next.splice(nextIndex, 0, ...block)
+      return next
+    })
+  }
+
+  const addFieldToSection = (type: BuilderFieldType, sectionId: string) => {
+    const field = createField(type, currentFields.length, null)
+    field.sectionId = sectionId
+    setCurrentFields((prev) => [...prev, field])
+    setSelectedFieldId(field.id)
+  }
+
+  const toggleSectionCollapse = (sectionId: string) => {
+    setCurrentFields((prev) =>
+      prev.map((f) => (f.id === sectionId ? { ...f, collapsed: !f.collapsed } : f))
+    )
   }
 
   const updateSelectedField = (patch: Partial<BuilderField>) => {
@@ -338,6 +422,18 @@ export default function ConfigureProjectPage() {
     const month = (i + 1) * parseInt(project.visitInterval.replace('M', ''))
     return `${month}M`
   })
+
+  const { sections, orphanFields, globalIdxByFieldId } = useMemo(() => {
+    const sections: BuilderField[] = []
+    const orphans: BuilderField[] = []
+    const idxMap = new Map<string, number>()
+    currentFields.forEach((f, i) => {
+      idxMap.set(f.id, i)
+      if (f.type === 'section') sections.push(f)
+      else if (!f.sectionId) orphans.push(f)
+    })
+    return { sections, orphanFields: orphans, globalIdxByFieldId: idxMap }
+  }, [currentFields])
 
   return (
     <div className="space-y-6 p-6">
@@ -521,21 +617,195 @@ export default function ConfigureProjectPage() {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {currentFields.map((field, idx) => (
-                    <FieldRow
-                      key={field.id}
-                      field={field}
-                      index={idx}
-                      total={currentFields.length}
-                      selected={field.id === selectedFieldId}
-                      onSelect={() => setSelectedFieldId(field.id)}
-                      onMoveUp={() => moveField(idx, -1)}
-                      onMoveDown={() => moveField(idx, 1)}
-                      onDuplicate={() => duplicateField(field.id)}
-                      onDelete={() => deleteField(field.id)}
-                    />
-                  ))}
+                <div className="space-y-4">
+                  {sections.map((section, sIdx) => {
+                    const childFields = currentFields.filter((f) => f.sectionId === section.id)
+                    const anyChildActive = selectedFieldId === section.id ||
+                      childFields.some((c) => c.id === selectedFieldId)
+                    const canMoveSecUp = sIdx > 0
+                    const canMoveSecDown = sIdx < sections.length - 1
+                    return (
+                      <div
+                        key={section.id}
+                        className={classNames(
+                          'rounded-2xl border transition-all bg-white overflow-hidden group',
+                          anyChildActive
+                            ? 'border-blue-300 shadow-[0_0_0_3px_rgba(59,130,246,0.1)]'
+                            : 'border-slate-200 hover:border-slate-300'
+                        )}
+                      >
+                        {/* Section Header */}
+                        <div
+                          className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-50/70 to-slate-50 border-b border-slate-100 cursor-pointer"
+                          onClick={() => setSelectedFieldId(section.id)}
+                        >
+                          {/* 编辑专属：装饰拖拽手柄 (非真拖拽, 仅视觉暗示) */}
+                          <div className="shrink-0 text-slate-300 group-hover:text-slate-400 transition-all opacity-40 group-hover:opacity-100">
+                            <GripVertical className="w-4 h-4" />
+                          </div>
+                          <span className="inline-block w-1.5 h-6 rounded-sm bg-indigo-500 shrink-0" />
+                          <div className="font-semibold text-slate-800 truncate min-w-0">
+                            {section.sectionTitle || '未命名模块容器'}
+                          </div>
+                          <span className={classNames(
+                            'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                            'bg-indigo-100/70 text-indigo-700 border border-indigo-200/60 shrink-0'
+                          )}>
+                            {childFields.length} 项
+                          </span>
+                          <div className="flex-1" />
+                          {/* 编辑专属工具栏：整体全隐 hover 才出现 */}
+                          <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (canMoveSecUp) moveSection(section.id, 'up')
+                              }}
+                              disabled={!canMoveSecUp}
+                              className={classNames(
+                                'w-7 h-7 rounded-lg flex items-center justify-center transition',
+                                canMoveSecUp
+                                  ? 'text-slate-500 hover:text-blue-600 hover:bg-white'
+                                  : 'text-slate-300 cursor-not-allowed'
+                              )}
+                              title="上移整个模块"
+                            >
+                              <ChevronRight className="w-4 h-4 -rotate-90" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (canMoveSecDown) moveSection(section.id, 'down')
+                              }}
+                              disabled={!canMoveSecDown}
+                              className={classNames(
+                                'w-7 h-7 rounded-lg flex items-center justify-center transition',
+                                canMoveSecDown
+                                  ? 'text-slate-500 hover:text-blue-600 hover:bg-white'
+                                  : 'text-slate-300 cursor-not-allowed'
+                              )}
+                              title="下移整个模块"
+                            >
+                              <ChevronRight className="w-4 h-4 rotate-90" />
+                            </button>
+                            <div className="w-px h-5 bg-slate-200 mx-0.5" />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                addFieldToSection('text', section.id)
+                              }}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-white transition"
+                              title="模块内新增文本字段"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                duplicateField(section.id)
+                              }}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:bg-white transition"
+                              title="复制整个模块（含内部字段）"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                deleteField(section.id)
+                              }}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
+                              title="删除整个模块（含内部字段）"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleSectionCollapse(section.id)
+                            }}
+                            className={classNames(
+                              'shrink-0 w-6 h-6 rounded-md flex items-center justify-center hover:bg-white transition-all',
+                              'text-slate-400 group-hover:text-slate-600 opacity-60 group-hover:opacity-100'
+                            )}
+                          >
+                            <ChevronDown className={classNames(
+                              'w-4 h-4 transition-transform',
+                              section.collapsed && '-rotate-90'
+                            )} />
+                          </button>
+                        </div>
+                        {/* Section Body */}
+                        {!section.collapsed && childFields.length > 0 && (
+                          <div className="p-4 space-y-3 bg-slate-50/40">
+                            {childFields.map((child, i) => {
+                              const globalIdx = globalIdxByFieldId.get(child.id) ?? -1
+                              const canMoveUp = i > 0
+                              const canMoveDown = i < childFields.length - 1
+                              return (
+                                <FieldRow
+                                  key={child.id}
+                                  field={child}
+                                  index={i}
+                                  total={childFields.length}
+                                  selected={child.id === selectedFieldId}
+                                  onSelect={() => setSelectedFieldId(child.id)}
+                                  onMoveUp={() => canMoveUp && moveField(globalIdx, -1)}
+                                  onMoveDown={() => canMoveDown && moveField(globalIdx, 1)}
+                                  onDuplicate={() => duplicateField(child.id)}
+                                  onDelete={() => deleteField(child.id)}
+                                />
+                              )
+                            })}
+                          </div>
+                        )}
+                        {!section.collapsed && childFields.length === 0 && (
+                          <div className="px-4 py-6 text-center text-xs text-slate-400 bg-slate-50/40">
+                            模块内暂无字段 · 点击右上角 <Plus className="w-3 h-3 inline" /> 新增
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+
+                  {/* Orphan Fields */}
+                  {orphanFields.length > 0 && (
+                    <>
+                      <div className="flex items-center gap-3 pt-2">
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+                        <span className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase shrink-0 px-2">
+                          未归属模块字段 · {orphanFields.length} 项
+                        </span>
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+                      </div>
+                      <div className="space-y-3">
+                        {orphanFields.map((field) => {
+                          const globalIdx = globalIdxByFieldId.get(field.id) ?? -1
+                          return (
+                            <FieldRow
+                              key={field.id}
+                              field={field}
+                              index={globalIdx}
+                              total={currentFields.length}
+                              selected={field.id === selectedFieldId}
+                              onSelect={() => setSelectedFieldId(field.id)}
+                              onMoveUp={() => moveField(globalIdx, -1)}
+                              onMoveDown={() => moveField(globalIdx, 1)}
+                              onDuplicate={() => duplicateField(field.id)}
+                              onDelete={() => deleteField(field.id)}
+                            />
+                          )
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
