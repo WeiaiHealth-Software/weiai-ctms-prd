@@ -1,10 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { useHeaderStore } from '../../store/useHeaderStore';
 import { Plus, Trash2 } from 'lucide-react';
+import DimensionCreateDrawer, { NewDimensionData, DimensionType } from './DimensionCreateDrawer';
+
+const TYPE_ICON_BG: Record<string, string> = {
+  enum: 'bg-cyan-50 text-cyan-600',
+  number: 'bg-orange-50 text-orange-600',
+  string: 'bg-violet-50 text-violet-600',
+  boolean: 'bg-emerald-50 text-emerald-600'
+};
+
+const generateNumberOptions = (minStr: string, maxStr: string, stepStr: string): string[] => {
+  const min = parseFloat(minStr);
+  const max = parseFloat(maxStr);
+  const step = parseFloat(stepStr) || 1;
+  if (Number.isNaN(min) || Number.isNaN(max) || min >= max) return [];
+  const range = max - min;
+  const bucketSize = Math.max(step, Math.ceil(range / 3));
+  const options: string[] = [];
+  let start = min;
+  while (start < max) {
+    const end = Math.min(start + bucketSize, max);
+    options.push(`${start}-${end}`);
+    start = end;
+  }
+  if (start < max + step) {
+    options.push(`>${max}`);
+  }
+  return options;
+};
 
 export const Dimensions: React.FC = () => {
   const setTitle = useHeaderStore(state => state.setTitle);
   const [filter, setFilter] = useState('all');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [dimensionsData, setDimensionsData] = useState([
+    { id: 1, type: 'system', title: '性别维度', description: '通用基础人口学特征', icon: 'ri-men-line', iconBg: 'bg-blue-50 text-blue-600', badge: '系统内置', badgeBg: 'bg-brand-600', options: ['男', '女'], references: 5, shared: true },
+    { id: 2, type: 'system', title: '年龄分层', description: '青少年年龄标准分层', icon: 'ri-calendar-2-line', iconBg: 'bg-purple-50 text-purple-600', badge: '系统内置', badgeBg: 'bg-brand-600', options: ['4-7岁', '7-10岁', '10-13岁'], references: 5, shared: true },
+    { id: 3, type: 'system', title: '屈光度', description: '近视程度分层', icon: 'ri-eye-line', iconBg: 'bg-orange-50 text-orange-600', badge: '系统内置', badgeBg: 'bg-brand-600', options: ['-1.25 ~ -1.00D', '-1.00 ~ 0.00D', '0.00 ~ +1.00D'], fontMono: true, references: 5, shared: true },
+    { id: 4, type: 'custom', title: '眼压范围', description: '自定义眼压分层', icon: 'ri-flask-line', iconBg: 'bg-cyan-50 text-cyan-600', badge: '中心自定义', badgeBg: 'bg-cyan-500', options: ['10-15', '15-21', '>21'], references: 0, shared: false, status: 'reviewing', statusClass: 'bg-blue-50 text-blue-600 border-blue-100', statusText: '审核中' },
+    { id: 5, type: 'custom', title: '用药史', description: '既往用药情况', icon: 'ri-capsule-line', iconBg: 'bg-cyan-50 text-cyan-600', badge: '中心自定义', badgeBg: 'bg-cyan-500', options: ['无', '阿托品', '其他'], references: 0, shared: false, status: 'rejected', statusClass: 'bg-red-50 text-red-600 border-red-100', statusText: '审核失败' },
+    { id: 6, type: 'custom', title: '配镜类型', description: '当前配戴眼镜类型', icon: 'ri-book-line', iconBg: 'bg-cyan-50 text-cyan-600', badge: '中心自定义', badgeBg: 'bg-cyan-500', options: ['框架眼镜', '角膜塑形镜'], references: 2, shared: false, status: 'approved', statusClass: 'bg-emerald-50 text-emerald-600 border-emerald-100', statusText: '审核通过' }
+  ]);
 
   useEffect(() => {
     setTitle('维度管理', '定义全局可用的随机化分层因素', [
@@ -14,14 +51,34 @@ export const Dimensions: React.FC = () => {
     ]);
   }, [setTitle]);
 
-  const dimensionsData = [
-    { id: 1, type: 'system', title: '性别维度', description: '通用基础人口学特征', icon: 'ri-men-line', iconBg: 'bg-blue-50 text-blue-600', badge: '系统内置', badgeBg: 'bg-brand-600', options: ['男', '女'], references: 5, shared: true },
-    { id: 2, type: 'system', title: '年龄分层', description: '青少年年龄标准分层', icon: 'ri-calendar-2-line', iconBg: 'bg-purple-50 text-purple-600', badge: '系统内置', badgeBg: 'bg-brand-600', options: ['4-7岁', '7-10岁', '10-13岁'], references: 5, shared: true },
-    { id: 3, type: 'system', title: '屈光度', description: '近视程度分层', icon: 'ri-eye-line', iconBg: 'bg-orange-50 text-orange-600', badge: '系统内置', badgeBg: 'bg-brand-600', options: ['-1.25 ~ -1.00D', '-1.00 ~ 0.00D', '0.00 ~ +1.00D'], fontMono: true, references: 5, shared: true },
-    { id: 4, type: 'custom', title: '眼压范围', description: '自定义眼压分层', icon: 'ri-flask-line', iconBg: 'bg-cyan-50 text-cyan-600', badge: '中心自定义', badgeBg: 'bg-cyan-500', options: ['10-15', '15-21', '>21'], references: 0, shared: false, status: 'reviewing', statusClass: 'bg-blue-50 text-blue-600 border-blue-100', statusText: '审核中' },
-    { id: 5, type: 'custom', title: '用药史', description: '既往用药情况', icon: 'ri-capsule-line', iconBg: 'bg-cyan-50 text-cyan-600', badge: '中心自定义', badgeBg: 'bg-cyan-500', options: ['无', '阿托品', '其他'], references: 0, shared: false, status: 'rejected', statusClass: 'bg-red-50 text-red-600 border-red-100', statusText: '审核失败' },
-    { id: 6, type: 'custom', title: '配镜类型', description: '当前配戴眼镜类型', icon: 'ri-book-line', iconBg: 'bg-cyan-50 text-cyan-600', badge: '中心自定义', badgeBg: 'bg-cyan-500', options: ['框架眼镜', '角膜塑形镜'], references: 2, shared: false, status: 'approved', statusClass: 'bg-emerald-50 text-emerald-600 border-emerald-100', statusText: '审核通过' }
-  ];
+  const handleCreateDimension = (data: NewDimensionData) => {
+    const typeToOptions: Record<DimensionType, string[]> = {
+      enum: data.options || [],
+      number: generateNumberOptions(data.numberMin || '', data.numberMax || '', data.numberStep || '1'),
+      string: [],
+      boolean: ['是', '否']
+    };
+
+    const newDimension = {
+      id: Date.now(),
+      type: 'custom' as const,
+      title: data.title,
+      description: data.description || '暂无描述',
+      icon: data.icon || 'ri-flask-line',
+      iconBg: TYPE_ICON_BG[data.type],
+      badge: '中心自定义',
+      badgeBg: 'bg-cyan-500',
+      options: typeToOptions[data.type],
+      references: 0,
+      shared: false,
+      status: 'reviewing' as const,
+      statusClass: 'bg-blue-50 text-blue-600 border-blue-100',
+      statusText: '审核中'
+    };
+
+    setDimensionsData(prev => [newDimension, ...prev]);
+    setDrawerOpen(false);
+  };
 
   const filteredDimensions = dimensionsData.filter(dim => filter === 'all' || dim.type === filter);
 
@@ -43,7 +100,10 @@ export const Dimensions: React.FC = () => {
             </button>
           ))}
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 transition-all active:scale-95 w-full sm:w-auto justify-center">
+        <button
+          onClick={() => setDrawerOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 transition-all active:scale-95 w-full sm:w-auto justify-center"
+        >
           <Plus className="w-4 h-4" /> 新增维度
         </button>
       </div>
@@ -104,6 +164,12 @@ export const Dimensions: React.FC = () => {
           </div>
         ))}
       </div>
+
+      <DimensionCreateDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onSubmit={handleCreateDimension}
+      />
     </div>
   );
 };
