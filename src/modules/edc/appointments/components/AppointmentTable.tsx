@@ -1,5 +1,6 @@
 import type { Appointment } from '../../../../types/appointment'
 import { classNames } from '../../../../lib/classNames'
+import { Bell } from 'lucide-react'
 
 type AppointmentTableProps = {
   data: Appointment[]
@@ -26,6 +27,14 @@ export default function AppointmentTable({
   totalPages,
   onPageChange
 }: AppointmentTableProps) {
+  const fixedToday = '2026-10-07'
+  const todayMs = new Date(fixedToday + 'T00:00:00').getTime()
+  const withinUrgentWindow = (dueDate: string, contactStatus: string) => {
+    if (contactStatus !== '待联系') return false
+    if (!dueDate) return false
+    const diffDays = Math.ceil((new Date(dueDate + 'T00:00:00').getTime() - todayMs) / (1000 * 60 * 60 * 24))
+    return diffDays <= 14
+  }
   return (
     <div className="overflow-hidden rounded-b-2xl">
       <div className="overflow-x-auto">
@@ -53,7 +62,16 @@ export default function AppointmentTable({
                   <td className="px-6 py-4 text-slate-600 whitespace-nowrap">{item.dueDate}</td>
                   <td className="px-6 py-4 text-slate-600 whitespace-nowrap">{item.appointmentDate || '--'}</td>
                   <td className="px-6 py-4 text-slate-600">{item.center}</td>
-                  <td className="px-6 py-4 text-slate-600">{item.contactStatus}</td>
+                  <td className="px-6 py-4">
+                    {withinUrgentWindow(item.dueDate, item.contactStatus) ? (
+                      <span className="inline-flex items-center gap-1.5 font-semibold text-rose-600">
+                        <Bell className="w-3.5 h-3.5 fill-rose-500 stroke-rose-600 shrink-0" />
+                        <span>待联系</span>
+                      </span>
+                    ) : (
+                      <span className="text-slate-600">{item.contactStatus}</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4">
                     <span
                       className={classNames(

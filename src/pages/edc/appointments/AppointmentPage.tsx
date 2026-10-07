@@ -59,16 +59,22 @@ export function AppointmentPage() {
   }, [filteredAppointments, safeCurrentPage])
 
   const stats = useMemo(() => {
-    const today = new Date()
+    const today = new Date('2026-10-07T00:00:00')
     const todayText = today.toISOString().slice(0, 10)
     const weekEnd = new Date(today)
     weekEnd.setDate(weekEnd.getDate() + 7)
     const weekEndText = weekEnd.toISOString().slice(0, 10)
+    const twoWeeksEnd = new Date(today)
+    twoWeeksEnd.setDate(twoWeeksEnd.getDate() + 14)
+    const twoWeeksEndText = twoWeeksEnd.toISOString().slice(0, 10)
 
     return {
       todayPending: appointments.filter((item) => item.dueDate === todayText && item.status !== '已到访').length,
       weekPending: appointments.filter(
         (item) => item.dueDate >= todayText && item.dueDate <= weekEndText && item.status !== '已到访'
+      ).length,
+      twoWeekPending: appointments.filter(
+        (item) => item.dueDate >= todayText && item.dueDate <= twoWeeksEndText && item.status !== '已到访'
       ).length,
       scheduled: appointments.filter((item) => item.status === '已预约').length,
       overdue: appointments.filter((item) => item.dueDate < todayText && item.status !== '已到访').length
