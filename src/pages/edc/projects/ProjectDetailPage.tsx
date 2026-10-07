@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { ArrowLeft, BarChart3, ChevronDown, Cpu, Download, History, Hospital, Building, Layers, MoreHorizontal, Play, RotateCcw, Search, Settings2, Sparkles, Square, UserPlus, X, type LucideIcon } from 'lucide-react'
+import { ArrowLeft, BarChart3, ChevronDown, Cpu, Download, History, Hospital, Building, Layers, MoreHorizontal, Play, RefreshCw, RotateCcw, Search, Settings2, Sparkles, Square, UserPlus, X, type LucideIcon, CheckCircle2 } from 'lucide-react'
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEdcProjectStore } from '../../../store/useEdcProjectStore'
@@ -71,6 +71,9 @@ export default function ProjectDetailPage() {
   const [aiHistoryQuery, setAiHistoryQuery] = useState('')
   const [aiQuickActionsCollapsed, setAiQuickActionsCollapsed] = useState(false)
   const aiEngineMenuRef = useRef<HTMLDivElement | null>(null)
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const moreMenuRef = useRef<HTMLDivElement | null>(null)
+  const [syncToast, setSyncToast] = useState<{ show: boolean; status: 'loading' | 'success' | 'error' }>({ show: false, status: 'loading' })
   const [subjectFilters, setSubjectFilters] = useState({
     keyword: '',
     visit: '全部访视',
@@ -257,6 +260,43 @@ export default function ProjectDetailPage() {
   }, [aiEngineMenuOpen])
 
   useEffect(() => {
+    if (!moreMenuOpen) return
+    const onPointerDown = (e: MouseEvent) => {
+      const el = moreMenuRef.current
+      if (!el) return
+      if (el.contains(e.target as Node)) return
+      setMoreMenuOpen(false)
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMoreMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [moreMenuOpen])
+
+  useEffect(() => {
+    if (!syncToast.show) return
+    if (syncToast.status === 'success' || syncToast.status === 'error') {
+      const timer = setTimeout(() => {
+        setSyncToast((prev) => ({ ...prev, show: false }))
+      }, 2500)
+      return () => clearTimeout(timer)
+    }
+  }, [syncToast])
+
+  const handleSyncIwrsData = () => {
+    setMoreMenuOpen(false)
+    setSyncToast({ show: true, status: 'loading' })
+    setTimeout(() => {
+      setSyncToast({ show: true, status: 'success' })
+    }, 1200)
+  }
+
+  useEffect(() => {
     if (project) {
       setTitle('项目详情', `项目代码：${project.code}`, [
         { text: '开发者账户', color: 'indigo' },
@@ -271,6 +311,43 @@ export default function ProjectDetailPage() {
 
   return (
     <>
+      {syncToast.show && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[100] animate-[slideDown_.3s_ease-out]">
+          <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border shadow-xl shadow-slate-300/50 backdrop-blur-sm ${
+            syncToast.status === 'loading'
+              ? 'bg-white/95 border-slate-200'
+              : syncToast.status === 'success'
+              ? 'bg-emerald-50/95 border-emerald-200'
+              : 'bg-rose-50/95 border-rose-200'
+          }`}>
+            {syncToast.status === 'loading' && (
+              <RefreshCw className="w-4.5 h-4.5 text-violet-600 animate-spin" />
+            )}
+            {syncToast.status === 'success' && (
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            )}
+            {syncToast.status === 'error' && (
+              <X className="w-5 h-5 text-rose-600" />
+            )}
+            <div className="flex flex-col">
+              <span className={`text-sm font-bold ${
+                syncToast.status === 'loading' ? 'text-slate-800' :
+                syncToast.status === 'success' ? 'text-emerald-800' : 'text-rose-800'
+              }`}>
+                {syncToast.status === 'loading' && '正在同步 IWRS 数据...'}
+                {syncToast.status === 'success' && '同步完成！'}
+                {syncToast.status === 'error' && '同步失败，请稍后重试'}
+              </span>
+              {syncToast.status === 'success' && (
+                <span className="text-xs text-emerald-600 mt-0.5">最新受试者分组与入组信息已同步至 EDC</span>
+              )}
+              {syncToast.status === 'loading' && (
+                <span className="text-xs text-slate-500 mt-0.5">正在拉取 IWRS 端的最新数据...</span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       <div className={`space-y-6 p-6 ${aiPanelOpen ? 'xl:pr-[560px]' : ''}`}>
         <div className="space-y-6 min-w-0">
           <Link to="/index/edc/projects" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-700">
@@ -334,29 +411,29 @@ export default function ProjectDetailPage() {
                 <p className="mt-4 text-sm text-slate-600 max-w-4xl leading-relaxed">{project.desc}</p>
               </div>
 
-              <div className="shrink-0 w-[300px] space-y-4">
-                <div className="flex items-center justify-end gap-2 flex-wrap">
+              <div className="shrink-0 w-[320px] space-y-4">
+                <div className="flex items-center justify-end gap-2 flex-nowrap">
                   <button
                     type="button"
                     onClick={() => setAiPanelOpen((value) => !value)}
-                    className={`h-10 px-4 rounded-xl text-sm font-medium flex items-center gap-2 border transition-colors ${
+                    className={`h-10 px-4 rounded-xl text-sm font-medium flex items-center gap-2 border transition-colors shrink-0 ${
                       aiPanelOpen
                         ? 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100'
                         : 'bg-violet-600 text-white border-violet-600 hover:bg-violet-700'
                     }`}
                   >
-                    <Sparkles className="w-4 h-4" />
-                    {aiPanelOpen ? '收起 AI 助手' : 'AI 助手'}
+                    <Sparkles className="w-4 h-4 shrink-0" />
+                    <span className="whitespace-nowrap">{aiPanelOpen ? '收起 AI 助手' : 'AI 助手'}</span>
                   </button>
 
                   {project.status === '未配置' ? (
                     <button
                       type="button"
                       onClick={() => navigate(`/index/edc/projects/${project.id}/configure`)}
-                      className="h-10 px-4 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                      className="h-10 px-4 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 flex items-center gap-2 shadow-lg shadow-indigo-500/20 shrink-0"
                     >
-                      <Settings2 className="w-4 h-4" />
-                      配置表单
+                      <Settings2 className="w-4 h-4 shrink-0" />
+                      <span className="whitespace-nowrap">配置表单</span>
                     </button>
                   ) : null}
 
@@ -364,43 +441,110 @@ export default function ProjectDetailPage() {
                     <button
                       type="button"
                       onClick={() => projectId && startProject(projectId)}
-                      className="h-10 px-4 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+                      className="h-10 px-4 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 flex items-center gap-2 shadow-lg shadow-emerald-500/20 shrink-0"
                     >
-                      <Play className="w-4 h-4" />
-                      开始项目
+                      <Play className="w-4 h-4 shrink-0" />
+                      <span className="whitespace-nowrap">开始项目</span>
                     </button>
                   ) : null}
 
                   {project.status === '进行中' ? (
-                    <>
-                      <button
-                        onClick={() => setShowSubjectDrawer(true)}
-                        className="h-10 px-4 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
-                      >
-                        <UserPlus className="w-4 h-4" />
-                        新增受试者
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => projectId && finishProject(projectId)}
-                        className="h-10 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-sm font-medium border border-rose-200 flex items-center gap-2"
-                      >
-                        <Square className="w-3.5 h-3.5 fill-current" />
-                        结束项目
-                      </button>
-                    </>
+                    <button
+                      onClick={() => setShowSubjectDrawer(true)}
+                      className="h-10 px-4 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-2 shrink-0"
+                    >
+                      <UserPlus className="w-4 h-4 shrink-0" />
+                      <span className="whitespace-nowrap">新增受试者</span>
+                    </button>
                   ) : null}
 
                   {project.status === '已结束' ? (
-                    <div className="h-10 px-4 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium flex items-center gap-2 border border-slate-200">
-                      <Square className="w-3.5 h-3.5 fill-current" />
-                      项目已结束
+                    <div className="h-10 px-4 rounded-xl bg-slate-100 text-slate-500 text-sm font-medium flex items-center gap-2 border border-slate-200 shrink-0">
+                      <Square className="w-3.5 h-3.5 fill-current shrink-0" />
+                      <span className="whitespace-nowrap">项目已结束</span>
                     </div>
                   ) : null}
 
-                  <button className="h-10 px-3 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
+                  <div ref={moreMenuRef} className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setMoreMenuOpen((v) => !v)}
+                      className={`h-10 px-3 rounded-xl border text-slate-500 hover:bg-slate-50 transition-colors shrink-0 ${
+                        moreMenuOpen ? 'bg-slate-50 border-slate-300' : 'border-slate-200'
+                      }`}
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </button>
+                    {moreMenuOpen && (
+                      <div className="absolute top-full mt-2 right-0 w-72 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40 z-50">
+                        <div className="px-3.5 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50 whitespace-nowrap">
+                          项目操作
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleSyncIwrsData}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-violet-50 hover:text-violet-700 transition-colors"
+                        >
+                          <RefreshCw className="w-4 h-4 text-violet-500 shrink-0" />
+                          <div className="flex flex-col items-start whitespace-nowrap overflow-hidden">
+                            <span className="font-semibold">同步 IWRS 数据</span>
+                            <span className="text-[11px] text-slate-400">从 IWRS 同步最新分组与入组信息</span>
+                          </div>
+                        </button>
+                        <div className="h-px bg-slate-100 mx-3" />
+                        <button
+                          type="button"
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                        >
+                          <Download className="w-4 h-4 text-blue-500 shrink-0" />
+                          <div className="flex flex-col items-start whitespace-nowrap overflow-hidden">
+                            <span className="font-semibold">导出项目数据</span>
+                            <span className="text-[11px] text-slate-400">一键导出 Excel / CSV</span>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/index/edc/projects/${project?.id}/configure`)}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                        >
+                          <Settings2 className="w-4 h-4 text-indigo-500 shrink-0" />
+                          <div className="flex flex-col items-start whitespace-nowrap overflow-hidden">
+                            <span className="font-semibold">表单配置</span>
+                            <span className="text-[11px] text-slate-400">调整 eCRF 模板与访视设置</span>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                        >
+                          <History className="w-4 h-4 text-slate-500 shrink-0" />
+                          <div className="flex flex-col items-start whitespace-nowrap overflow-hidden">
+                            <span className="font-semibold">操作日志</span>
+                            <span className="text-[11px] text-slate-400">查看项目变更审计记录</span>
+                          </div>
+                        </button>
+                        {project.status === '进行中' && (
+                          <>
+                            <div className="h-px bg-slate-200 mx-3 my-1" />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMoreMenuOpen(false)
+                                if (projectId) finishProject(projectId)
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition-colors"
+                            >
+                              <Square className="w-3.5 h-3.5 text-rose-500 fill-current shrink-0" />
+                              <div className="flex flex-col items-start whitespace-nowrap overflow-hidden">
+                                <span className="font-semibold">结束项目</span>
+                                <span className="text-[11px] text-slate-400">终止入组并标记为已完成</span>
+                              </div>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 gap-3">
                   <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
