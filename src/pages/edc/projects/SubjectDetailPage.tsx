@@ -5,21 +5,23 @@ import SectionCard from '../../../components/common/SectionCard'
 import { projectSubjects } from '../../../data/edc/subjects'
 import { subjectVisits } from '../../../data/edc/visits'
 import { defaultTemplateFields } from '../../../data/edc/mockTemplateSchema'
+import { getVisitFormData } from '../../../data/edc/visitFormData'
 import VisitTimeline from '../../../modules/edc/projects/components/VisitTimelines'
 import DynamicFormRenderer from '../../../modules/edc/form-engine/DynamicFormRenderer'
 import { buildInitialFormData } from '../../../modules/edc/form-engine/utils/buildInitialFormData'
 import { useHeaderStore } from '../../../store/useHeaderStore'
+import type { DynamicFormValue } from '../../../modules/form-engine/types'
 
 export default function SubjectDetailPage() {
   const { projectId, subjectId } = useParams()
   const setTitle = useHeaderStore(state => state.setTitle)
-  const [selectedVisitId, setSelectedVisitId] = useState('v2')
+  const [selectedVisitId, setSelectedVisitId] = useState('v1')
   const [readOnly, setReadOnly] = useState(true)
 
   const subjects = projectId ? projectSubjects[projectId] || [] : []
   const subject = useMemo(() => subjects.find((s) => s.id === subjectId) || null, [subjects, subjectId])
 
-  const [formData, setFormData] = useState(() => buildInitialFormData(defaultTemplateFields))
+  const [formData, setFormData] = useState<DynamicFormValue>(() => buildInitialFormData(defaultTemplateFields))
 
   const currentVisit = subjectVisits.find((item) => item.id === selectedVisitId)
 
@@ -35,6 +37,35 @@ export default function SubjectDetailPage() {
       ])
     }
   }, [setTitle, subject])
+
+  useEffect(() => {
+    if (!subjectId) return
+    const mock = getVisitFormData(subjectId, selectedVisitId)
+    const empty = buildInitialFormData(defaultTemplateFields)
+    if (mock && Object.keys(mock).length > 0) {
+      const merged: DynamicFormValue = { ...empty }
+      Object.keys(mock).forEach((key) => {
+        const value = (mock as DynamicFormValue)[key]
+        const field = defaultTemplateFields.find((f) => f.key === key)
+        if (!field) {
+          merged[key] = value
+          return
+        }
+        if (field.type === 'eyeGrid') {
+          merged[key] = { ...empty[key], ...(value || {}) }
+        } else if (field.type === 'matrix') {
+          merged[key] = { ...empty[key], ...(value || {}) }
+        } else if (field.type === 'dynamicList') {
+          merged[key] = Array.isArray(value) && value.length > 0 ? value : empty[key]
+        } else {
+          merged[key] = value ?? empty[key]
+        }
+      })
+      setFormData(merged)
+    } else {
+      setFormData(empty)
+    }
+  }, [subjectId, selectedVisitId])
 
   if (!subject) {
     return <div className="p-6 text-sm text-slate-500">未找到受试者，请检查路由参数或受试者数据是否存在</div>
