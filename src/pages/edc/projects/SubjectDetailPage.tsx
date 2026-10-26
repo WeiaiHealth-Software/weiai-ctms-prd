@@ -183,14 +183,12 @@ export default function SubjectDetailPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <DynamicFormRenderer
-              fields={defaultTemplateFields}
-              formData={formData}
-              readOnly={readOnly}
-              onChange={(key: any, value: any) => setFormData((prev) => ({ ...prev, [key]: value }))}
-            />
-          </div>
+          <DynamicFormRenderer
+            fields={defaultTemplateFields}
+            formData={formData}
+            readOnly={readOnly}
+            onChange={(key: any, value: any) => setFormData((prev) => ({ ...prev, [key]: value }))}
+          />
         </div>
 
         <div className="sticky top-4 w-[224px] shrink-0 self-start">
