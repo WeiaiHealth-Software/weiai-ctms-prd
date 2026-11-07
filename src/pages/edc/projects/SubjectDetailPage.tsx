@@ -1,22 +1,26 @@
-import { ArrowLeft, AlertCircle, Edit, Save } from 'lucide-react'
+import { ArrowLeft, AlertCircle, Edit, Paperclip, Save, Upload } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import SectionCard from '../../../components/common/SectionCard'
+import { getVisitAttachments } from '../../../data/edc/visitAttachments'
 import { projectSubjects } from '../../../data/edc/subjects'
 import { subjectVisits } from '../../../data/edc/visits'
 import { defaultTemplateFields } from '../../../data/edc/mockTemplateSchema'
 import { getVisitFormData } from '../../../data/edc/visitFormData'
+import VisitAttachmentDrawer from '../../../modules/edc/projects/components/VisitAttachmentDrawer'
 import VisitTimeline from '../../../modules/edc/projects/components/VisitTimelines'
 import DynamicFormRenderer from '../../../modules/edc/form-engine/DynamicFormRenderer'
 import { buildInitialFormData } from '../../../modules/edc/form-engine/utils/buildInitialFormData'
+import type { DynamicFormValue } from '../../../modules/edc/form-engine/types'
 import { useHeaderStore } from '../../../store/useHeaderStore'
-import type { DynamicFormValue } from '../../../modules/form-engine/types'
 
 export default function SubjectDetailPage() {
   const { projectId, subjectId } = useParams()
   const setTitle = useHeaderStore(state => state.setTitle)
   const [selectedVisitId, setSelectedVisitId] = useState('v1')
   const [readOnly, setReadOnly] = useState(true)
+  const [attachmentDrawerOpen, setAttachmentDrawerOpen] = useState(false)
+  const [attachmentCount, setAttachmentCount] = useState(0)
 
   const subjects = projectId ? projectSubjects[projectId] || [] : []
   const subject = useMemo(() => subjects.find((s) => s.id === subjectId) || null, [subjects, subjectId])
@@ -65,6 +69,14 @@ export default function SubjectDetailPage() {
     } else {
       setFormData(empty)
     }
+  }, [subjectId, selectedVisitId])
+
+  useEffect(() => {
+    if (!subjectId) {
+      setAttachmentCount(0)
+      return
+    }
+    setAttachmentCount(getVisitAttachments(subjectId, selectedVisitId).length)
   }, [subjectId, selectedVisitId])
 
   if (!subject) {
@@ -144,6 +156,18 @@ export default function SubjectDetailPage() {
                   <div className="mr-2 inline-flex h-10 items-center rounded-xl bg-slate-100 px-4 text-sm font-medium text-slate-600">
                     只读模式
                   </div>
+                  <button
+                    onClick={() => setAttachmentDrawerOpen(true)}
+                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    {attachmentCount > 0 ? <Paperclip className="w-4 h-4 text-blue-600" /> : <Upload className="w-4 h-4 text-blue-600" />}
+                    <span>{attachmentCount > 0 ? '检查单' : '上传检查单'}</span>
+                    {attachmentCount > 0 && (
+                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600">
+                        {attachmentCount} 份
+                      </span>
+                    )}
+                  </button>
                   <button className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50">
                     <AlertCircle className="w-4 h-4 text-orange-500" />
                     提出质疑
@@ -161,6 +185,18 @@ export default function SubjectDetailPage() {
                   <div className="mr-2 inline-flex h-10 items-center rounded-xl bg-blue-50 px-4 text-sm font-medium text-blue-600">
                     编辑模式
                   </div>
+                  <button
+                    onClick={() => setAttachmentDrawerOpen(true)}
+                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    {attachmentCount > 0 ? <Paperclip className="w-4 h-4 text-blue-600" /> : <Upload className="w-4 h-4 text-blue-600" />}
+                    <span>{attachmentCount > 0 ? '检查单' : '上传检查单'}</span>
+                    {attachmentCount > 0 && (
+                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600">
+                        {attachmentCount} 份
+                      </span>
+                    )}
+                  </button>
                   <button
                     onClick={() => setReadOnly(true)}
                     className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -187,7 +223,9 @@ export default function SubjectDetailPage() {
             fields={defaultTemplateFields}
             formData={formData}
             readOnly={readOnly}
-            onChange={(key: any, value: any) => setFormData((prev) => ({ ...prev, [key]: value }))}
+            onChange={(key: string, value: unknown) =>
+              setFormData((prev: DynamicFormValue) => ({ ...prev, [key]: value }))
+            }
           />
         </div>
 
@@ -207,6 +245,16 @@ export default function SubjectDetailPage() {
           </SectionCard>
         </div>
       </div>
+
+      <VisitAttachmentDrawer
+        open={attachmentDrawerOpen}
+        subjectId={subjectId || ''}
+        subjectInitials={subject.initials}
+        visitId={selectedVisitId}
+        visitName={currentVisit?.name || '访视'}
+        onClose={() => setAttachmentDrawerOpen(false)}
+        onCountChange={setAttachmentCount}
+      />
     </div>
   )
 }
