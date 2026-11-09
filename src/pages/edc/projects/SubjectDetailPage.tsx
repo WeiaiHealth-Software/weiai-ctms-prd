@@ -1,4 +1,5 @@
-import { ArrowLeft, AlertCircle, Edit, Paperclip, Save, Upload } from 'lucide-react'
+/* eslint-disable react-hooks/set-state-in-effect */
+import { ArrowLeft, AlertCircle, Check, Copy, Edit, Paperclip, Save, Upload } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import SectionCard from '../../../components/common/SectionCard'
@@ -12,6 +13,8 @@ import VisitTimeline from '../../../modules/edc/projects/components/VisitTimelin
 import DynamicFormRenderer from '../../../modules/edc/form-engine/DynamicFormRenderer'
 import { buildInitialFormData } from '../../../modules/edc/form-engine/utils/buildInitialFormData'
 import type { DynamicFormValue } from '../../../modules/edc/form-engine/types'
+import { classNames } from '../../../lib/classNames'
+import { copyTextToClipboard } from '../../../lib/copyTextToClipboard'
 import { useHeaderStore } from '../../../store/useHeaderStore'
 
 export default function SubjectDetailPage() {
@@ -21,6 +24,7 @@ export default function SubjectDetailPage() {
   const [readOnly, setReadOnly] = useState(true)
   const [attachmentDrawerOpen, setAttachmentDrawerOpen] = useState(false)
   const [attachmentCount, setAttachmentCount] = useState(0)
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
 
   const subjects = projectId ? projectSubjects[projectId] || [] : []
   const subject = useMemo(() => subjects.find((s) => s.id === subjectId) || null, [subjects, subjectId])
@@ -29,9 +33,20 @@ export default function SubjectDetailPage() {
 
   const currentVisit = subjectVisits.find((item) => item.id === selectedVisitId)
 
+  useEffect(() => {
+    if (copyState === 'idle') return
+    const timeout = window.setTimeout(() => setCopyState('idle'), 1800)
+    return () => window.clearTimeout(timeout)
+  }, [copyState])
+
   const sections = useMemo(() => {
     return defaultTemplateFields.filter(f => f.type === 'section')
   }, [])
+
+  const handleCopySubjectNo = async () => {
+    const copied = await copyTextToClipboard(subject?.screeningNo || '')
+    setCopyState(copied ? 'copied' : 'failed')
+  }
 
   useEffect(() => {
     if (subject) {
@@ -102,12 +117,45 @@ export default function SubjectDetailPage() {
 
       <div className="flex items-start gap-5">
         <div className="w-[292px] shrink-0 self-stretch space-y-3">
-          <div className="rounded-2xl bg-blue-600 p-4 text-white shadow-sm">
-            <div className="text-xs text-blue-100">当前受试者</div>
-            <div className="mt-1.5 text-[2rem] font-bold leading-none">{subject.initials}</div>
-            <div className="mt-2 text-sm text-blue-100">{subject.screeningNo}</div>
+          <div className="overflow-hidden rounded-2xl bg-blue-600 text-white shadow-sm">
+            <div className="px-4 pb-4 pt-4">
+              <div className="text-xs text-blue-100">当前受试者</div>
+              <div className="mt-1.5 text-[2rem] font-bold leading-none">{subject.initials}</div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 bg-gray-50 px-4 py-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="shrink-0 text-xs font-medium text-slate-500">受试者编号</span>
+                <span className="min-w-0 truncate font-mono text-base font-semibold tracking-wide text-blue-700">
+                  {subject.screeningNo}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopySubjectNo}
+                aria-label={copyState === 'copied' ? '已复制受试者编号' : copyState === 'failed' ? '复制失败，请重试' : '复制受试者编号'}
+                title={copyState === 'copied' ? '已复制' : copyState === 'failed' ? '复制失败，请重试' : '复制受试者编号'}
+                className={classNames(
+                  'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                  copyState === 'copied'
+                    ? 'text-emerald-600'
+                    : copyState === 'failed'
+                      ? 'text-rose-600'
+                      : 'text-blue-700 hover:bg-blue-50'
+                )}
+              >
+                {copyState === 'copied'
+                  ? <Check className="h-4 w-4" />
+                  : copyState === 'failed'
+                    ? <AlertCircle className="h-4 w-4" />
+                    : <Copy className="h-4 w-4" />}
+              </button>
+              <span aria-live="polite" className="sr-only">
+                {copyState === 'copied' ? '受试者编号已复制' : copyState === 'failed' ? '复制失败，请重试' : ''}
+              </span>
+            </div>
             
-            <div className="mt-4 space-y-3 border-t border-blue-500/50 pt-4 text-sm">
+            <div className="space-y-3 border-t border-blue-500/50 px-4 pb-4 pt-4 text-sm">
               <div className="flex justify-between gap-3">
                 <span className="text-blue-200">随机号</span>
                 <span className="font-medium">{subject.randomNo}</span>
