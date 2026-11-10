@@ -22,8 +22,8 @@ export default function Drawer({
   children,
   footer,
   width = 720,
-  headerClassName = 'px-6 py-5 border-b border-slate-200 flex items-start justify-between gap-4',
-  bodyClassName = 'p-6'
+  headerClassName = 'px-5 py-4 border-b border-slate-200 flex items-start justify-between gap-3',
+  bodyClassName = 'p-5'
 }: DrawerProps) {
   if (!open) return null
 
@@ -46,7 +46,7 @@ export default function Drawer({
 
         <div className={`flex-1 overflow-auto ${bodyClassName}`}>{children}</div>
 
-        {footer && <div className="px-6 py-4 border-t border-slate-200 bg-white">{footer}</div>}
+        {footer && <div className="px-5 py-3 border-t border-slate-200 bg-white">{footer}</div>}
       </div>
     </div>
   )

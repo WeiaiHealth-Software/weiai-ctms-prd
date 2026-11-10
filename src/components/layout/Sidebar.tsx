@@ -55,9 +55,9 @@ export const Sidebar: React.FC = () => {
   return (
     <aside className={classNames(
       "bg-white border-r border-slate-200 flex flex-col shadow-sm z-50 transition-all duration-300",
-      collapsed ? "w-20" : "w-72"
+      collapsed ? "w-20" : "w-[288px]"
     )}>
-      <div className="relative h-20 flex items-center px-6 border-b border-slate-100 overflow-hidden whitespace-nowrap">
+      <div className="relative h-[70px] flex items-center px-6 border-b border-slate-100 overflow-hidden whitespace-nowrap">
         <div className="w-8 h-8 min-w-[2rem] rounded-lg flex items-center justify-center mr-3 font-bold flex-shrink-0">
           <img src="weiai.svg" alt="Weiai" />
         </div>
@@ -68,14 +68,14 @@ export const Sidebar: React.FC = () => {
         )}
       </div>
 
-      <nav className="flex-1 py-6 space-y-2 px-3 overflow-y-auto overflow-x-hidden no-scrollbar">
+      <nav className="flex-1 py-4 space-y-1 px-3 overflow-y-auto overflow-x-hidden no-scrollbar">
         {navItems.map(item => (
           <NavLink
             key={item.path}
             to={item.path}
             end
             className={({ isActive }) => classNames(
-              "flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+              "flex items-center px-4 py-2 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
               isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
             )}
           >
@@ -90,7 +90,7 @@ export const Sidebar: React.FC = () => {
           <button
             onClick={() => setIwrsOpen(!iwrsOpen)}
             className={classNames(
-              "w-full flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden hover:bg-slate-50 hover:text-brand-600",
+              "w-full flex items-center px-4 py-2 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden hover:bg-slate-50 hover:text-brand-600",
               iwrsActive ? "text-brand-600" : "text-slate-600"
             )}
           >
@@ -119,7 +119,7 @@ export const Sidebar: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) => classNames(
-                    "flex items-center py-3 pr-4 pl-12 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+                    "flex items-center py-2 pr-4 pl-12 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
                     isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
                   )}
                 >
@@ -134,7 +134,7 @@ export const Sidebar: React.FC = () => {
           <button
             onClick={() => setEdcOpen(!edcOpen)}
             className={classNames(
-              "w-full flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden hover:bg-slate-50 hover:text-brand-600",
+              "w-full flex items-center px-4 py-2 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden hover:bg-slate-50 hover:text-brand-600",
               edcActive ? "text-brand-600" : "text-slate-600"
             )}
           >
@@ -163,7 +163,7 @@ export const Sidebar: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) => classNames(
-                    "flex items-center py-3 pr-4 pl-12 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+                    "flex items-center py-2 pr-4 pl-12 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
                     isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
                   )}
                 >
@@ -178,7 +178,7 @@ export const Sidebar: React.FC = () => {
           <button
             onClick={() => setSystemOpen(!systemOpen)}
             className={classNames(
-              "w-full flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden hover:bg-slate-50 hover:text-brand-600",
+              "w-full flex items-center px-4 py-2 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden hover:bg-slate-50 hover:text-brand-600",
               systemActive ? "text-brand-600" : "text-slate-600"
             )}
           >
@@ -207,7 +207,7 @@ export const Sidebar: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) => classNames(
-                    "flex items-center py-3 pr-4 pl-12 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+                    "flex items-center py-2 pr-4 pl-12 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
                     isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
                   )}
                 >
@@ -222,7 +222,7 @@ export const Sidebar: React.FC = () => {
         <NavLink
           to="/index/ui-spec"
           className={({ isActive }) => classNames(
-            "flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+            "flex items-center px-4 py-2 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
             isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
           )}
         >
@@ -234,7 +234,7 @@ export const Sidebar: React.FC = () => {
         <NavLink
           to="/miniprogram"
           className={({ isActive }) => classNames(
-            "flex items-center px-4 py-3 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
+            "flex items-center px-4 py-2 rounded-xl transition-all group font-medium whitespace-nowrap overflow-hidden",
             isActive ? "bg-brand-50 text-brand-600" : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
           )}
         >

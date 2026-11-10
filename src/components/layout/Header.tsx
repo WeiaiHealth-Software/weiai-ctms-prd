@@ -55,7 +55,7 @@ export const Header: React.FC = () => {
   }, [menuOpen]);
 
   return (
-    <header className="z-40 bg-white/80 backdrop-blur-md sticky top-0 border-b border-slate-200 px-8 h-20 flex items-center justify-between">
+    <header className="z-40 bg-white/80 backdrop-blur-md sticky top-0 border-b border-slate-200 px-8 h-[70px] flex items-center justify-between">
       <div className="flex flex-col justify-center h-full">
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold text-slate-800">{title}</h2>
